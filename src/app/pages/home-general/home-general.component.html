@@ -1,0 +1,125 @@
+<section class="hero">
+
+  <!-- Floating Profile Cards -->
+  <div class="floating-cards">
+    <div class="profile-card card-1 animate-float">
+      <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Jeanne"/>
+      <div class="card-info">
+        <p class="card-name">Jeanne</p>
+        <p class="card-role">Manager de transition</p>
+        <div class="stars">★★★★☆ <span>42 compétences</span></div>
+      </div>
+    </div>
+
+    <div class="profile-card card-2 animate-float delay-1">
+      <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Chef de projet IT"/>
+      <div class="card-info">
+        <p class="card-role">Chef de projet IT</p>
+        <div class="stars">★★★★★ <span>18 compétences</span></div>
+      </div>
+    </div>
+
+    <div class="profile-card card-3 animate-float delay-2">
+      <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Data Analyst"/>
+      <div class="card-info">
+        <p class="card-role">Data Analyst</p>
+        <div class="stars">★★★★★ <span>23 compétences</span></div>
+      </div>
+    </div>
+
+    <div class="profile-card card-4 animate-float delay-1">
+      <img src="https://randomuser.me/api/portraits/women/27.jpg" alt="Expert cybersécurité"/>
+      <div class="card-info">
+        <p class="card-role">Expert cybersécurité</p>
+        <div class="stars">★★★★☆ <span>28 compétences</span></div>
+      </div>
+    </div>
+
+    <div class="profile-card card-5 animate-float delay-3">
+      <img src="https://randomuser.me/api/portraits/men/55.jpg" alt="Développeur Java"/>
+      <div class="card-info">
+        <p class="card-role">Développeur Java</p>
+        <div class="stars">★★★★☆ <span>32 compétences</span></div>
+      </div>
+    </div>
+
+    <div class="profile-card card-6 animate-float delay-2">
+      <img src="https://randomuser.me/api/portraits/men/76.jpg" alt="DevOps Engineer"/>
+      <div class="card-info">
+        <p class="card-role">DevOps Engineer</p>
+        <div class="stars">★★★★★ <span>35 compétences</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dotted Globe Background -->
+  <div class="globe-dots"></div>
+
+  <!-- ===== LOGO TUNISIE TELECOM — PUR SVG ===== -->
+  <div class="center-logo">
+    <svg width="140" height="168" viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <clipPath id="drop-clip">
+          <path d="M100,6 C52,6 16,44 16,90 C16,148 100,234 100,234 C100,234 184,148 184,90 C184,44 148,6 100,6 Z"/>
+        </clipPath>
+      </defs>
+
+      <!-- Fond goutte -->
+      <path d="M100,6 C52,6 16,44 16,90 C16,148 100,234 100,234 C100,234 184,148 184,90 C184,44 148,6 100,6 Z" fill="#ddd"/>
+
+      <!-- Triangles multicolores -->
+      <g clip-path="url(#drop-clip)">
+        <polygon points="16,6  100,6  16,90"    fill="#43a047"/>
+        <polygon points="16,6  100,6  100,90"   fill="#7cb342"/>
+        <polygon points="100,6 184,6  100,90"   fill="#c6d000"/>
+        <polygon points="184,6 184,90 100,90"   fill="#fb8c00"/>
+        <polygon points="184,90 184,170 100,90" fill="#e53935"/>
+        <polygon points="184,170 100,234 100,90" fill="#c62828"/>
+        <polygon points="100,234 16,170  100,90" fill="#6a1b9a"/>
+        <polygon points="16,170 16,90   100,90" fill="#1565c0"/>
+        <polygon points="16,90  16,6    100,90" fill="#0097a7"/>
+        <polygon points="100,6 100,90 70,48"    fill="#aed139"/>
+        <polygon points="100,6 130,48 100,90"   fill="#fdd835"/>
+      </g>
+
+      <!-- Contour goutte -->
+      <path d="M100,6 C52,6 16,44 16,90 C16,148 100,234 100,234 C100,234 184,148 184,90 C184,44 148,6 100,6 Z"
+            fill="none" stroke="white" stroke-width="1.5" opacity="0.25"/>
+
+      <!-- T gauche -->
+      
+
+      <!-- Texte -->
+      <text x="100" y="172" text-anchor="middle" fill="white"
+            font-family="Arial, Helvetica, sans-serif"
+            font-size="12.5" font-weight="700" letter-spacing="0.8"></text>
+    </svg>
+  </div>
+
+  <!-- Hero Text -->
+   <div class="hero-content">
+    <h1>
+      Plateforme Nationale de Gestion<br>
+      <span class="highlight">des Travailleurs Saisonniers</span>
+    </h1>
+
+    
+
+    <div class="cta-buttons">
+      <button class="btn-experts" (click)="goSaisonnier()">
+        Je suis saisonnier
+      </button>
+      <button class="btn-missions" (click)="goRH()">
+        Je suis responsable RH régional
+      </button>
+    </div>
+  </div>
+
+  <!-- Bottom wave -->
+  <div class="wave-bottom">
+    <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+      <path d="M0,0 C360,120 1080,120 1440,0 L1440,120 L0,120 Z" fill="white"/>
+    </svg>
+  </div>
+
+</section>

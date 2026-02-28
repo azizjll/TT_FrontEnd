@@ -1,0 +1,86 @@
+
+
+
+<div class="modal">
+
+  <!-- Header -->
+   <div class="modal-header" *ngIf="showModal">
+      <h2>Ajouter des Saisonniers</h2>
+      <button class="close-btn" (click)="closeModal()">&#x2715;</button>
+    </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active">Saisonnier</div>
+    <div class="tab">Dossier candidat</div>
+  </div>
+
+  <!-- Section intro -->
+  <div class="section-title">Créer le profil d'un collaborateur</div>
+  <p class="section-desc">
+    Le consultant est employé par votre entreprise. Communiquer son identité au client ne pose aucun problème.
+  </p>
+
+  <div class="info-label">Informations</div>
+
+  <!-- Formulaire -->
+  <div class="form-group">
+    <label for="email">Adresse email</label>
+    <input type="email" id="email" name="email">
+  </div>
+
+  <div class="form-group">
+    <label for="prenom">Prénom</label>
+    <input type="text" id="prenom" name="prenom">
+  </div>
+
+  <div class="form-group">
+    <label for="nom">Nom</label>
+    <input type="text" id="nom" name="nom">
+  </div>
+
+  <div class="form-group">
+    <label for="titre">Titre du dossier de compétences</label>
+    <input type="text" id="titre" name="titre">
+  </div>
+
+  <div class="form-group">
+    <label>CV :</label>
+    <div class="file-group">
+      <button class="file-btn">Choisir un fichier</button>
+      <span class="file-name">Aucun fichier choisi</span>
+    </div>
+  </div>
+
+  <!-- Rôles -->
+  <p class="role-label">Rôle du collaborateur</p>
+  <div class="checkbox-group">
+    <label class="checkbox-item">
+      <input type="checkbox" name="role" value="gerant">
+      Gérant du compte entreprise
+    </label>
+    <label class="checkbox-item">
+      <input type="checkbox" name="role" value="commercial">
+      Commercial
+    </label>
+    <label class="checkbox-item">
+      <input type="checkbox" name="role" value="consultant" checked>
+      Consultant
+    </label>
+  </div>
+
+  <!-- Confirmation -->
+  <label class="confirm-check">
+    <input type="checkbox" name="confirmation">
+    Je confirme avoir l'autorisation de créer un compte avec les informations concernant l'expert.
+  </label>
+
+  <!-- Footer -->
+  <div class="modal-footer">
+    <button class="btn btn-outline">Ajouter un autre collaborateur</button>
+    <button class="btn btn-primary">Créer les profils</button>
+  </div>
+
+</div>
+
+

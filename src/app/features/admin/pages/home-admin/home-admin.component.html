@@ -1,0 +1,432 @@
+<!-- directeur-general-dashboard.component.html -->
+<div class="dg-wrapper">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="18" stroke="#4A9EFF" stroke-width="2"/>
+          <path d="M12 20 L20 12 L28 20 L20 28 Z" fill="#4A9EFF" opacity="0.8"/>
+          <circle cx="20" cy="20" r="4" fill="#fff"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <span class="logo-title">GovPilot</span>
+        <span class="logo-sub">Portail DG</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">PILOTAGE</div>
+
+      <a class="nav-item active" (click)="setActive('campagnes')">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 3h18v18H3z"/><path d="M8 12h8M12 8v8"/>
+          </svg>
+        </span>
+        <span>Campagnes</span>
+        <span class="nav-badge">{{ stats.campagnesActives }}</span>
+      </a>
+
+      <a class="nav-item" (click)="setActive('candidatures')">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </span>
+        <span>Candidatures</span>
+        <span class="nav-badge secondary">{{ stats.totalCandidatures }}</span>
+      </a>
+
+      <a class="nav-item" (click)="setActive('utilisateurs')">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M20 21a8 8 0 1 0-16 0"/>
+          </svg>
+        </span>
+        <span>Utilisateurs</span>
+      </a>
+
+      <div class="nav-section-label">SYSTÈME</div>
+
+      <a class="nav-item">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M20 12h-2M4 12H2M17.66 17.66l-1.41-1.41M6.34 17.66l1.41-1.41M12 20v2M12 2v2"/>
+          </svg>
+        </span>
+        <span>Paramètres</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">DG</div>
+      <div class="user-info">
+        <span class="user-name">Directeur Général</span>
+        <span class="user-role">Accès Complet</span>
+      </div>
+      <button class="logout-btn" title="Déconnexion">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="page-title">{{ pageTitle }}</h1>
+        <p class="page-subtitle">{{ pageSubtitle }}</p>
+      </div>
+      <div class="topbar-right">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" placeholder="Rechercher..." [(ngModel)]="searchQuery" />
+        </div>
+        <div class="notification-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span class="notif-dot"></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== SECTION: CAMPAGNES ===== -->
+    <section class="content-section" *ngIf="activeSection === 'campagnes'">
+
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card primary">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <div class="stat-data">
+            <span class="stat-value">{{ stats.campagnesActives }}</span>
+            <span class="stat-label">Campagnes Actives</span>
+          </div>
+          <div class="stat-trend up">+2 ce mois</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <div class="stat-data">
+            <span class="stat-value">{{ stats.campagnesTotal }}</span>
+            <span class="stat-label">Total Campagnes</span>
+          </div>
+          <div class="stat-trend">Toutes périodes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div class="stat-data">
+            <span class="stat-value">{{ stats.affectationsVerrouillees }}</span>
+            <span class="stat-label">Affectations Verrouillées</span>
+          </div>
+          <div class="stat-trend">Sécurisées</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div class="stat-data">
+            <span class="stat-value">{{ stats.joursRestants }}</span>
+            <span class="stat-label">Jours Restants</span>
+          </div>
+          <div class="stat-trend">Campagne en cours</div>
+        </div>
+      </div>
+
+      <!-- Action Bar -->
+      <div class="section-header">
+        <h2 class="section-title">Gestion des Campagnes</h2>
+        <div class="action-buttons">
+          <button class="btn btn-outline" (click)="openCreateModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+            Créer Campagne
+          </button>
+          <button class="btn btn-primary" (click)="activerCampagne()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            Activer
+          </button>
+        </div>
+      </div>
+
+      <!-- Table Campagnes -->
+      <div class="table-card">
+        <div class="table-filters">
+          <button class="filter-tab active">Toutes</button>
+          <button class="filter-tab">Actives</button>
+          <button class="filter-tab">Terminées</button>
+          <button class="filter-tab">Brouillons</button>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Campagne</th>
+              <th>Période</th>
+              <th>Statut</th>
+              <th>Candidatures</th>
+              <th>Affectations</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let campagne of campagnes" class="table-row">
+              <td>
+                <div class="campagne-name">
+                  <div class="campagne-dot" [ngClass]="campagne.statut"></div>
+                  <div>
+                    <span class="name-primary">{{ campagne.nom }}</span>
+                    <span class="name-secondary">{{ campagne.code }}</span>
+                  </div>
+                </div>
+              </td>
+              <td class="period-cell">
+                <span>{{ campagne.dateDebut }}</span>
+                <span class="period-sep">→</span>
+                <span>{{ campagne.dateFin }}</span>
+              </td>
+              <td>
+                <span class="status-badge" [ngClass]="campagne.statut">{{ campagne.statutLabel }}</span>
+              </td>
+              <td class="number-cell">{{ campagne.candidatures }}</td>
+              <td>
+                <div class="affectation-cell">
+                  <span>{{ campagne.affectations }}</span>
+                  <button class="lock-btn" [class.locked]="campagne.verrouille" (click)="toggleVerrouillage(campagne)" [title]="campagne.verrouille ? 'Déverrouiller' : 'Verrouiller'">
+                    <svg *ngIf="!campagne.verrouille" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <svg *ngIf="campagne.verrouille" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <button class="action-icon" title="Voir">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                  <button class="action-icon" title="Modifier">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                  <button class="action-icon danger" title="Supprimer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===== SECTION: CANDIDATURES ===== -->
+    <section class="content-section" *ngIf="activeSection === 'candidatures'">
+      <div class="section-header">
+        <h2 class="section-title">Liste des Candidatures</h2>
+        <div class="action-buttons">
+          <button class="btn btn-outline">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Exporter
+          </button>
+        </div>
+      </div>
+
+      <div class="stats-mini-grid">
+        <div class="mini-stat">
+          <span class="mini-value">{{ stats.totalCandidatures }}</span>
+          <span class="mini-label">Total</span>
+        </div>
+        <div class="mini-stat success">
+          <span class="mini-value">{{ stats.candidaturesAcceptees }}</span>
+          <span class="mini-label">Acceptées</span>
+        </div>
+        <div class="mini-stat warning">
+          <span class="mini-value">{{ stats.candidaturesEnAttente }}</span>
+          <span class="mini-label">En attente</span>
+        </div>
+        <div class="mini-stat danger">
+          <span class="mini-value">{{ stats.candidaturesRefusees }}</span>
+          <span class="mini-label">Refusées</span>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Candidat</th>
+              <th>Campagne</th>
+              <th>Poste</th>
+              <th>Date Dépôt</th>
+              <th>Score</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let cand of candidatures" class="table-row">
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar-sm">{{ cand.initiales }}</div>
+                  <div>
+                    <span class="name-primary">{{ cand.nom }}</span>
+                    <span class="name-secondary">{{ cand.email }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>{{ cand.campagne }}</td>
+              <td>{{ cand.poste }}</td>
+              <td>{{ cand.dateDepot }}</td>
+              <td>
+                <div class="score-bar">
+                  <div class="score-fill" [style.width.%]="cand.score"></div>
+                  <span class="score-text">{{ cand.score }}%</span>
+                </div>
+              </td>
+              <td>
+                <span class="status-badge" [ngClass]="cand.statut">{{ cand.statutLabel }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===== SECTION: UTILISATEURS ===== -->
+    <section class="content-section" *ngIf="activeSection === 'utilisateurs'">
+      <div class="section-header">
+        <h2 class="section-title">Tous les Utilisateurs</h2>
+        <div class="action-buttons">
+          <button class="btn btn-outline">Exporter</button>
+          <button class="btn btn-primary">+ Ajouter</button>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Utilisateur</th>
+              <th>Rôle</th>
+              <th>Département</th>
+              <th>Dernière Connexion</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of utilisateurs" class="table-row">
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar-sm">{{ user.initiales }}</div>
+                  <div>
+                    <span class="name-primary">{{ user.nom }}</span>
+                    <span class="name-secondary">{{ user.email }}</span>
+                  </div>
+                </div>
+              </td>
+              <td><span class="role-badge" [ngClass]="user.roleClass">{{ user.role }}</span></td>
+              <td>{{ user.departement }}</td>
+              <td>{{ user.derniereConnexion }}</td>
+              <td><span class="status-badge" [ngClass]="user.statut">{{ user.statutLabel }}</span></td>
+              <td>
+                <div class="row-actions">
+                  <button class="action-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                  <button class="action-icon danger">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal Création Campagne -->
+  <div class="modal-overlay" *ngIf="showCreateModal" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Créer une Campagne</h3>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Nom de la campagne *</label>
+          <input type="text" placeholder="Ex: Recrutement Cadres 2025" [(ngModel)]="newCampagne.nom"/>
+        </div>
+        <div class="form-group">
+          <label>Code campagne</label>
+          <input type="text" placeholder="Ex: REC-2025-01" [(ngModel)]="newCampagne.code"/>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date de début *</label>
+            <input type="date" [(ngModel)]="newCampagne.dateDebut"/>
+          </div>
+          <div class="form-group">
+            <label>Date de fin *</label>
+            <input type="date" [(ngModel)]="newCampagne.dateFin"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea rows="3" placeholder="Description de la campagne..." [(ngModel)]="newCampagne.description"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Budget *</label>
+          <input type="number" placeholder="Ex: 150000" [(ngModel)]="newCampagne.budget"/>
+        </div>
+        <div class="form-group">
+          <label>Régions concernées *</label>
+          <select multiple [(ngModel)]="newCampagne.regionIds">
+            <option *ngFor="let r of regions" [value]="r.id">
+              {{ r.nom }}
+            </option>
+          </select>
+      </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="closeModal()">Annuler</button>
+        <button class="btn btn-outline" (click)="saveCampagne(false)">Enregistrer Brouillon</button>
+        <button class="btn btn-primary" (click)="saveCampagne(true)">Créer & Activer</button>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,217 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap');
+
+:host {
+  font-family: 'Sora', sans-serif;
+}
+
+/* ===== HERO SECTION ===== */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a0fa8 0%, #2b1de8 40%, #1e3bef 70%, #0d5cff 100%);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ===== GLOBE DOTS ===== */
+.globe-dots {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -48%);
+  width: 680px;
+  height: 680px;
+  border-radius: 50%;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.18) 1.5px, transparent 1.5px);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse 90% 90% at center, black 40%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 90% at center, black 40%, transparent 75%);
+  z-index: 0;
+}
+
+/* ===== CENTER LOGO — TUNISIE TELECOM SVG ===== */
+.center-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /* On remonte le logo au-dessus du centre pour laisser la place au texte en dessous */
+  transform: translate(-50%, -80%) rotate(-90deg);
+  z-index: 5;
+  filter: drop-shadow(0 8px 28px rgba(0, 0, 0, 0.4));
+  animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: translate(-50%, -80%) rotate(-90deg) scale(1); }
+  50%      { transform: translate(-50%, -80%) rotate(-90deg) scale(1.07); }
+}
+
+/* ===== HERO CONTENT ===== */
+.hero-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 10;
+  width: 100%;
+  max-width: 800px;
+  padding: 0 20px;
+
+  h1 {
+    color: white;
+    font-size: clamp(24px, 3.5vw, 46px);
+    font-weight: 800;
+    line-height: 1.25;
+    margin: 0 0 32px;
+    text-shadow: 0 2px 20px rgba(0, 0, 50, 0.3);
+
+    .highlight {
+      color: #7eb5ff;
+    }
+  }
+}
+
+/* ===== CTA BUTTONS ===== */
+.cta-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  button {
+    border: none;
+    border-radius: 50px;
+    padding: 14px 28px;
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.25s, box-shadow 0.25s;
+
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    }
+  }
+
+  .btn-experts {
+    background: #22c55e;
+    color: white;
+    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+  }
+
+  .btn-missions {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1.5px solid rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(6px);
+  }
+}
+
+/* ===== FLOATING PROFILE CARDS ===== */
+.floating-cards {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+}
+
+.profile-card {
+  position: absolute;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 40, 0.3);
+  display: flex;
+  flex-direction: column;
+  width: 160px;
+
+  img {
+    width: 100%;
+    height: 130px;
+    object-fit: cover;
+    object-position: top;
+  }
+
+  .card-info {
+    padding: 8px 10px 10px;
+    background: white;
+
+    .card-name {
+      margin: 0 0 2px;
+      font-weight: 700;
+      font-size: 12px;
+      color: #111;
+    }
+
+    .card-role {
+      margin: 0 0 4px;
+      font-size: 11px;
+      color: #555;
+      font-weight: 500;
+    }
+
+    .stars {
+      font-size: 10px;
+      color: #f59e0b;
+
+      span {
+        color: #888;
+        font-size: 9px;
+      }
+    }
+  }
+}
+
+/* Card positions */
+.card-1 { top: 14%; left: 5%; }
+.card-2 { top: 10%; left: 36%; width: 180px; }
+.card-3 { top: 12%; right: 6%; }
+.card-4 { top: 52%; left: 5%; }
+.card-5 { top: 50%; right: 5%; }
+.card-6 { top: 62%; left: 44%; width: 150px; }
+
+/* ===== FLOAT ANIMATIONS ===== */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+
+.animate-float { animation: float 5s ease-in-out infinite; }
+.delay-1 { animation-delay: 1s; }
+.delay-2 { animation-delay: 2s; }
+.delay-3 { animation-delay: 0.5s; }
+
+/* ===== WAVE BOTTOM ===== */
+.wave-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  line-height: 0;
+
+  svg {
+    width: 100%;
+    height: 80px;
+  }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .profile-card {
+    width: 110px;
+    img { height: 90px; }
+  }
+
+  .card-2 { display: none; }
+  .card-6 { display: none; }
+
+  .center-logo svg {
+    width: 100px;
+    height: 120px;
+  }
+}

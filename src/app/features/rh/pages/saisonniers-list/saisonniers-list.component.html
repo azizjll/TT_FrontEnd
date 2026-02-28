@@ -1,0 +1,188 @@
+
+
+
+  <!-- TABS NAVIGATION -->
+  
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <div class="page-card">
+
+      <!-- HEADER -->
+      <div class="page-header">
+        <h1>Gérer mes Saisonniers</h1>
+        <div class="header-actions">
+          <button class="btn-validate">1 Saisonnier à valider</button>
+          <button class="btn-add" (click)="openModal()">
+            Ajouter un Saisonnier
+            </button>
+        </div>
+      </div>
+
+      <!-- SUB TABS -->
+      <div class="sub-tabs">
+        <a href="#" class="sub-tab active">Tous les Saisonniers</a>
+        <a href="#" class="sub-tab">Administrateurs</a>
+        <a href="#" class="sub-tab">Commercial</a>
+      </div>
+
+      <hr class="divider">
+
+      <!-- SECTION TITLE -->
+      <div class="section-header">
+        <h2>Tous les Saisonniers</h2>
+        <a href="#" class="dossiers-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          Dossiers candidats
+        </a>
+      </div>
+
+      <!-- COLLABORATEUR CARD -->
+      <div class="collaborateur-card">
+
+        <div class="collab-header">
+          <div class="collab-avatar">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+            </svg>
+          </div>
+          <span class="collab-name">Chahlaoui Aziz</span>
+        </div>
+
+        <hr class="card-divider">
+
+        <div class="collab-roles">
+          <p class="roles-label">Rôle du collaborateur</p>
+
+          <div class="role-row">
+            <label class="toggle">
+              <input type="checkbox" checked>
+              <span class="slider"></span>
+            </label>
+            <span>Gérant du compte entreprise</span>
+          </div>
+
+          <div class="role-row">
+            <label class="toggle">
+              <input type="checkbox" checked>
+              <span class="slider"></span>
+            </label>
+            <span>Commercial</span>
+          </div>
+        </div>
+
+      </div>
+      <!-- END COLLABORATEUR CARD -->
+
+    </div>
+  </main>
+  <!-- MODAL -->
+<div class="modal-backdrop" *ngIf="showModal">
+
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="modal-header">
+      <h2>Ajouter des collaborateurs</h2>
+      <button class="close-btn" (click)="closeModal()">✕</button>
+    </div>
+
+    <!-- Tabs -->
+   <div class="tabs">
+        <div class="tab"
+            [class.active]="activeTab === 'collaborateur'"
+            (click)="setTab('collaborateur')">
+            Saisonnier
+        </div>
+
+        <div class="tab"
+            [class.active]="activeTab === 'dossier'"
+            (click)="setTab('dossier')">
+            Dossier candidat
+        </div>
+    </div>
+    <div *ngIf="activeTab === 'collaborateur'">
+    <div class="section-title">Créer le profil d'un saisonnier</div>
+
+    <!-- Formulaire -->
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email">
+    </div>
+
+    <div class="form-group">
+      <label>Prénom</label>
+      <input type="text">
+    </div>
+
+    <div class="form-group">
+      <label>Nom</label>
+      <input type="text">
+    </div>
+
+    <div class="form-group">
+      <label>CV</label>
+      <input type="file">
+    </div>
+  </div>
+  <div *ngIf="activeTab === 'dossier'">
+
+  <div class="section-title">Créer un dossier de compétences</div>
+
+  <p class="helper-text">
+    Le dossier de compétences vous permet de répondre à appel d'offres sans avoir à créer un compte utilisateur pour l'expert à positionner.
+  </p>
+
+  <p class="helper-text">
+    Si le dossier est retenu, vous devrez le compléter afin de créer un compte pour le collaborateur.
+  </p>
+
+  <div class="form-group">
+    <label>Titre du dossier de compétences</label>
+    <input type="text">
+  </div>
+
+  <div class="form-group">
+    <label>Ajouter ici la pièce jointe</label>
+    <input type="file">
+  </div>
+
+  <div class="form-group">
+    <label>Prénom (facultatif)</label>
+    <input type="text">
+  </div>
+
+  <div class="form-group">
+    <label>Nom (facultatif)</label>
+    <input type="text">
+  </div>
+
+  <button class="btn-add-secondary">+ Ajouter un autre collaborateur</button>
+
+</div>
+
+ 
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="closeModal()">Annuler</button>
+      <button class="btn btn-primary">Créer</button>
+    </div>
+
+  </div>
+
+  <!-- ASSISTANCE -->
+  <button class="assistance-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 16v-4M12 8h.01"/>
+    </svg>
+    Assistance
+  </button>
+

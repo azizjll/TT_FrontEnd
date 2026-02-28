@@ -1,0 +1,50 @@
+<nav class="fixed top-0 left-0 w-full z-50 transition-all duration-500"
+     [ngClass]="isScrolled ? 'bg-white/80 shadow-md text-gray-700 py-3' : 'bg-indigo-500 text-white py-6'">
+
+  <div class="flex items-center justify-between px-6">
+
+    <!-- Logo -->
+    <a routerLink="/" class="flex items-center">
+  <img src="assets/logo.png" alt="Logo" class="h-10 w-auto">
+</a>
+
+    <!-- Desktop -->
+    <div class="hidden md:flex gap-8">
+      <a *ngFor="let link of navLinks"
+         [routerLink]="link.path"
+         routerLinkActive="font-bold"
+         class="hover:underline">
+        {{ link.name }}
+      </a>
+
+      <button class="border px-4 py-1 rounded-full">New Launch</button>
+      <button routerLink="/login" class="bg-black text-white px-6 py-2 rounded-full">
+        Login
+      </button>
+    </div>
+
+    <!-- Mobile -->
+    <div class="md:hidden" (click)="toggleMenu()">☰</div>
+
+  </div>
+
+  <!-- Mobile menu -->
+  <div *ngIf="isMenuOpen"
+       class="fixed inset-0 bg-white flex flex-col items-center justify-center gap-6 text-lg">
+
+    <button class="absolute top-4 right-4" (click)="toggleMenu()">✖</button>
+
+    <a *ngFor="let link of navLinks"
+       [routerLink]="link.path"
+       (click)="toggleMenu()">
+      {{ link.name }}
+    </a>
+
+    <button routerLink="/login"
+            (click)="toggleMenu()"
+            class="bg-black text-white px-6 py-2 rounded-full">
+      Login
+    </button>
+  </div>
+
+</nav>

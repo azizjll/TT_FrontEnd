@@ -1,0 +1,691 @@
+/* =====================
+   RESET & BASE
+===================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: #eaf1f8;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* =====================
+   TOP TABS (nav principale)
+===================== */
+.top-tabs {
+  background: #fff;
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  padding: 0 40px;
+  border-bottom: 1px solid #e3eaf2;
+  height: 52px;
+}
+
+.tab {
+  text-decoration: none;
+  color: #5a6a84;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding-bottom: 4px;
+  border-bottom: 2.5px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.tab.active {
+  color: #2b4cdb;
+  border-bottom: 2.5px solid #2b4cdb;
+}
+
+.tab:hover {
+  color: #2b4cdb;
+}
+
+/* =====================
+   MAIN
+===================== */
+main {
+  max-width: 1100px;
+  margin: 32px auto;
+  padding: 0 24px;
+  width: 100%;
+}
+
+/* =====================
+   PAGE CARD
+===================== */
+.page-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 36px 40px;
+  box-shadow: 0 2px 12px rgba(79, 110, 242, 0.07);
+  min-height: 580px;
+}
+
+/* =====================
+   PAGE HEADER
+===================== */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.page-header h1 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #1a2b4a;
+}
+
+.header-actions {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+/* Bouton "à valider" — outline arrondi */
+.btn-validate {
+  border: 1.5px solid #1a2b4a;
+  color: #1a2b4a;
+  background: transparent;
+  padding: 10px 22px;
+  border-radius: 50px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn-validate:hover {
+  background: #1a2b4a;
+  color: #fff;
+}
+
+/* Bouton "Ajouter" — plein bleu */
+.btn-add {
+  background: #2b4cdb;
+  color: #fff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 50px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-add:hover {
+  background: #1a35b5;
+}
+
+/* =====================
+   SUB TABS
+===================== */
+.sub-tabs {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 0;
+}
+
+.sub-tab {
+  text-decoration: none;
+  color: #5a6a84;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding-bottom: 10px;
+  border-bottom: 2.5px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.sub-tab.active {
+  color: #2b4cdb;
+  border-bottom: 2.5px solid #2b4cdb;
+}
+
+.sub-tab:hover {
+  color: #2b4cdb;
+}
+
+/* =====================
+   DIVIDER
+===================== */
+.divider {
+  border: none;
+  border-top: 1px solid #e3eaf2;
+  margin: 0 0 24px 0;
+}
+
+/* =====================
+   SECTION HEADER
+===================== */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.section-header h2 {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1a2b4a;
+}
+
+.dossiers-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: #5a6a84;
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.dossiers-link svg {
+  width: 16px;
+  height: 16px;
+}
+
+.dossiers-link:hover {
+  color: #2b4cdb;
+}
+
+/* =====================
+   COLLABORATEUR CARD
+===================== */
+.collaborateur-card {
+  border: 1px solid #e3eaf2;
+  border-radius: 12px;
+  padding: 20px 24px;
+  width: 320px;
+}
+
+/* Header du collaborateur */
+.collab-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.collab-avatar {
+  width: 36px;
+  height: 36px;
+  background: #dbe6f8;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2b4cdb;
+}
+
+.collab-avatar svg {
+  width: 20px;
+  height: 20px;
+}
+
+.collab-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1a2b4a;
+}
+
+.card-divider {
+  border: none;
+  border-top: 1px solid #e3eaf2;
+  margin-bottom: 16px;
+}
+
+/* Rôles */
+.collab-roles {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.roles-label {
+  font-size: 0.82rem;
+  color: #7a8fa8;
+  font-weight: 600;
+}
+
+.role-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.88rem;
+  color: #1a2b4a;
+  font-weight: 600;
+}
+
+/* =====================
+   TOGGLE SWITCH
+===================== */
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #ccc;
+  border-radius: 50px;
+  transition: background 0.3s;
+}
+
+.slider::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+.toggle input:checked + .slider {
+  background: #22c55e;
+}
+
+.toggle input:checked + .slider::before {
+  transform: translateX(20px);
+}
+
+/* =====================
+   ASSISTANCE BUTTON
+===================== */
+.assistance-btn {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  background: #1a2b4a;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 22px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(26, 43, 74, 0.25);
+  transition: background 0.2s;
+}
+
+.assistance-btn:hover {
+  background: #2b4cdb;
+}
+
+.assistance-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+
+/* ================================
+   Reset & Base
+================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Sora', sans-serif;
+  background: #f0f2f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+/* ================================
+   Modal
+================================ */
+.modal {
+  background: #ffffff;
+  border-radius: 16px;
+  width: 500px;
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  padding: 28px 32px;
+  position: relative;
+  animation: fadeUp 0.3s ease;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================================
+   Header
+================================ */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111111;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888888;
+  font-size: 20px;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.close-btn:hover {
+  color: #111111;
+  background: #f0f0f0;
+}
+
+/* ================================
+   Tabs
+================================ */
+.tabs {
+  display: flex;
+  border-bottom: 2px solid #e8e8e8;
+  margin-bottom: 24px;
+  gap: 24px;
+}
+
+.tab {
+  padding: 8px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #888888;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.tab.active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+}
+
+.tab:hover:not(.active) {
+  color: #444444;
+}
+
+/* ================================
+   Section Intro
+================================ */
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111111;
+  margin-bottom: 6px;
+}
+
+.section-desc {
+  font-size: 13px;
+  color: #666666;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.info-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111111;
+  margin-bottom: 18px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* ================================
+   Form Groups
+================================ */
+.form-group {
+  margin-bottom: 16px;
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #444444;
+  margin-bottom: 6px;
+}
+
+input[type="text"],
+input[type="email"] {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #dddddd;
+  border-radius: 8px;
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+  color: #111111;
+  background: #fafafa;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus {
+  border-color: #2563eb;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* ================================
+   File Input
+================================ */
+.file-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.file-btn {
+  padding: 8px 14px;
+  border: 1.5px solid #cccccc;
+  border-radius: 8px;
+  background: #f5f5f5;
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  color: #333333;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.file-btn:hover {
+  background: #e8e8e8;
+  border-color: #aaaaaa;
+}
+
+.file-name {
+  font-size: 13px;
+  color: #999999;
+}
+
+/* ================================
+   Checkboxes — Rôles
+================================ */
+.role-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #444444;
+  margin-bottom: 10px;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333333;
+}
+
+.checkbox-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #2563eb;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ================================
+   Confirmation Checkbox
+================================ */
+.confirm-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: #555555;
+  line-height: 1.6;
+  margin-bottom: 28px;
+  cursor: pointer;
+}
+
+.confirm-check input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #2563eb;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ================================
+   Footer Buttons
+================================ */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.btn-outline {
+  background: #ffffff;
+  border: 1.5px solid #2563eb;
+  color: #2563eb;
+}
+
+.btn-outline:hover {
+  background: #eff6ff;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal {
+  background: white;
+  width: 650px;
+  max-width: 95%;
+  border-radius: 12px;
+  padding: 20px;
+  animation: fadeIn .25s ease;
+}
+
+@keyframes fadeIn {
+  from { transform: scale(.95); opacity: 0 }
+  to   { transform: scale(1); opacity: 1 }
+}
+
+.helper-text {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 8px;
+}
+
+.btn-add-secondary {
+  background: transparent;
+  border: 1px dashed #ccc;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
