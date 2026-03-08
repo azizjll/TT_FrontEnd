@@ -12,7 +12,7 @@
       <div class="page-header">
         <h1>Gérer mes Saisonniers</h1>
         <div class="header-actions">
-          <button class="btn-validate">1 Saisonnier à valider</button>
+          <button class="btn-validate">Les saisonniers effectués</button>
           <button class="btn-add" (click)="openModal()">
             Ajouter un Saisonnier
             </button>
@@ -44,43 +44,171 @@
       </div>
 
       <!-- COLLABORATEUR CARD -->
-      <div class="collaborateur-card">
+        <div class="collaborateur-container">
+          <div class="collaborateur-card" *ngFor="let cand of candidatures">
 
-        <div class="collab-header">
-          <div class="collab-avatar">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
-            </svg>
+            <div class="collab-header">
+
+              <div class="collab-avatar">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                </svg>
+              </div>
+
+              <div class="collab-info">
+                <span class="collab-name">
+                  {{ cand.saisonnier.prenom }} {{ cand.saisonnier.nom }}
+                </span>
+
+                <!-- statut -->
+                <span class="status-badge"
+                      [ngClass]="{
+                        'status-pending': cand.statut === 'EN_ATTENTE',
+                        'status-accepted': cand.statut === 'ACCEPTEE',
+                        'status-refused': cand.statut === 'REFUSEE',
+                        'status-correct': cand.statut === 'A_CORRIGER'
+                      }">
+
+                  {{ cand.statut }}
+
+                </span>
+              </div>
+
+              <!-- bouton voir dossier -->
+              <button  ton class="btn-eye" (click)="openDossier(cand)">👁️</button>
+
+              <button
+                *ngIf="cand.statut === 'ACCEPTEE'"
+                class="btn-affect"
+                (click)="openAffectationModal(cand)">
+                Affecter
+              </button>
+
+            </div>
+
           </div>
-          <span class="collab-name">Chahlaoui Aziz</span>
         </div>
-
-        <hr class="card-divider">
-
-        <div class="collab-roles">
-          <p class="roles-label">Rôle du collaborateur</p>
-
-          <div class="role-row">
-            <label class="toggle">
-              <input type="checkbox" checked>
-              <span class="slider"></span>
-            </label>
-            <span>Gérant du compte entreprise</span>
-          </div>
-
-          <div class="role-row">
-            <label class="toggle">
-              <input type="checkbox" checked>
-              <span class="slider"></span>
-            </label>
-            <span>Commercial</span>
-          </div>
-        </div>
-
-      </div>
       <!-- END COLLABORATEUR CARD -->
 
+
+
     </div>
+
+    <div class="modal-backdrop" *ngIf="showDossierModal">
+  <div class="modal" (click)="$event.stopPropagation()">
+    
+    <!-- HEADER -->
+    <div class="modal-header">
+      <h2>Dossier de {{ selectedCandidature?.saisonnier.prenom }} {{ selectedCandidature?.saisonnier.nom }}</h2>
+      <button class="close-btn" (click)="closeDossier()">✕</button>
+    </div>
+
+    <!-- BODY -->
+    <div class="modal-body">
+
+      <!-- Informations du saisonnier -->
+      <div class="saisonnier-info">
+
+        <p>
+        <strong>Nom :</strong>
+        <input [(ngModel)]="selectedCandidature.saisonnier.nom">
+        </p>
+
+        <p>
+        <strong>Prénom :</strong>
+        <input [(ngModel)]="selectedCandidature.saisonnier.prenom">
+        </p>
+
+        <p>
+        <strong>Email :</strong>
+        <input [(ngModel)]="selectedCandidature.saisonnier.email">
+        </p>
+
+        <p>
+        <strong>CIN :</strong>
+        <input [(ngModel)]="selectedCandidature.saisonnier.cin">
+        </p>
+
+        <p>
+        <strong>Téléphone :</strong>
+        <input [(ngModel)]="selectedCandidature.saisonnier.telephone">
+        </p>
+
+        <p>
+        <strong>RIB :</strong>
+        <input [(ngModel)]="selectedCandidature.saisonnier.rib">
+        </p>
+
+        <p>
+        <strong>Région :</strong>
+
+        <select [(ngModel)]="selectedCandidature.saisonnier.region.id">
+
+        <option *ngFor="let r of regions" [value]="r.id">
+        {{ r.nom }}
+        </option>
+
+        </select>
+
+        </p>
+
+        </div>
+
+      <!-- Informations sur la candidature -->
+      <div class="candidature-info">
+
+      <p>
+      <strong>Date :</strong>
+      {{ selectedCandidature?.dateDepot | date:'dd/MM/yyyy' }}
+      </p>
+
+      <p>
+      <strong>Statut :</strong>
+
+      <select [(ngModel)]="selectedCandidature.statut">
+
+      <option value="EN_ATTENTE">EN_ATTENTE</option>
+      <option value="ACCEPTEE">ACCEPTEE</option>
+      <option value="REFUSEE">REFUSEE</option>
+      <option value="A_CORRIGER">A_CORRIGER</option>
+
+      </select>
+
+      </p>
+
+      <p>
+      <strong>Commentaire :</strong>
+
+      <textarea [(ngModel)]="selectedCandidature.commentaire"></textarea>
+
+      </p>
+
+      </div>
+
+      <hr>
+
+      <!-- Liste des documents -->
+      <div class="documents">
+        <h3>Documents joints</h3>
+        <ul>
+          <li *ngFor="let doc of selectedCandidature?.documents">
+            <a [href]="doc.url" target="_blank">{{ doc.nomFichier }} ({{ doc.type }})</a>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="closeDossier()">Fermer</button>
+      <button class="btn btn-primary" (click)="updateCandidature()">
+Enregistrer les modifications
+</button>
+    </div>
+
+  </div>
+</div>
   </main>
   <!-- MODAL -->
 <div class="modal-backdrop" *ngIf="showModal">
@@ -89,93 +217,136 @@
 
     <!-- Header -->
     <div class="modal-header">
-      <h2>Ajouter des collaborateurs</h2>
+      <h2>Ajouter des saisonniers</h2>
       <button class="close-btn" (click)="closeModal()">✕</button>
     </div>
 
     <!-- Tabs -->
-   <div class="tabs">
-        <div class="tab"
-            [class.active]="activeTab === 'collaborateur'"
-            (click)="setTab('collaborateur')">
-            Saisonnier
+    <div class="tabs">
+      <div class="tab"
+           [class.active]="activeTab === 'collaborateur'"
+           (click)="setTab('collaborateur')">
+        Saisonnier
+      </div>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="section-title">
+        Créer le profil d'un saisonnier
+      </div>
+
+      <form (ngSubmit)="submit()">
+
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="form.email" name="email" required>
+          </div>
+
+          <div class="form-group">
+            <label>Prénom</label>
+            <input type="text" [(ngModel)]="form.prenom" name="prenom" required>
+          </div>
+
+          <div class="form-group">
+            <label>Nom</label>
+            <input type="text" [(ngModel)]="form.nom" name="nom" required>
+          </div>
+
+          <div class="form-group">
+            <label>CIN</label>
+            <input type="number" [(ngModel)]="form.cin" name="cin" required>
+          </div>
+
+          <div class="form-group">
+            <label>RIB</label>
+            <input type="text" [(ngModel)]="form.rib" name="rib" required>
+          </div>
+
+          <div class="form-group">
+            <label>Téléphone</label>
+            <input type="text" [(ngModel)]="form.telephone" name="telephone" required>
+          </div>
+
+          <div class="form-group">
+            <label>Région</label>
+            <select [(ngModel)]="form.regionId" name="regionId" required>
+              <option *ngFor="let region of regions" [value]="region.id">
+                {{ region.nom }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>CIN (PDF)</label>
+            <input type="file" (change)="onFileChange($event,'cin')" required>
+          </div>
+
+          <div class="form-group">
+            <label>Diplôme (PDF)</label>
+            <input type="file" (change)="onFileChange($event,'diplome')" required>
+          </div>
+
+          <div class="form-group">
+            <label>Contrat (PDF)</label>
+            <input type="file" (change)="onFileChange($event,'contrat')" required>
+          </div>
+
         </div>
 
-        <div class="tab"
-            [class.active]="activeTab === 'dossier'"
-            (click)="setTab('dossier')">
-            Dossier candidat
-        </div>
+        <button type="submit" class="btn btn-primary">
+          Créer
+        </button>
+
+      </form>
+
     </div>
-    <div *ngIf="activeTab === 'collaborateur'">
-    <div class="section-title">Créer le profil d'un saisonnier</div>
-
-    <!-- Formulaire -->
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email">
-    </div>
-
-    <div class="form-group">
-      <label>Prénom</label>
-      <input type="text">
-    </div>
-
-    <div class="form-group">
-      <label>Nom</label>
-      <input type="text">
-    </div>
-
-    <div class="form-group">
-      <label>CV</label>
-      <input type="file">
-    </div>
-  </div>
-  <div *ngIf="activeTab === 'dossier'">
-
-  <div class="section-title">Créer un dossier de compétences</div>
-
-  <p class="helper-text">
-    Le dossier de compétences vous permet de répondre à appel d'offres sans avoir à créer un compte utilisateur pour l'expert à positionner.
-  </p>
-
-  <p class="helper-text">
-    Si le dossier est retenu, vous devrez le compléter afin de créer un compte pour le collaborateur.
-  </p>
-
-  <div class="form-group">
-    <label>Titre du dossier de compétences</label>
-    <input type="text">
-  </div>
-
-  <div class="form-group">
-    <label>Ajouter ici la pièce jointe</label>
-    <input type="file">
-  </div>
-
-  <div class="form-group">
-    <label>Prénom (facultatif)</label>
-    <input type="text">
-  </div>
-
-  <div class="form-group">
-    <label>Nom (facultatif)</label>
-    <input type="text">
-  </div>
-
-  <button class="btn-add-secondary">+ Ajouter un autre collaborateur</button>
-
-</div>
-
- 
 
     <!-- Footer -->
     <div class="modal-footer">
       <button class="btn btn-outline" (click)="closeModal()">Annuler</button>
-      <button class="btn btn-primary">Créer</button>
     </div>
 
   </div>
+
+</div>
+
+
+<!-- Popup Affectation -->
+<div class="modal-backdrop" *ngIf="showAffectModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Affecter saisonnier</h2>
+      <button (click)="showAffectModal=false">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <p>
+        {{ selectedCandidatureForAffect?.saisonnier.prenom }}
+        {{ selectedCandidatureForAffect?.saisonnier.nom }}
+      </p>
+
+      <label>Choisir structure</label>
+
+      <select [(ngModel)]="selectedStructureId" class="form-control">
+        <optgroup label="ESPACE COMMERCIAL">
+          <option *ngFor="let s of structuresCommerciaux" [value]="s.id">{{ s.nom }}</option>
+        </optgroup>
+
+        <optgroup label="CENTRE TECHNOLOGIQUE">
+          <option *ngFor="let s of structuresTech" [value]="s.id">{{ s.nom }}</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-primary" (click)="affecter()">Confirmer</button>
+      <button class="btn btn-outline" (click)="showAffectModal=false">Annuler</button>
+    </div>
+  </div>
+</div>
 
   <!-- ASSISTANCE -->
   <button class="assistance-btn">

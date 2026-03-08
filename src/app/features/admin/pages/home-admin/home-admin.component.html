@@ -281,45 +281,74 @@
         </div>
       </div>
 
-      <div class="table-card">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Candidat</th>
-              <th>Campagne</th>
-              <th>Poste</th>
-              <th>Date Dépôt</th>
-              <th>Score</th>
-              <th>Statut</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let cand of candidatures" class="table-row">
-              <td>
-                <div class="user-cell">
-                  <div class="user-avatar-sm">{{ cand.initiales }}</div>
-                  <div>
-                    <span class="name-primary">{{ cand.nom }}</span>
-                    <span class="name-secondary">{{ cand.email }}</span>
-                  </div>
-                </div>
-              </td>
-              <td>{{ cand.campagne }}</td>
-              <td>{{ cand.poste }}</td>
-              <td>{{ cand.dateDepot }}</td>
-              <td>
-                <div class="score-bar">
-                  <div class="score-fill" [style.width.%]="cand.score"></div>
-                  <span class="score-text">{{ cand.score }}%</span>
-                </div>
-              </td>
-              <td>
-                <span class="status-badge" [ngClass]="cand.statut">{{ cand.statutLabel }}</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+     <div class="table-card">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Candidat</th>
+        <th>Campagne</th>
+        <th>CIN</th>
+        <th>Région</th>
+        <th>Date Dépôt</th>
+        <th>Statut</th>
+        <th>Documents</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let cand of candidatures" class="table-row">
+
+        <!-- CANDIDAT -->
+        <td>
+          <div class="user-cell">
+            <div class="user-avatar-sm">
+              {{ cand.saisonnier.nom[0] }}{{ cand.saisonnier.prenom[0] }}
+            </div>
+
+            <div>
+              <span class="name-primary">
+                {{ cand.saisonnier.nom }} {{ cand.saisonnier.prenom }}
+              </span>
+
+              <span class="name-secondary">
+                {{ cand.saisonnier.email }}
+              </span>
+            </div>
+          </div>
+        </td>
+
+        <!-- CAMPAGNE -->
+        <td>{{ cand.campagne.libelle }}</td>
+
+        <!-- CIN -->
+        <td>{{ cand.saisonnier.cin }}</td>
+
+        <!-- REGION -->
+        <td>{{ cand.saisonnier.region.nom }}</td>
+
+        <!-- DATE -->
+        <td>{{ cand.dateDepot }}</td>
+
+        <!-- STATUT -->
+        <td>
+          <span class="status-badge">
+            {{ cand.statut }}
+          </span>
+        </td>
+
+        <!-- DOCUMENTS -->
+        <td>
+          <div *ngFor="let doc of cand.documents">
+            <a [href]="doc.url" target="_blank">
+              {{ doc.type }}
+            </a>
+          </div>
+        </td>
+
+      </tr>
+    </tbody>
+  </table>
+</div>
     </section>
 
     <!-- ===== SECTION: UTILISATEURS ===== -->
@@ -414,10 +443,14 @@
         </div>
         <div class="form-group">
           <label>Régions concernées *</label>
-          <select multiple [(ngModel)]="newCampagne.regionIds">
+          <select multiple [(ngModel)]="newCampagne.regionIds" (change)="onRegionChange()">
+
+            <option [value]="0">Tous les gouvernorats</option>
+
             <option *ngFor="let r of regions" [value]="r.id">
               {{ r.nom }}
             </option>
+
           </select>
       </div>
       </div>

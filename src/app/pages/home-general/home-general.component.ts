@@ -12,9 +12,10 @@ export class HomeGeneralComponent {
   constructor(private router: Router) {}
 
 
-  goSaisonnier() {
-    this.router.navigate(['/login'], { queryParams: { role: 'SAISONNIER' }});
+   goSaisonnier() {
+    this.router.navigate(['/home']);
   }
+
 
   goRH() {
     this.router.navigate(['/login'], { queryParams: { role: 'RH_REGIONAL' }});

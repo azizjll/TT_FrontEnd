@@ -94,4 +94,10 @@ private authHeaders(): HttpHeaders {
     Authorization: `Bearer ${token}`
   });
 }
+
+// Récupérer la région du RH connecté
+getMyRegion(): Observable<Region> {
+  const headers = this.authHeaders(); // ton header avec token
+  return this.http.get<Region>(`${this.baseUrl}/my-region`, { headers });
+}
 }

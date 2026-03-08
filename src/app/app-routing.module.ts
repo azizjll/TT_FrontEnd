@@ -33,7 +33,7 @@ const routes: Routes = [
   { path: 'saisonniers/validation', component: SaisonniersValidationComponent },
   {path: 'admin', component: HomeAdminComponent},
 
-  { path: '', redirectTo: '/home', pathMatch: 'full' }
+  { path: '', redirectTo: '/home-ge', pathMatch: 'full' }
 ];
 
 @NgModule({

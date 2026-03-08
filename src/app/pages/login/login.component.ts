@@ -1,6 +1,7 @@
 import { Component, AfterViewInit, OnInit } from '@angular/core';
 import { AuthService, SignupRequest, SigninRequest, Region } from 'src/app/services/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-login',
@@ -22,6 +23,14 @@ forgotEmail: string = '';
 resetMode: boolean = false;
 resetToken: string = '';
 newPassword: string = '';
+
+showMessage(msg: string) {
+  this.message = msg;
+
+  setTimeout(() => {
+    this.message = '';
+  }, 3000);
+}
 
 constructor(private authService: AuthService,
             private route: ActivatedRoute,
@@ -85,27 +94,54 @@ onForgotPassword() {
 
 
   onSignin() {
-    this.authService.signin(this.signinData).subscribe({
-      next: (res) => {
-  localStorage.setItem('token', res.token);
-  this.message = 'Connexion réussie !';
-      },
-      error: (err) => {
-        this.message = 'Email ou mot de passe incorrect';
-        console.error(err);
-      }
-    });
-  }
+  this.authService.signin(this.signinData).subscribe({
+    next: (res) => {
 
-  onSignup() {
-    this.authService.signup(this.signupData).subscribe({
-      next: (res) => this.message = 'Inscription réussie ! Vérifiez votre email.',
-      error: (err) => {
-        this.message = 'Erreur lors de l\'inscription';
-        console.error(err);
-      }
-    });
-  }
+      localStorage.setItem('token', res.token);
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Connexion réussie',
+        timer: 1500,
+        showConfirmButton: false
+      });
+
+      this.router.navigate(['/home']);
+    },
+    error: () => {
+      Swal.fire({
+        icon: 'error',
+        title: 'Erreur',
+        text: 'Email ou mot de passe incorrect'
+      });
+    }
+  });
+}
+
+ onSignup() {
+  this.authService.signup(this.signupData).subscribe({
+    next: () => {
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Inscription réussie',
+        text: 'Vérifiez votre email pour activer votre compte',
+        confirmButtonText: 'OK'
+      });
+
+      const container = document.getElementById('container');
+      container?.classList.remove("right-panel-active");
+
+    },
+    error: () => {
+      Swal.fire({
+        icon: 'error',
+        title: 'Erreur',
+        text: "Erreur lors de l'inscription"
+      });
+    }
+  });
+}
   onResetPassword() {
   if (!this.newPassword) {
     this.message = 'Veuillez saisir un nouveau mot de passe';

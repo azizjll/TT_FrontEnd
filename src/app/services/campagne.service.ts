@@ -20,7 +20,9 @@ export interface Campagne {
   dateDebut: string;
   dateFin: string;
   statut: string;
+  description?: string;
 }
+
 
 @Injectable({
   providedIn: 'root'

@@ -14,45 +14,183 @@
   <!-- MAIN -->
   <main>
 
-    <!-- WELCOME -->
-    <div class="welcome-card">
-      <h1>Bonjour Chahlaoui Aziz, bienvenue sur votre espace LittleBig Connection</h1>
-      <p>Aujourd'hui, mardi 24 février 2026</p>
-    </div>
+  <!-- WELCOME -->
+  <div class="welcome-card">
+    <h1>Bonjour Chahlaoui Aziz, bienvenue sur votre espace LittleBig Connection</h1>
+    <p>Aujourd'hui, mardi 24 février 2026</p>
+  </div>
 
-    <!-- CONTENT ROW -->
-    <div class="content-row">
+  <!-- CONTENT ROW -->
+  <div class="content-row">
 
-      <!-- AO CARD -->
-      <div class="ao-card">
-        <h2>Les entreprises (0)</h2>
-        <div class="ao-empty">Aucun entreprise pour le moment.</div>
+    <!-- CAMPAGNES -->
+    <div class="ao-card">
+      <h2>Campagnes ({{ campagnes.length }})</h2>
+
+      <div *ngIf="campagnes.length === 0" class="ao-empty">
+        Aucun campagne pour le moment.
       </div>
 
-      <!-- MISSION CARD -->
-      <div class="mission-card">
-        <h3>Mission en cours</h3>
+      <div *ngFor="let c of campagnes" class="campagne-card">
+  <div class="campagne-logo">
+  <svg viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Bâtiment gauche -->
+    <rect x="5" y="15" width="14" height="38" stroke="white" stroke-width="2" fill="none"/>
+    <rect x="8" y="19" width="3" height="3" fill="white"/>
+    <rect x="13" y="19" width="3" height="3" fill="white"/>
+    <rect x="8" y="26" width="3" height="3" fill="white"/>
+    <rect x="13" y="26" width="3" height="3" fill="white"/>
 
-        <div class="mission-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#8a9ab5" stroke-width="1.5">
-            <rect x="2" y="7" width="20" height="14" rx="2"/>
-            <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+    <!-- Bâtiment central (le plus grand) -->
+    <rect x="22" y="5" width="16" height="48" stroke="white" stroke-width="2" fill="none"/>
+    <rect x="25" y="10" width="3" height="3" fill="white"/>
+    <rect x="32" y="10" width="3" height="3" fill="white"/>
+    <rect x="25" y="18" width="3" height="3" fill="white"/>
+    <rect x="32" y="18" width="3" height="3" fill="white"/>
+    <rect x="25" y="26" width="3" height="3" fill="white"/>
+    <rect x="32" y="26" width="3" height="3" fill="white"/>
+
+    <!-- Toit maison -->
+    <polyline points="42,30 55,18 68,30" stroke="white" stroke-width="2" fill="none" stroke-linejoin="round"/>
+    <!-- Corps maison -->
+    <rect x="44" y="30" width="22" height="23" stroke="white" stroke-width="2" fill="none"/>
+    <!-- Fenêtres maison -->
+    <rect x="47" y="34" width="5" height="5" stroke="white" stroke-width="1.5" fill="none"/>
+    <rect x="58" y="34" width="5" height="5" stroke="white" stroke-width="1.5" fill="none"/>
+    <!-- Porte -->
+    <rect x="52" y="42" width="6" height="11" stroke="white" stroke-width="1.5" fill="none"/>
+
+    <!-- Ligne sol -->
+    <line x1="2" y1="53" x2="75" y2="53" stroke="white" stroke-width="1.5"/>
+  </svg>
+</div>
+  <div class="campagne-info">
+    <h3>{{ c.libelle }}</h3>
+    <p>{{ c.description || 'Pas de description disponible' }}</p>
+    <p>Début: {{ c.dateDebut | date:'shortDate' }} - Fin: {{ c.dateFin | date:'shortDate' }}</p>
+    <p>Statut: {{ c.statut }}</p>
+      <!-- Bouton pour déposer candidature -->
+    <button class="btn-candidature" (click)="deposerCandidature(c.id)">Déposer candidature</button>
+    <button *ngIf="isRH()" class="btn-primary" 
+        (click)="ouvrirPageSaisonniers(c.id)">
+  Ajouter un saisonnier
+</button>
+ 
+  </div>
+</div>
+    </div>
+
+    <!-- MISSION CARD -->
+    <div class="mission-card" *ngIf="campagnes.length > 0">
+      <h3>Description de la campagne </h3>
+
+      <div class="mission-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#8a9ab5" stroke-width="1.5">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+        </svg>
+        <div class="badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3">
+            <path d="M18 6L6 18M6 6l12 12"/>
           </svg>
-          <div class="badge">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3">
-              <path d="M18 6L6 18M6 6l12 12"/>
-            </svg>
-          </div>
         </div>
-
-        <div class="mission-title">Vos missions en cours apparaîtront ici</div>
-        <div class="mission-desc">Pour démarrer une mission, vous devez d'abord répondre à un Appel d'Offres (AO)</div>
-
-        <button class="btn-outline">En savoir plus</button>
       </div>
 
+      <div class="mission-title">{{ campagnes[0].libelle }}</div>
+      <div class="mission-desc">{{ campagnes[0].description || 'Description non disponible' }}</div>
+
+      <button class="btn-outline">En savoir plus</button>
     </div>
-  </main>
+
+  </div>
+</main>
+
+<!-- BACKDROP -->
+<div class="modal-backdrop" *ngIf="showCandidatureModal">
+
+  <!-- MODAL -->
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <!-- HEADER -->
+    <div class="modal-header">
+      <h2>Déposer une candidature</h2>
+      <button class="close-btn" (click)="closeModal()">✕</button>
+    </div>
+
+    <!-- DESCRIPTION -->
+    <p class="modal-desc">
+      Remplissez les informations ci-dessous pour déposer votre candidature.
+    </p>
+
+    <!-- FORM -->
+    <form (ngSubmit)="submitCandidature()">
+
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" [(ngModel)]="form.email" name="email" required>
+      </div>
+
+      <div class="form-group">
+        <label>Prénom</label>
+        <input type="text" [(ngModel)]="form.prenom" name="prenom" required>
+      </div>
+
+      <div class="form-group">
+        <label>Nom</label>
+        <input type="text" [(ngModel)]="form.nom" name="nom" required>
+      </div>
+
+      <div class="form-group">
+        <label>CIN</label>
+        <input type="number" [(ngModel)]="form.cin" name="cin" required>
+      </div>
+
+      <div class="form-group">
+        <label>RIB</label>
+        <input type="text" [(ngModel)]="form.rib" name="rib" required>
+      </div>
+
+      <div class="form-group">
+        <label>Téléphone</label>
+        <input type="text" [(ngModel)]="form.telephone" name="telephone" required>
+      </div>
+
+      <div class="form-group">
+        <label>Région ID</label>
+        <input type="number" [(ngModel)]="form.regionId" name="regionId" required>
+      </div>
+
+      <div class="form-group">
+        <label>CIN (PDF)</label>
+        <input type="file" (change)="onFileChange($event,'cin')" required>
+      </div>
+
+      <div class="form-group">
+        <label>Diplôme (PDF)</label>
+        <input type="file" (change)="onFileChange($event,'diplome')" required>
+      </div>
+
+      <div class="form-group">
+        <label>Contrat (PDF)</label>
+        <input type="file" (change)="onFileChange($event,'contrat')" required>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="closeModal()">
+          Annuler
+        </button>
+
+        <button type="submit" class="btn-submit">
+          Envoyer la candidature
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
 
   <!-- ASSISTANCE -->
   <button class="assistance-btn">
