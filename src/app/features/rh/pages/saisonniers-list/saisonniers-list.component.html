@@ -270,14 +270,26 @@ Enregistrer les modifications
             <input type="text" [(ngModel)]="form.telephone" name="telephone" required>
           </div>
 
-          <div class="form-group">
-            <label>Région</label>
-            <select [(ngModel)]="form.regionId" name="regionId" required>
-              <option *ngFor="let region of regions" [value]="region.id">
-                {{ region.nom }}
-              </option>
-            </select>
-          </div>
+        <!-- Région -->
+        <div class="form-group">
+          <label>Région</label>
+          <select [(ngModel)]="form.regionId" name="regionId" required
+                  (change)="loadStructuresByRegion(form.regionId)">
+            <option *ngFor="let region of regions" [value]="region.id">
+              {{ region.nom }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Structure -->
+        <div class="form-group">
+          <label>Structure</label>
+          <select [(ngModel)]="form.structureId" name="structureId" required>
+            <option *ngFor="let structure of structures" [value]="structure.id">
+              {{ structure.nom }}
+            </option>
+          </select>
+        </div>
 
           <div class="form-group">
             <label>CIN (PDF)</label>

@@ -3,11 +3,13 @@ import { ActivatedRoute } from '@angular/router';
 import { AffectationService } from 'src/app/services/affectation.service';
 import { AuthService, Region } from 'src/app/services/auth.service';
 import { CandidatureService } from 'src/app/services/candidature.service';
+import { StructureService } from 'src/app/structure.service';
 
 export interface Structure {
   id: number;
   nom: string;
   type: 'ESPACE_COMMERCIAL' | 'CENTRE_TECHNOLOGIQUE';
+   regionId: number;
   adresse?: string;
   affectations?: any[];
 }
@@ -57,6 +59,7 @@ export class SaisonniersListComponent implements OnInit {
     private route: ActivatedRoute,
     private candidatureService: CandidatureService,
     private authService: AuthService,
+    private structureService: StructureService,
     private affectationService: AffectationService,
   ) {}
 
@@ -102,6 +105,17 @@ export class SaisonniersListComponent implements OnInit {
       });
   }
 
+  loadStructuresByRegion(regionId: number) {
+  if (!regionId) return;
+
+  this.structureService.getStructuresByRegion(regionId).subscribe({
+    next: (data: Structure[]) => {
+      this.structures = data;
+    },
+    error: err => console.error("Erreur chargement structures", err)
+  });
+}
+
   openDossier(cand: any) {
     this.selectedCandidature = cand;
     this.showDossierModal = true;
@@ -146,6 +160,7 @@ export class SaisonniersListComponent implements OnInit {
     formData.append('telephone', this.form.telephone);
     formData.append('email', this.form.email);
     formData.append('regionId', this.form.regionId.toString());
+    formData.append('structureId', this.form.structureId.toString());
     formData.append('campagneId', this.campagneId.toString());
 
     formData.append('cinFile', this.cinFile);
@@ -192,16 +207,14 @@ export class SaisonniersListComponent implements OnInit {
     this.showAffectModal = true;
     this.selectedStructureId = null;
 
-    this.affectationService.getStructuresByRegion(this.myRegion.id).subscribe({
-      next: (data: Structure[]) => {
-        this.structuresCommerciaux = data.filter(s => s.type === 'ESPACE_COMMERCIAL');
-        this.structuresTech = data.filter(s => s.type === 'CENTRE_TECHNOLOGIQUE');
-
-        // Optionnel : concat pour le select global
-        this.structures = [...this.structuresCommerciaux, ...this.structuresTech];
-      },
-      error: err => console.error(err)
-    });
+this.affectationService.getStructuresByRegion(this.myRegion.id).subscribe({
+  next: (data: Structure[]) => {
+    this.structuresCommerciaux = data.filter(s => s.type === 'ESPACE_COMMERCIAL');
+    this.structuresTech = data.filter(s => s.type === 'CENTRE_TECHNOLOGIQUE');
+    this.structures = [...this.structuresCommerciaux, ...this.structuresTech];
+  },
+  error: err => console.error(err)
+});
   }
 
   affecter() {

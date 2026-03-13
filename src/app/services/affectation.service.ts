@@ -7,6 +7,7 @@ export interface Structure {
   nom: string;
   type: 'ESPACE_COMMERCIAL' | 'CENTRE_TECHNOLOGIQUE';
   adresse?: string;
+    regionId: number;
   affectations?: any[];
 }
 @Injectable({

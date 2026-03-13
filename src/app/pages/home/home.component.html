@@ -16,7 +16,7 @@
 
   <!-- WELCOME -->
   <div class="welcome-card">
-    <h1>Bonjour Chahlaoui Aziz, bienvenue sur votre espace LittleBig Connection</h1>
+    <h1>Bonjour Chahlaoui Aziz, bienvenue sur votre espace Tunisie Telecom</h1>
     <p>Aujourd'hui, mardi 24 février 2026</p>
   </div>
 
@@ -155,11 +155,24 @@
         <input type="text" [(ngModel)]="form.telephone" name="telephone" required>
       </div>
 
-      <div class="form-group">
-        <label>Région ID</label>
-        <input type="number" [(ngModel)]="form.regionId" name="regionId" required>
-      </div>
+<div class="form-group">
+  <label>Région</label>
+  <select [(ngModel)]="form.regionId" name="regionId" required 
+          (change)="loadStructuresByRegion(form.regionId)">
+    <option *ngFor="let region of regions" [value]="region.id">
+      {{ region.nom }}
+    </option>
+  </select>
+</div>
 
+<div class="form-group">
+  <label>Structure</label>
+  <select [(ngModel)]="form.structureId" name="structureId" required>
+    <option *ngFor="let structure of structures" [value]="structure.id">
+      {{ structure.nom }}
+    </option>
+  </select>
+</div>
       <div class="form-group">
         <label>CIN (PDF)</label>
         <input type="file" (change)="onFileChange($event,'cin')" required>

@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService, Region } from 'src/app/services/auth.service';
 import { Campagne, CampagneService } from 'src/app/services/campagne.service';
 import { CandidatureService } from 'src/app/services/candidature.service';
+import { StructureService } from 'src/app/structure.service';
 
 @Component({
   selector: 'app-home',
@@ -11,6 +13,8 @@ import { CandidatureService } from 'src/app/services/candidature.service';
 export class HomeComponent implements OnInit {
 
   campagnes: Campagne[] = [];
+  regions: Region[] = [];
+  structures: any[] = [];
 
   showCandidatureModal = false;
   campagneIdSelectionnee!: number;
@@ -32,11 +36,14 @@ export class HomeComponent implements OnInit {
   constructor(
     private campagneService: CampagneService,
     private candidatureService: CandidatureService,
+      private authService: AuthService,
+       private structureService: StructureService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadCampagnes();
+      this.loadRegions();
   }
 
   loadCampagnes(): void {
@@ -45,6 +52,26 @@ export class HomeComponent implements OnInit {
       error: (err) => console.error('Erreur lors du chargement des campagnes', err)
     });
   }
+
+loadStructuresByRegion(regionId: number) {
+  this.structureService.getStructuresByRegion(regionId).subscribe({
+    next: (data) => this.structures = data,
+    error: (err) => console.error("Erreur chargement structures", err)
+  });
+}
+
+  loadRegions() {
+
+  this.authService.getRegions().subscribe({
+    next: (data) => {
+      this.regions = data;
+    },
+    error: (err) => {
+      console.error("Erreur chargement régions", err);
+    }
+  });
+
+}
 
   deposerCandidature(campagneId: number) {
     this.campagneIdSelectionnee = campagneId;
@@ -81,6 +108,7 @@ export class HomeComponent implements OnInit {
     formData.append('telephone', this.form.telephone);
     formData.append('email', this.form.email);
     formData.append('regionId', this.form.regionId);
+    formData.append('structureId', this.form.structureId); // obligatoire
     formData.append('campagneId', this.campagneIdSelectionnee.toString());
 
     formData.append('cinFile', this.cinFile);

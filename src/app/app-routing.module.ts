@@ -9,6 +9,7 @@ import { ParametresEntrepriseComponent } from './features/rh/pages/parametres-en
 import { RhLayoutComponent } from './features/rh/layout/rh-layout/rh-layout.component';
 import { HomeAdminComponent } from './features/admin/pages/home-admin/home-admin.component';
 import { HomeGeneralComponent } from './pages/home-general/home-general.component';
+import { EspacesaisonnierComponent } from './saisonnier/espacesaisonnier/espacesaisonnier.component';
 
 const routes: Routes = [
 
@@ -32,6 +33,7 @@ const routes: Routes = [
   
   { path: 'saisonniers/validation', component: SaisonniersValidationComponent },
   {path: 'admin', component: HomeAdminComponent},
+  {path: 'espace-saisonnier', component: EspacesaisonnierComponent},
 
   { path: '', redirectTo: '/home-ge', pathMatch: 'full' }
 ];

@@ -14,6 +14,7 @@ import { SaisonnierAddComponent } from './features/rh/pages/saisonnier-add/saiso
 import { SaisonniersValidationComponent } from './features/rh/pages/saisonniers-validation/saisonniers-validation.component';
 import { HomeAdminComponent } from './features/admin/pages/home-admin/home-admin.component';
 import { HomeGeneralComponent } from './pages/home-general/home-general.component';
+import { EspacesaisonnierComponent } from './saisonnier/espacesaisonnier/espacesaisonnier.component';
 
 @NgModule({
   declarations: [
@@ -26,7 +27,8 @@ import { HomeGeneralComponent } from './pages/home-general/home-general.componen
     SaisonnierAddComponent,
     SaisonniersValidationComponent,
     HomeAdminComponent,
-    HomeGeneralComponent
+    HomeGeneralComponent,
+    EspacesaisonnierComponent
   ],
   imports: [
     BrowserModule,
