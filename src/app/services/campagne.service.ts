@@ -21,6 +21,7 @@ export interface Campagne {
   dateFin: string;
   statut: string;
   description?: string;
+  budget?: number;
 }
 
 

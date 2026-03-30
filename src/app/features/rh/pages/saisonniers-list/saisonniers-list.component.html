@@ -1,371 +1,472 @@
+<div class="saisonniers-page">
 
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1>Gérer mes Saisonniers</h1>
+      <p class="header-sub">Consultez et gérez les candidatures de votre équipe saisonnière</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-outline-dark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Saisonniers effectués
+      </button>
+      <button class="btn-primary-action" (click)="openModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Ajouter un saisonnier
+      </button>
+    </div>
+  </div>
 
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-num">{{ candidatures.length }}</span>
+      <span class="stat-lbl">Total</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-num pending">{{ countByStatus('EN_ATTENTE') }}</span>
+      <span class="stat-lbl">En attente</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-num accepted">{{ countByStatus('ACCEPTEE') }}</span>
+      <span class="stat-lbl">Acceptées</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-num refused">{{ countByStatus('REFUSEE') }}</span>
+      <span class="stat-lbl">Refusées</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-num correct">{{ countByStatus('A_CORRIGER') }}</span>
+      <span class="stat-lbl">À corriger</span>
+    </div>
+  </div>
 
-  <!-- TABS NAVIGATION -->
-  
+  <!-- SUB TABS + SEARCH -->
+  <div class="toolbar">
+    <div class="sub-tabs">
+      <button class="sub-tab" [class.active]="activeFilter === 'ALL'" (click)="setFilter('ALL')">Tous</button>
+      <button class="sub-tab" [class.active]="activeFilter === 'EN_ATTENTE'" (click)="setFilter('EN_ATTENTE')">En attente</button>
+      <button class="sub-tab" [class.active]="activeFilter === 'ACCEPTEE'" (click)="setFilter('ACCEPTEE')">Acceptés</button>
+      <button class="sub-tab" [class.active]="activeFilter === 'REFUSEE'" (click)="setFilter('REFUSEE')">Refusés</button>
+      <button class="sub-tab" [class.active]="activeFilter === 'A_CORRIGER'" (click)="setFilter('A_CORRIGER')">À corriger</button>
+    </div>
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" placeholder="Rechercher un saisonnier..." [(ngModel)]="searchQuery">
+    </div>
+  </div>
 
-  <!-- MAIN CONTENT -->
-  <main>
-    <div class="page-card">
+  <!-- GRID -->
+  <div class="cards-grid" *ngIf="filteredCandidatures.length > 0; else emptyState">
+    <div class="cand-card" *ngFor="let cand of filteredCandidatures; let i = index"
+         [style.animation-delay]="i * 60 + 'ms'">
 
-      <!-- HEADER -->
-      <div class="page-header">
-        <h1>Gérer mes Saisonniers</h1>
-        <div class="header-actions">
-          <button class="btn-validate">Les saisonniers effectués</button>
-          <button class="btn-add" (click)="openModal()">
-            Ajouter un Saisonnier
-            </button>
+      <!-- Card Top -->
+      <div class="card-top">
+        <div class="avatar" [ngClass]="'avatar-' + (i % 4)">
+          {{ cand.saisonnier.prenom[0] }}{{ cand.saisonnier.nom[0] }}
+        </div>
+        <div class="cand-meta">
+          <span class="cand-name">{{ cand.saisonnier.prenom }} {{ cand.saisonnier.nom }}</span>
+          <span class="cand-email">{{ cand.saisonnier.email }}</span>
+        </div>
+        <span class="status-pill"
+              [ngClass]="{
+                'pill-pending':  cand.statut === 'EN_ATTENTE',
+                'pill-accepted': cand.statut === 'ACCEPTEE',
+                'pill-refused':  cand.statut === 'REFUSEE',
+                'pill-correct':  cand.statut === 'A_CORRIGER'
+              }">
+          <span class="pill-dot"></span>
+          {{ statusLabel(cand.statut) }}
+        </span>
+      </div>
+
+      <!-- Card Details -->
+      <div class="card-details">
+        <div class="detail-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <span>{{ cand.dateDepot | date:'dd MMM yyyy' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="cand.saisonnier.telephone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 12"/>
+          </svg>
+          <span>{{ cand.saisonnier.telephone }}</span>
+        </div>
+        <div class="detail-row" *ngIf="cand.saisonnier.region">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          <span>{{ cand.saisonnier.region?.nom }}</span>
         </div>
       </div>
 
-      <!-- SUB TABS -->
-      <div class="sub-tabs">
-        <a href="#" class="sub-tab active">Tous les Saisonniers</a>
-        <a href="#" class="sub-tab">Administrateurs</a>
-        <a href="#" class="sub-tab">Commercial</a>
+      <!-- Card Footer -->
+      <div class="card-footer">
+        <button class="btn-dossier" (click)="openDossier(cand)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          Voir dossier
+        </button>
+        <button class="btn-affect" *ngIf="cand.statut === 'ACCEPTEE'" (click)="openAffectationModal(cand)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <line x1="23" y1="11" x2="17" y2="11"/>
+            <line x1="20" y1="8" x2="20" y2="14"/>
+          </svg>
+          Affecter
+        </button>
       </div>
 
-      <hr class="divider">
+    </div>
+  </div>
 
-      <!-- SECTION TITLE -->
-      <div class="section-header">
-        <h2>Tous les Saisonniers</h2>
-        <a href="#" class="dossiers-link">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+  <!-- EMPTY STATE -->
+  <ng-template #emptyState>
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <h3>Aucun saisonnier trouvé</h3>
+      <p>Ajoutez votre premier saisonnier ou modifiez vos filtres.</p>
+      <button class="btn-primary-action" (click)="openModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Ajouter un saisonnier
+      </button>
+    </div>
+  </ng-template>
+
+</div>
+
+<!-- ═══════════════ MODAL DOSSIER ═══════════════ -->
+<div class="modal-overlay" *ngIf="showDossierModal">
+  <div class="modal-box wide" (click)="$event.stopPropagation()">
+
+    <div class="modal-head">
+      <div class="modal-title-grp">
+        <div class="modal-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
             <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/>
-            <line x1="16" y1="17" x2="8" y2="17"/>
-            <polyline points="10 9 9 9 8 9"/>
           </svg>
-          Dossiers candidats
-        </a>
-      </div>
-
-      <!-- COLLABORATEUR CARD -->
-        <div class="collaborateur-container">
-          <div class="collaborateur-card" *ngFor="let cand of candidatures">
-
-            <div class="collab-header">
-
-              <div class="collab-avatar">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
-                </svg>
-              </div>
-
-              <div class="collab-info">
-                <span class="collab-name">
-                  {{ cand.saisonnier.prenom }} {{ cand.saisonnier.nom }}
-                </span>
-
-                <!-- statut -->
-                <span class="status-badge"
-                      [ngClass]="{
-                        'status-pending': cand.statut === 'EN_ATTENTE',
-                        'status-accepted': cand.statut === 'ACCEPTEE',
-                        'status-refused': cand.statut === 'REFUSEE',
-                        'status-correct': cand.statut === 'A_CORRIGER'
-                      }">
-
-                  {{ cand.statut }}
-
-                </span>
-              </div>
-
-              <!-- bouton voir dossier -->
-              <button  ton class="btn-eye" (click)="openDossier(cand)">👁️</button>
-
-              <button
-                *ngIf="cand.statut === 'ACCEPTEE'"
-                class="btn-affect"
-                (click)="openAffectationModal(cand)">
-                Affecter
-              </button>
-
-            </div>
-
-          </div>
         </div>
-      <!-- END COLLABORATEUR CARD -->
-
-
-
-    </div>
-
-    <div class="modal-backdrop" *ngIf="showDossierModal">
-  <div class="modal" (click)="$event.stopPropagation()">
-    
-    <!-- HEADER -->
-    <div class="modal-header">
-      <h2>Dossier de {{ selectedCandidature?.saisonnier.prenom }} {{ selectedCandidature?.saisonnier.nom }}</h2>
-      <button class="close-btn" (click)="closeDossier()">✕</button>
-    </div>
-
-    <!-- BODY -->
-    <div class="modal-body">
-
-      <!-- Informations du saisonnier -->
-      <div class="saisonnier-info">
-
-        <p>
-        <strong>Nom :</strong>
-        <input [(ngModel)]="selectedCandidature.saisonnier.nom">
-        </p>
-
-        <p>
-        <strong>Prénom :</strong>
-        <input [(ngModel)]="selectedCandidature.saisonnier.prenom">
-        </p>
-
-        <p>
-        <strong>Email :</strong>
-        <input [(ngModel)]="selectedCandidature.saisonnier.email">
-        </p>
-
-        <p>
-        <strong>CIN :</strong>
-        <input [(ngModel)]="selectedCandidature.saisonnier.cin">
-        </p>
-
-        <p>
-        <strong>Téléphone :</strong>
-        <input [(ngModel)]="selectedCandidature.saisonnier.telephone">
-        </p>
-
-        <p>
-        <strong>RIB :</strong>
-        <input [(ngModel)]="selectedCandidature.saisonnier.rib">
-        </p>
-
-        <p>
-        <strong>Région :</strong>
-
-        <select [(ngModel)]="selectedCandidature.saisonnier.region.id">
-
-        <option *ngFor="let r of regions" [value]="r.id">
-        {{ r.nom }}
-        </option>
-
-        </select>
-
-        </p>
-
+        <div>
+          <h2>Dossier candidat</h2>
+          <p>{{ selectedCandidature?.saisonnier.prenom }} {{ selectedCandidature?.saisonnier.nom }}</p>
         </div>
-
-      <!-- Informations sur la candidature -->
-      <div class="candidature-info">
-
-      <p>
-      <strong>Date :</strong>
-      {{ selectedCandidature?.dateDepot | date:'dd/MM/yyyy' }}
-      </p>
-
-      <p>
-      <strong>Statut :</strong>
-
-      <select [(ngModel)]="selectedCandidature.statut">
-
-      <option value="EN_ATTENTE">EN_ATTENTE</option>
-      <option value="ACCEPTEE">ACCEPTEE</option>
-      <option value="REFUSEE">REFUSEE</option>
-      <option value="A_CORRIGER">A_CORRIGER</option>
-
-      </select>
-
-      </p>
-
-      <p>
-      <strong>Commentaire :</strong>
-
-      <textarea [(ngModel)]="selectedCandidature.commentaire"></textarea>
-
-      </p>
-
       </div>
-
-      <hr>
-
-      <!-- Liste des documents -->
-      <div class="documents">
-        <h3>Documents joints</h3>
-        <ul>
-          <li *ngFor="let doc of selectedCandidature?.documents">
-            <a [href]="doc.url" target="_blank">{{ doc.nomFichier }} ({{ doc.type }})</a>
-          </li>
-        </ul>
-      </div>
-
+      <button class="modal-close-btn" (click)="closeDossier()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
     </div>
 
-    <!-- FOOTER -->
-    <div class="modal-footer">
-      <button class="btn btn-outline" (click)="closeDossier()">Fermer</button>
-      <button class="btn btn-primary" (click)="updateCandidature()">
-Enregistrer les modifications
-</button>
-    </div>
+    <div class="modal-content">
+      <div class="dossier-grid">
 
-  </div>
-</div>
-  </main>
-  <!-- MODAL -->
-<div class="modal-backdrop" *ngIf="showModal">
-
-  <div class="modal" (click)="$event.stopPropagation()">
-
-    <!-- Header -->
-    <div class="modal-header">
-      <h2>Ajouter des saisonniers</h2>
-      <button class="close-btn" (click)="closeModal()">✕</button>
-    </div>
-
-    <!-- Tabs -->
-    <div class="tabs">
-      <div class="tab"
-           [class.active]="activeTab === 'collaborateur'"
-           (click)="setTab('collaborateur')">
-        Saisonnier
-      </div>
-    </div>
-
-    <div class="modal-body">
-
-      <div class="section-title">
-        Créer le profil d'un saisonnier
-      </div>
-
-      <form (ngSubmit)="submit()">
-
-        <div class="form-grid">
-
-          <div class="form-group">
-            <label>Email</label>
-            <input type="email" [(ngModel)]="form.email" name="email" required>
-          </div>
-
-          <div class="form-group">
+        <!-- Colonne infos saisonnier -->
+        <div class="dossier-col">
+          <h4 class="col-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            Informations personnelles
+          </h4>
+          <div class="field-group">
             <label>Prénom</label>
-            <input type="text" [(ngModel)]="form.prenom" name="prenom" required>
+            <input [(ngModel)]="selectedCandidature.saisonnier.prenom" placeholder="Prénom">
           </div>
-
-          <div class="form-group">
+          <div class="field-group">
             <label>Nom</label>
-            <input type="text" [(ngModel)]="form.nom" name="nom" required>
+            <input [(ngModel)]="selectedCandidature.saisonnier.nom" placeholder="Nom">
           </div>
-
-          <div class="form-group">
+          <div class="field-group">
+            <label>Email</label>
+            <input [(ngModel)]="selectedCandidature.saisonnier.email" placeholder="Email">
+          </div>
+          <div class="field-group">
             <label>CIN</label>
-            <input type="number" [(ngModel)]="form.cin" name="cin" required>
+            <input [(ngModel)]="selectedCandidature.saisonnier.cin" placeholder="CIN">
           </div>
-
-          <div class="form-group">
-            <label>RIB</label>
-            <input type="text" [(ngModel)]="form.rib" name="rib" required>
-          </div>
-
-          <div class="form-group">
+          <div class="field-group">
             <label>Téléphone</label>
-            <input type="text" [(ngModel)]="form.telephone" name="telephone" required>
+            <input [(ngModel)]="selectedCandidature.saisonnier.telephone" placeholder="Téléphone">
           </div>
-
-        <!-- Région -->
-        <div class="form-group">
-          <label>Région</label>
-          <select [(ngModel)]="form.regionId" name="regionId" required
-                  (change)="loadStructuresByRegion(form.regionId)">
-            <option *ngFor="let region of regions" [value]="region.id">
-              {{ region.nom }}
-            </option>
-          </select>
+          <div class="field-group">
+            <label>RIB</label>
+            <input [(ngModel)]="selectedCandidature.saisonnier.rib" placeholder="RIB">
+          </div>
+          <div class="field-group">
+            <label>Région</label>
+            <select [(ngModel)]="selectedCandidature.saisonnier.region.id">
+              <option *ngFor="let r of regions" [value]="r.id">{{ r.nom }}</option>
+            </select>
+          </div>
         </div>
 
-        <!-- Structure -->
-        <div class="form-group">
-          <label>Structure</label>
-          <select [(ngModel)]="form.structureId" name="structureId" required>
-            <option *ngFor="let structure of structures" [value]="structure.id">
-              {{ structure.nom }}
-            </option>
-          </select>
+        <!-- Colonne candidature -->
+        <div class="dossier-col">
+          <h4 class="col-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 11l3 3L22 4"/>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+            Candidature
+          </h4>
+          <div class="field-group readonly">
+            <label>Date de dépôt</label>
+            <div class="readonly-val">{{ selectedCandidature?.dateDepot | date:'dd/MM/yyyy' }}</div>
+          </div>
+          <div class="field-group">
+            <label>Statut</label>
+            <select [(ngModel)]="selectedCandidature.statut">
+              <option value="EN_ATTENTE">En attente</option>
+              <option value="ACCEPTEE">Acceptée</option>
+              <option value="REFUSEE">Refusée</option>
+              <option value="A_CORRIGER">À corriger</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Commentaire RH</label>
+            <textarea [(ngModel)]="selectedCandidature.commentaire" rows="4" placeholder="Ajouter un commentaire..."></textarea>
+          </div>
+
+          <!-- Documents -->
+          <h4 class="col-title" style="margin-top:20px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            Documents joints
+          </h4>
+          <div class="docs-list">
+            <a *ngFor="let doc of selectedCandidature?.documents"
+               [href]="doc.url" target="_blank" class="doc-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+              <span>{{ doc.nomFichier }}</span>
+              <span class="doc-type">{{ doc.type }}</span>
+            </a>
+            <p class="no-docs" *ngIf="!selectedCandidature?.documents?.length">Aucun document joint.</p>
+          </div>
         </div>
 
-          <div class="form-group">
-            <label>CIN (PDF)</label>
-            <input type="file" (change)="onFileChange($event,'cin')" required>
-          </div>
+      </div>
+    </div>
 
-          <div class="form-group">
-            <label>Diplôme (PDF)</label>
-            <input type="file" (change)="onFileChange($event,'diplome')" required>
-          </div>
+    <div class="modal-foot">
+      <button class="btn-cancel-modal" (click)="closeDossier()">Fermer</button>
+      <button class="btn-save-modal" (click)="updateCandidature()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+          <polyline points="7 3 7 8 15 8"/>
+        </svg>
+        Enregistrer
+      </button>
+    </div>
 
-          <div class="form-group">
-            <label>Contrat (PDF)</label>
-            <input type="file" (change)="onFileChange($event,'contrat')" required>
-          </div>
+  </div>
+</div>
 
+<!-- ═══════════════ MODAL AJOUTER ═══════════════ -->
+<div class="modal-overlay" *ngIf="showModal">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <div class="modal-head">
+      <div class="modal-title-grp">
+        <div class="modal-icon green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="8.5" cy="7" r="4"/>
+            <line x1="20" y1="8" x2="20" y2="14"/>
+            <line x1="23" y1="11" x2="17" y2="11"/>
+          </svg>
+        </div>
+        <div>
+          <h2>Ajouter un saisonnier</h2>
+          <p>Créer le profil d'un nouveau saisonnier</p>
+        </div>
+      </div>
+      <button class="modal-close-btn" (click)="closeModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-content">
+      <form (ngSubmit)="submit()">
+        <div class="form-grid-2">
+          <div class="field-group">
+            <label>Prénom</label>
+            <input type="text" [(ngModel)]="form.prenom" name="prenom" placeholder="Prénom" required>
+          </div>
+          <div class="field-group">
+            <label>Nom</label>
+            <input type="text" [(ngModel)]="form.nom" name="nom" placeholder="Nom" required>
+          </div>
+          <div class="field-group">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="form.email" name="email" placeholder="email@exemple.com" required>
+          </div>
+          <div class="field-group">
+            <label>Téléphone</label>
+            <input type="text" [(ngModel)]="form.telephone" name="telephone" placeholder="+216 XX XXX XXX" required>
+          </div>
+          <div class="field-group">
+            <label>CIN</label>
+            <input type="number" [(ngModel)]="form.cin" name="cin" placeholder="Numéro CIN" required>
+          </div>
+          <div class="field-group">
+            <label>RIB</label>
+            <input type="text" [(ngModel)]="form.rib" name="rib" placeholder="RIB bancaire" required>
+          </div>
+          <div class="field-group">
+            <label>Région</label>
+            <select [(ngModel)]="form.regionId" name="regionId" required (change)="loadStructuresByRegion(form.regionId)">
+              <option value="" disabled selected>Choisir une région</option>
+              <option *ngFor="let region of regions" [value]="region.id">{{ region.nom }}</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Structure</label>
+            <select [(ngModel)]="form.structureId" name="structureId" required>
+              <option value="" disabled selected>Choisir une structure</option>
+              <option *ngFor="let structure of structures" [value]="structure.id">{{ structure.nom }}</option>
+            </select>
+          </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">
-          Créer
-        </button>
+        <div class="files-section">
+          <h4>Documents requis</h4>
+          <div class="files-row">
+            <label class="file-zone">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+              <span>CIN (PDF)</span>
+              <input type="file" accept=".pdf" (change)="onFileChange($event,'cin')" required>
+            </label>
+            <label class="file-zone">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+              </svg>
+              <span>Diplôme (PDF)</span>
+              <input type="file" accept=".pdf" (change)="onFileChange($event,'diplome')" required>
+            </label>
+            <label class="file-zone">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M9 11l3 3L22 4"/>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+              </svg>
+              <span>Contrat (PDF)</span>
+              <input type="file" accept=".pdf" (change)="onFileChange($event,'contrat')" required>
+            </label>
+          </div>
+        </div>
 
+        <div class="modal-foot">
+          <button type="button" class="btn-cancel-modal" (click)="closeModal()">Annuler</button>
+          <button type="submit" class="btn-save-modal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="8.5" cy="7" r="4"/>
+              <line x1="20" y1="8" x2="20" y2="14"/>
+              <line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>
+            Créer le saisonnier
+          </button>
+        </div>
       </form>
-
-    </div>
-
-    <!-- Footer -->
-    <div class="modal-footer">
-      <button class="btn btn-outline" (click)="closeModal()">Annuler</button>
     </div>
 
   </div>
-
 </div>
 
+<!-- ═══════════════ MODAL AFFECTATION ═══════════════ -->
+<div class="modal-overlay" *ngIf="showAffectModal">
+  <div class="modal-box small" (click)="$event.stopPropagation()">
 
-<!-- Popup Affectation -->
-<div class="modal-backdrop" *ngIf="showAffectModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h2>Affecter saisonnier</h2>
-      <button (click)="showAffectModal=false">✕</button>
+    <div class="modal-head">
+      <div class="modal-title-grp">
+        <div class="modal-icon purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10H3M21 6H3M21 14H3M21 18H3"/>
+          </svg>
+        </div>
+        <div>
+          <h2>Affecter un saisonnier</h2>
+          <p>{{ selectedCandidatureForAffect?.saisonnier.prenom }} {{ selectedCandidatureForAffect?.saisonnier.nom }}</p>
+        </div>
+      </div>
+      <button class="modal-close-btn" (click)="showAffectModal=false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
     </div>
 
-    <div class="modal-body">
-      <p>
-        {{ selectedCandidatureForAffect?.saisonnier.prenom }}
-        {{ selectedCandidatureForAffect?.saisonnier.nom }}
-      </p>
-
-      <label>Choisir structure</label>
-
-      <select [(ngModel)]="selectedStructureId" class="form-control">
-        <optgroup label="ESPACE COMMERCIAL">
-          <option *ngFor="let s of structuresCommerciaux" [value]="s.id">{{ s.nom }}</option>
-        </optgroup>
-
-        <optgroup label="CENTRE TECHNOLOGIQUE">
-          <option *ngFor="let s of structuresTech" [value]="s.id">{{ s.nom }}</option>
-        </optgroup>
-      </select>
+    <div class="modal-content">
+      <div class="field-group">
+        <label>Choisir une structure</label>
+        <select [(ngModel)]="selectedStructureId">
+          <optgroup label="ESPACE COMMERCIAL">
+            <option *ngFor="let s of structuresCommerciaux" [value]="s.id">{{ s.nom }}</option>
+          </optgroup>
+          <optgroup label="CENTRE TECHNOLOGIQUE">
+            <option *ngFor="let s of structuresTech" [value]="s.id">{{ s.nom }}</option>
+          </optgroup>
+        </select>
+      </div>
     </div>
 
-    <div class="modal-footer">
-      <button class="btn btn-primary" (click)="affecter()">Confirmer</button>
-      <button class="btn btn-outline" (click)="showAffectModal=false">Annuler</button>
+    <div class="modal-foot">
+      <button class="btn-cancel-modal" (click)="showAffectModal=false">Annuler</button>
+      <button class="btn-save-modal" (click)="affecter()">Confirmer l'affectation</button>
     </div>
+
   </div>
 </div>
 
-  <!-- ASSISTANCE -->
-  <button class="assistance-btn">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="12" cy="12" r="10"/>
-      <path d="M12 16v-4M12 8h.01"/>
-    </svg>
-    Assistance
-  </button>
-
+<!-- FAB ASSISTANCE -->
+<button class="fab-btn">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="12" cy="12" r="10"/>
+    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+    <line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+  Assistance
+</button>

@@ -15,6 +15,10 @@ import { SaisonniersValidationComponent } from './features/rh/pages/saisonniers-
 import { HomeAdminComponent } from './features/admin/pages/home-admin/home-admin.component';
 import { HomeGeneralComponent } from './pages/home-general/home-general.component';
 import { EspacesaisonnierComponent } from './saisonnier/espacesaisonnier/espacesaisonnier.component';
+import { HeroSliderComponent } from './shared/hero-slider/hero-slider.component';
+import { CommonModule } from '@angular/common';
+import { DocumentsComponent } from './features/rh/pages/documents/documents.component';
+import { PresencePaiementComponent } from './features/rh/pages/presence-paiement/presence-paiement.component';
 
 @NgModule({
   declarations: [
@@ -28,13 +32,17 @@ import { EspacesaisonnierComponent } from './saisonnier/espacesaisonnier/espaces
     SaisonniersValidationComponent,
     HomeAdminComponent,
     HomeGeneralComponent,
-    EspacesaisonnierComponent
+    EspacesaisonnierComponent,
+    HeroSliderComponent,
+    
+    
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     FormsModule,
-    HttpClientModule
+    HttpClientModule,
+    CommonModule
     
   ],
   providers: [],

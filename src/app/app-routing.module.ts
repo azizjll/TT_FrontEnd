@@ -10,6 +10,8 @@ import { RhLayoutComponent } from './features/rh/layout/rh-layout/rh-layout.comp
 import { HomeAdminComponent } from './features/admin/pages/home-admin/home-admin.component';
 import { HomeGeneralComponent } from './pages/home-general/home-general.component';
 import { EspacesaisonnierComponent } from './saisonnier/espacesaisonnier/espacesaisonnier.component';
+import { DocumentsComponent } from './features/rh/pages/documents/documents.component';
+import { PresencePaiementComponent } from './features/rh/pages/presence-paiement/presence-paiement.component';
 
 const routes: Routes = [
 
@@ -25,6 +27,8 @@ const routes: Routes = [
       { path: 'saisonniers', component: SaisonniersListComponent },
       { path: 'saisonniers/add', component: SaisonnierAddComponent },
       { path: 'parametres', component: ParametresEntrepriseComponent },
+      { path: 'documents', component: DocumentsComponent },
+      {path: 'Presence&paiement', component: PresencePaiementComponent},
       { path: '', redirectTo: 'saisonniers', pathMatch: 'full' }
     ]
   },

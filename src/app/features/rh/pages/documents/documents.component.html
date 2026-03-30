@@ -1,0 +1,400 @@
+<div class="docs-page">
+
+  <!-- ── PAGE HEADER ── -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1>Documents administratifs</h1>
+      <p>Circulaires, fichiers de structure et ressources RH — Campagne 2025</p>
+    </div>
+  </div>
+
+  <!-- ── TABS ── -->
+  <div class="doc-tabs">
+    <button class="doc-tab" [class.active]="activeTab==='circulaire'" (click)="activeTab='circulaire'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      مذكرة الإنتداب 2025
+    </button>
+    <button class="doc-tab" [class.active]="activeTab==='excel'" (click)="activeTab='excel'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/>
+        <line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/>
+      </svg>
+      Structures par Région
+    </button>
+  </div>
+
+  <!-- ══════════════ TAB 1 — PDF ══════════════ -->
+  <div class="tab-panel" *ngIf="activeTab==='circulaire'">
+    <div class="content-layout">
+      <aside class="doc-sidebar">
+        <div class="doc-meta-card">
+          <div class="doc-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+          </div>
+          <h3 class="doc-meta-title" dir="rtl">مذكرة حول إنتداب أعوان متعاقدين لعمل موسمي</h3>
+          <p class="doc-meta-sub">سنة 2025</p>
+          <div class="meta-rows">
+            <div class="meta-row"><span class="meta-key">النوع</span><span class="meta-val">مذكرة إدارية</span></div>
+            <div class="meta-row"><span class="meta-key">السنة</span><span class="meta-val">2025</span></div>
+            <div class="meta-row"><span class="meta-key">الصيغة</span><span class="meta-val badge-pdf">PDF</span></div>
+            <div class="meta-row"><span class="meta-key">الحالة</span><span class="meta-val badge-active">سارية المفعول</span></div>
+          </div>
+          <div class="doc-actions">
+            <a [href]="circulairePdfUrl" download="مذكرة_إنتداب_موسمي_2025.pdf" class="btn-download">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              تحميل المذكرة
+            </a>
+            <button class="btn-print" (click)="printPdf()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 6 2 18 2 18 9"/>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                <rect x="6" y="14" width="12" height="8"/>
+              </svg>
+              طباعة
+            </button>
+          </div>
+        </div>
+        <div class="summary-card" dir="rtl">
+          <h4>ملخص المذكرة</h4>
+          <ul>
+            <li>تحديد عدد الأعوان المسموح بإنتدابهم</li>
+            <li>شروط الإنتداب وآجاله</li>
+            <li>الوثائق المطلوبة لكل ملف</li>
+            <li>إجراءات التوقيع والمصادقة</li>
+            <li>مراحل المعالجة الإدارية</li>
+          </ul>
+        </div>
+      </aside>
+
+<div class="pdf-viewer-wrap">
+  <div class="pdf-toolbar">
+    <span class="pdf-filename">مذكرة_إنتداب_موسمي_2025.pdf</span>
+    <div class="pdf-controls">
+      <button (click)="zoomOut()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          <line x1="8" y1="11" x2="14" y2="11"/>
+        </svg>
+      </button>
+      <span class="zoom-val">{{ zoomLevel }}%</span>
+      <button (click)="zoomIn()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Chargement -->
+  <div class="pdf-loading" *ngIf="isLoadingPdf">
+    <div class="loading-spinner"></div>
+    <span>Chargement du document...</span>
+  </div>
+
+  <!-- PDF affiché -->
+  <ng-container *ngIf="!isLoadingPdf">
+    <div class="pdf-frame-wrap" *ngIf="safePdfUrl; else noPdf">
+      <object [attr.data]="safePdfUrl" type="application/pdf" class="pdf-object">
+        <div class="pdf-fallback">
+          <p>Votre navigateur ne supporte pas l'affichage PDF.</p>
+          <a [href]="circulairePdfUrl" download class="btn-download">Télécharger</a>
+        </div>
+      </object>
+    </div>
+
+    <ng-template #noPdf>
+      <div class="pdf-upload-zone"
+           (dragover)="onDragOver($event)"
+           (drop)="onDropPdf($event)">
+        <div class="upload-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/>
+            <polyline points="9 15 12 12 15 15"/>
+          </svg>
+        </div>
+        <h3>Importer la circulaire PDF</h3>
+        <p>Glissez-déposez ou cliquez pour parcourir</p>
+        <label class="btn-upload-file">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          Choisir un fichier PDF
+          <input type="file" accept=".pdf" (change)="onPdfSelected($event)">
+        </label>
+
+        <!-- Messages upload -->
+        <div class="upload-status" *ngIf="isUploading || uploadSuccess || uploadError">
+          <span class="status-uploading" *ngIf="isUploading">⏳ Upload en cours...</span>
+          <span class="status-success"  *ngIf="uploadSuccess">✅ Circulaire uploadée avec succès</span>
+          <span class="status-error"    *ngIf="uploadError">❌ {{ uploadError }}</span>
+        </div>
+
+        <span class="upload-hint">PDF uniquement — max 20 Mo</span>
+      </div>
+    </ng-template>
+  </ng-container>
+</div>
+    </div>
+  </div>
+
+  <!-- ══════════════ TAB 2 — EXCEL ══════════════ -->
+  <div class="tab-panel" *ngIf="activeTab==='excel'">
+
+    <!-- Stats globales -->
+    <div class="global-stats">
+      <div class="gstat-card">
+        <span class="gstat-num">{{ totalRegions }}</span>
+        <span class="gstat-lbl">Gouvernorats</span>
+      </div>
+      <div class="gstat-card">
+        <span class="gstat-num">{{ totalStructures }}</span>
+        <span class="gstat-lbl">Structures totales</span>
+      </div>
+      <div class="gstat-card ec">
+        <span class="gstat-num">{{ totalEC }}</span>
+        <span class="gstat-lbl">Espaces Commerciaux</span>
+      </div>
+      <div class="gstat-card ct">
+        <span class="gstat-num">{{ totalCT }}</span>
+        <span class="gstat-lbl">Centres Technologiques</span>
+      </div>
+      <div class="gstat-card auth">
+        <span class="gstat-num">{{ getTotalAuth() }}</span>
+        <span class="gstat-lbl">Saisonniers autorisés</span>
+      </div>
+      <div class="gstat-card rec">
+        <span class="gstat-num">{{ getTotalRec() }}</span>
+        <span class="gstat-lbl">Saisonniers recrutés</span>
+      </div>
+    </div>
+
+    <div class="content-layout">
+
+      <!-- SIDEBAR -->
+      <aside class="doc-sidebar">
+        <div class="doc-meta-card">
+          <div class="doc-icon-wrap green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/>
+              <line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/>
+            </svg>
+          </div>
+          <h3 class="doc-meta-title">Structures par Région</h3>
+          <p class="doc-meta-sub">17 gouvernorats — 87 structures — 2025</p>
+          <div class="meta-rows">
+            <div class="meta-row"><span class="meta-key">Gouvernorats</span><span class="meta-val">{{ totalRegions }}</span></div>
+            <div class="meta-row"><span class="meta-key">EC</span><span class="meta-val badge-ec-sm">{{ totalEC }}</span></div>
+            <div class="meta-row"><span class="meta-key">CT</span><span class="meta-val badge-ct-sm">{{ totalCT }}</span></div>
+            <div class="meta-row"><span class="meta-key">Format</span><span class="meta-val badge-xlsx">XLSX</span></div>
+          </div>
+          <div class="doc-actions">
+            <a href="assets/docs/structures_regions_TT_2025.xlsx" download class="btn-download green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Télécharger le fichier
+            </a>
+          </div>
+        </div>
+
+        <!-- Filtre type -->
+        <div class="filter-card">
+          <h4>Filtrer par type</h4>
+          <div class="filter-btns">
+            <button [class.active]="filterType==='ALL'" (click)="filterType='ALL'">Tous</button>
+            <button class="btn-ec" [class.active]="filterType==='ESPACE_COMMERCIAL'" (click)="filterType='ESPACE_COMMERCIAL'">
+              Espaces Commerciaux
+            </button>
+            <button class="btn-ct" [class.active]="filterType==='CENTRE_TECHNOLOGIQUE'" (click)="filterType='CENTRE_TECHNOLOGIQUE'">
+              Centres Technologiques
+            </button>
+          </div>
+        </div>
+
+        <!-- Navigation régions -->
+        <div class="regions-nav">
+          <h4>Gouvernorats ({{ regions.length }})</h4>
+          <button *ngFor="let r of regions" class="region-btn"
+                  [class.active]="selectedRegion===r.name"
+                  (click)="selectRegion(r.name)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            {{ r.name.replace('Gouvernorat de ', '').replace("Gouvernorat de l'", '') }}
+            <span class="region-count">{{ r.structures.length }}</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- TABLE -->
+      <div class="excel-preview-wrap">
+        <div class="preview-header">
+          <div>
+            <h3>{{ selectedRegion ? selectedRegion : 'Récapitulatif global' }}</h3>
+            <p>
+              {{ selectedRegion ? getCurrentStructures().length : totalStructures }} structures
+              <span *ngIf="filterType !== 'ALL'"> — filtre : {{ filterType === 'ESPACE_COMMERCIAL' ? 'Espaces Commerciaux' : 'Centres Technologiques' }}</span>
+            </p>
+          </div>
+          <button class="btn-recap" [class.active]="!selectedRegion" (click)="selectedRegion=''">
+            Vue globale
+          </button>
+        </div>
+
+        <!-- ── TABLEAU RÉCAPITULATIF ── -->
+        <div class="table-wrap" *ngIf="!selectedRegion">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Gouvernorat</th>
+                <th>Structure / Unité</th>
+                <th>Type</th>
+                <th>Adresse</th>
+                <th>Autorisés</th>
+                <th>Recrutés</th>
+                <th>Restants</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let r of regions; let ri = index">
+                <tr *ngFor="let s of r.structures; let si = index"
+                    [class.alt-row]="si % 2 === 0"
+                    [class.hidden-row]="filterType !== 'ALL' && s.type !== filterType">
+                  <td class="td-num">{{ getGlobalIndex(ri, si) }}</td>
+                  <td class="td-region">
+                    <span *ngIf="si === 0" class="region-label">
+                      {{ r.name.replace('Gouvernorat de ','').replace("Gouvernorat de l'","") }}
+                    </span>
+                  </td>
+                  <td class="td-struct">{{ s.name }}</td>
+                  <td>
+                    <span class="type-badge" [class.badge-ec]="s.type==='ESPACE_COMMERCIAL'" [class.badge-ct]="s.type==='CENTRE_TECHNOLOGIQUE'">
+                      {{ s.type === 'ESPACE_COMMERCIAL' ? 'EC' : 'CT' }}
+                    </span>
+                  </td>
+                  <td class="td-adresse">{{ s.adresse }}</td>
+                  <td class="td-num editable">
+                    <input type="number" [(ngModel)]="structureData[r.name+'|'+s.name+'|auth']" min="0" (change)="updateStats()">
+                  </td>
+                  <td class="td-num editable">
+                    <input type="number" [(ngModel)]="structureData[r.name+'|'+s.name+'|rec']"  min="0" (change)="updateStats()">
+                  </td>
+                  <td class="td-num" [class.positive]="getRest(r.name,s.name)>0" [class.zero]="getRest(r.name,s.name)===0">
+                    {{ getRest(r.name, s.name) }}
+                  </td>
+                  <td>
+                    <span class="status-chip" [class.chip-done]="getRest(r.name,s.name)===0">
+                      {{ getRest(r.name, s.name) > 0 ? 'En cours' : 'Complet' }}
+                    </span>
+                  </td>
+                </tr>
+              </ng-container>
+              <tr class="total-row">
+                <td colspan="5">TOTAL GÉNÉRAL</td>
+                <td>{{ getTotalAuth() }}</td>
+                <td>{{ getTotalRec() }}</td>
+                <td>{{ getTotalAuth() - getTotalRec() }}</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ── TABLEAU DÉTAIL RÉGION ── -->
+        <div class="table-wrap" *ngIf="selectedRegion">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Structure / Unité</th>
+                <th>Type</th>
+                <th>Adresse</th>
+                <th>Autorisés</th>
+                <th>Recrutés</th>
+                <th>Restants</th>
+                <th>Responsable</th>
+                <th>Observations</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of getCurrentStructures(); let i = index" [class.alt-row]="i%2===0">
+                <td class="td-num">{{ i + 1 }}</td>
+                <td class="td-struct">{{ s.name }}</td>
+                <td>
+                  <span class="type-badge" [class.badge-ec]="s.type==='ESPACE_COMMERCIAL'" [class.badge-ct]="s.type==='CENTRE_TECHNOLOGIQUE'">
+                    {{ s.type === 'ESPACE_COMMERCIAL' ? 'EC' : 'CT' }}
+                  </span>
+                </td>
+                <td class="td-adresse">{{ s.adresse }}</td>
+                <td class="td-num editable">
+                  <input type="number" [(ngModel)]="structureData[selectedRegion+'|'+s.name+'|auth']" min="0" (change)="updateStats()">
+                </td>
+                <td class="td-num editable">
+                  <input type="number" [(ngModel)]="structureData[selectedRegion+'|'+s.name+'|rec']"  min="0" (change)="updateStats()">
+                </td>
+                <td class="td-num" [class.positive]="getRest(selectedRegion,s.name)>0" [class.zero]="getRest(selectedRegion,s.name)===0">
+                  {{ getRest(selectedRegion, s.name) }}
+                </td>
+                <td><input type="text" class="input-text" [(ngModel)]="structureData[selectedRegion+'|'+s.name+'|resp']" placeholder="Responsable..."></td>
+                <td><input type="text" class="input-text" [(ngModel)]="structureData[selectedRegion+'|'+s.name+'|obs']"  placeholder="Observations..."></td>
+              </tr>
+              <tr class="total-row">
+                <td colspan="4">TOTAL — {{ selectedRegion.replace('Gouvernorat de ','').replace("Gouvernorat de l'","") }}</td>
+                <td>{{ getRegionTotal(selectedRegion,'auth') }}</td>
+                <td>{{ getRegionTotal(selectedRegion,'rec') }}</td>
+                <td>{{ getRegionTotal(selectedRegion,'auth') - getRegionTotal(selectedRegion,'rec') }}</td>
+                <td colspan="2"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="export-bar">
+          <span class="export-hint">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Champs bleus = saisie manuelle • Données sauvegardées automatiquement
+          </span>
+          <button class="btn-export-excel" (click)="exportToExcel()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Exporter en Excel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="fab-btn">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="12" cy="12" r="10"/>
+    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+    <line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+  Assistance
+</button>

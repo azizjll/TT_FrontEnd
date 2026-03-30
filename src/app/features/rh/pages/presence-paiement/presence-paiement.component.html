@@ -1,0 +1,393 @@
+<div class="pp-page">
+
+  <!-- ── HEADER ── -->
+  <div class="page-header">
+    <div>
+      <h1>Présence & Paiement</h1>
+      <p>Suivi des absences et calcul automatique des salaires — Campagne 2025</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-outline-dark" (click)="exportPdf()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        Exporter PDF
+      </button>
+      <button class="btn-primary-action" (click)="exportExcel()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Exporter Excel
+      </button>
+    </div>
+  </div>
+
+  <!-- ── STATS ── -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <div>
+        <span class="stat-val">{{ saisonniers.length }}</span>
+        <span class="stat-lbl">Saisonniers</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+      </div>
+      <div>
+        <span class="stat-val">{{ getTotalMontant() | number:'1.0-0' }} DT</span>
+        <span class="stat-lbl">Masse salariale</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon amber">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <div>
+        <span class="stat-val">{{ getTotalAbsences() }}</span>
+        <span class="stat-lbl">Jours d'absence</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon purple">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+      </div>
+      <div>
+        <span class="stat-val">{{ tauxJourDT }} DT</span>
+        <span class="stat-lbl">Taux journalier</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PARAMETRES ── -->
+  <div class="params-bar">
+    <div class="param-group">
+      <label>Taux journalier (DT)</label>
+      <input type="number" [(ngModel)]="tauxJourDT" min="1" (change)="recalcAll()">
+    </div>
+    <div class="param-group">
+      <label>Durée contrat (jours)</label>
+      <input type="number" [(ngModel)]="dureeContrat" min="1" (change)="recalcAll()">
+    </div>
+    <div class="param-group">
+      <label>Date de prise de fonction</label>
+      <input type="date" [(ngModel)]="dateMbacharah" (change)="recalcAll()">
+    </div>
+    <div class="param-group">
+      <label>Campagne</label>
+      <select [(ngModel)]="campagneId">
+        <option *ngFor="let c of campagnes" [value]="c.id">{{ c.libelle }}</option>
+      </select>
+    </div>
+    <div class="param-info">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      Salaire brut = {{ dureeContrat }} × {{ tauxJourDT }} = <strong>{{ dureeContrat * tauxJourDT }} DT</strong>
+      &nbsp;|&nbsp; Net = ({{ dureeContrat }} - absences) × {{ tauxJourDT }}
+    </div>
+  </div>
+
+  <!-- ── TABLEAU PRINCIPAL ── -->
+  <div class="table-card">
+
+    <div class="table-toolbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" placeholder="Rechercher un saisonnier..." [(ngModel)]="searchQ">
+      </div>
+      <div class="filter-chips">
+        <button [class.active]="filterPaye === 'ALL'"   (click)="filterPaye='ALL'">Tous</button>
+        <button [class.active]="filterPaye === 'PAYE'"  (click)="filterPaye='PAYE'" class="chip-green">Payés</button>
+        <button [class.active]="filterPaye === 'IMPAYE'" (click)="filterPaye='IMPAYE'" class="chip-amber">Impayés</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table" dir="ltr">
+        <thead>
+          <tr>
+            <th>عدد</th>
+            <th>الاسم و اللقب المرئيص</th>
+            <th>رقم بطاقة التعريف</th>
+            <th>تاريخ المباشرة</th>
+            <th>مدة العمل</th>
+            <th>الغيابات</th>
+            <th>المبلغ الصافي (DT)</th>
+
+            <th>رقم الحساب</th>
+            <th>الحالة</th>
+            <th>إجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="filteredSaisonniers.length === 0">
+            <td colspan="12" class="empty-row">
+              <div class="empty-state-inline">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                </svg>
+                <span>Aucun saisonnier trouvé</span>
+              </div>
+            </td>
+          </tr>
+          <tr *ngFor="let s of filteredSaisonniers; let i = index"
+              [class.row-paid]="s.paye"
+              [class.alt-row]="i % 2 === 0">
+
+            <!-- Numéro -->
+            <td class="td-center td-muted">{{ i + 1 }}</td>
+
+            <!-- Nom complet -->
+            <td class="td-name" dir="rtl">{{ s.prenom }} {{ s.nom }}</td>
+
+            <!-- CIN -->
+            <td class="td-center td-mono">{{ s.cin }}</td>
+
+            <!-- Date début -->
+            <td class="td-center">
+              <input type="date" class="input-date"
+                     [(ngModel)]="s.dateMbacharah"
+                     (change)="save()">
+            </td>
+
+            <!-- Durée -->
+            <td class="td-center">
+              <input type="number" class="input-num"
+                     [(ngModel)]="s.duree" min="0"
+                     (change)="recalcRow(s); save()">
+            </td>
+
+            <!-- Absences -->
+            <td class="td-center">
+              <input type="number" class="input-num absence-input"
+                     [(ngModel)]="s.absences" min="0" [max]="s.duree"
+                     (change)="recalcRow(s); save()">
+            </td>
+
+            <!-- Montant net -->
+            <td class="td-center td-montant" [class.montant-zero]="s.montantNet === 0">
+              <span class="montant-val">{{ s.montantNet | number:'1.3-3' }}</span>
+              <span class="montant-currency">DT</span>
+            </td>
+
+           
+
+            <!-- Numéro compte -->
+            <td>
+              <input type="text" class="input-rib"
+                     [(ngModel)]="s.rib"
+                     placeholder="RIB / N° compte..."
+                     (change)="save()">
+            </td>
+
+            <!-- Statut paiement -->
+            <td class="td-center">
+              <span class="status-pill"
+                    [class.pill-paid]="s.paye"
+                    [class.pill-unpaid]="!s.paye">
+                <span class="pill-dot"></span>
+                {{ s.paye ? 'Payé' : 'Impayé' }}
+              </span>
+            </td>
+
+            <!-- Actions -->
+            <td class="td-center">
+              <div class="action-btns">
+                <button class="btn-action"
+                        [class.btn-pay]="!s.paye"
+                        [class.btn-unpay]="s.paye"
+                        (click)="togglePaye(s)"
+                        [title]="s.paye ? 'Marquer impayé' : 'Marquer payé'">
+                  <svg *ngIf="!s.paye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                  <svg *ngIf="s.paye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                  </svg>
+                </button>
+                <button class="btn-action btn-detail" (click)="openDetail(s)" title="Détail">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+
+        <!-- TOTAL ROW -->
+        <tfoot *ngIf="filteredSaisonniers.length > 0">
+          <tr class="total-row">
+            <td colspan="4" dir="rtl">المجموع الإجمالي</td>
+            <td class="td-center">{{ getTotalJours() }}</td>
+            <td class="td-center">{{ getTotalAbsences() }}</td>
+            <td class="td-center"><strong>{{ getTotalMontant() | number:'1.3-3' }} DT</strong></td>
+            <td colspan="5"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════ MODAL DÉTAIL ══════ -->
+<div class="modal-overlay" *ngIf="showDetail && selectedSaisonnier">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <div class="modal-head">
+      <div class="modal-title-grp">
+        <div class="modal-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23"/>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+        <div>
+          <h2>Fiche de paiement</h2>
+          <p>{{ selectedSaisonnier.prenom }} {{ selectedSaisonnier.nom }}</p>
+        </div>
+      </div>
+      <button class="modal-close-btn" (click)="showDetail=false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-content">
+
+      <!-- Bloc arabe (comme le formulaire officiel) -->
+      <div class="fiche-officielle" dir="rtl">
+        <div class="fiche-header">
+          <div class="fiche-logo">
+            <strong>تونس تيليكوم</strong>
+            <span>Tunisie Telecom</span>
+          </div>
+          <div class="fiche-title">
+            <h3>بطاقة أجرة عون متعاقد موسمي</h3>
+            <span>حملة {{ currentYear }}</span>
+          </div>
+        </div>
+
+        <div class="fiche-grid">
+          <div class="fiche-row">
+            <span class="fiche-label">الاسم و اللقب :</span>
+            <span class="fiche-val">{{ selectedSaisonnier.prenom }} {{ selectedSaisonnier.nom }}</span>
+          </div>
+          <div class="fiche-row">
+            <span class="fiche-label">رقم بطاقة التعريف :</span>
+            <span class="fiche-val td-mono">{{ selectedSaisonnier.cin }}</span>
+          </div>
+          <div class="fiche-row">
+            <span class="fiche-label">تاريخ المباشرة :</span>
+            <span class="fiche-val">{{ selectedSaisonnier.dateMbacharah | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="fiche-row">
+            <span class="fiche-label">مدة العمل :</span>
+            <span class="fiche-val">{{ selectedSaisonnier.duree }} يوم</span>
+          </div>
+          <div class="fiche-row">
+            <span class="fiche-label">الغيابات :</span>
+            <span class="fiche-val absent">{{ selectedSaisonnier.absences }} يوم</span>
+          </div>
+          <div class="fiche-row">
+            <span class="fiche-label">أيام العمل الفعلية :</span>
+            <span class="fiche-val">{{ selectedSaisonnier.duree - selectedSaisonnier.absences }} يوم</span>
+          </div>
+          <div class="fiche-row highlight">
+            <span class="fiche-label">المبلغ الصافي :</span>
+            <span class="fiche-val montant-big">{{ selectedSaisonnier.montantNet | number:'1.3-3' }} Dت</span>
+          </div>
+          <div class="fiche-row">
+            <span class="fiche-label">الاسم و اللقب صاحب الحساب :</span>
+            <span class="fiche-val">{{ selectedSaisonnier.nomTitulaireCompte || '—' }}</span>
+          </div>
+          <div class="fiche-row">
+            <span class="fiche-label">رقم بطاقة تعريف صاحب الحساب :</span>
+            <span class="fiche-val td-mono">{{ selectedSaisonnier.cinTitulaire || '—' }}</span>
+          </div>
+          <div class="fiche-row">
+            <span class="fiche-label">رقم الحساب :</span>
+            <span class="fiche-val td-mono">{{ selectedSaisonnier.rib || '—' }}</span>
+          </div>
+        </div>
+
+        <!-- Calcul détaillé -->
+        <div class="calcul-detail">
+          <h4>تفاصيل الحساب</h4>
+          <div class="calcul-formula">
+            <div class="calcul-step">
+              <span class="step-label">الأجر الإجمالي</span>
+              <span class="step-eq">{{ selectedSaisonnier.duree }} × {{ tauxJourDT }} DT</span>
+              <span class="step-result">= {{ selectedSaisonnier.duree * tauxJourDT | number:'1.3-3' }} DT</span>
+            </div>
+            <div class="calcul-step deduction" *ngIf="selectedSaisonnier.absences > 0">
+              <span class="step-label">خصم الغيابات</span>
+              <span class="step-eq">{{ selectedSaisonnier.absences }} × {{ tauxJourDT }} DT</span>
+              <span class="step-result red">− {{ selectedSaisonnier.absences * tauxJourDT | number:'1.3-3' }} DT</span>
+            </div>
+            <div class="calcul-step total-step">
+              <span class="step-label">الصافي للصرف</span>
+              <span class="step-eq">({{ selectedSaisonnier.duree }} − {{ selectedSaisonnier.absences }}) × {{ tauxJourDT }}</span>
+              <span class="step-result green">= {{ selectedSaisonnier.montantNet | number:'1.3-3' }} DT</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn-cancel-modal" (click)="showDetail=false">Fermer</button>
+      <button class="btn-save-modal" (click)="printFiche(selectedSaisonnier)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 6 2 18 2 18 9"/>
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+          <rect x="6" y="14" width="12" height="8"/>
+        </svg>
+        Imprimer la fiche
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- FAB -->
+<button class="fab-btn">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="12" cy="12" r="10"/>
+    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+    <line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+  Assistance
+</button>

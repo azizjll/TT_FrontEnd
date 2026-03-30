@@ -1,0 +1,83 @@
+.slider-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  height: 200px; // adapte selon tes images (1920x600 → ratio ~31%)
+
+  @media (min-width: 768px) {
+    height: 300px;
+  }
+
+  @media (min-width: 1024px) {
+    height: 400px;
+  }
+}
+
+.slider-track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+
+  &.active {
+    opacity: 1;
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 3rem;
+  line-height: 1;
+  padding: 0.2rem 0.8rem;
+  cursor: pointer;
+  z-index: 10;
+  transition: background 0.2s;
+  border-radius: 4px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.4);
+  }
+
+  &-left  { left: 12px; }
+  &-right { right: 12px; }
+}
+
+.dots {
+  position: absolute;
+  bottom: 12px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  z-index: 10;
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: background 0.3s;
+
+    &.active {
+      background: white;
+    }
+  }
+}

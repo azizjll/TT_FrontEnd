@@ -14,7 +14,7 @@ export class LoginComponent implements AfterViewInit, OnInit {
   signupData: SignupRequest = { nom: '', prenom: '', email: '', password: '', cin: '', telephone: '', role: '', regionId: undefined };
   message: string = '';
 
-  roles: string[] = [];
+  roles: string[] = ['RH_REGIONAL'];
   regions: Region[] = [];
 
   forgotMode: boolean = false;

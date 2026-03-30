@@ -27,22 +27,22 @@
             <input type="password" placeholder="Password" [(ngModel)]="signupData.password" name="password" required />
 
             <!-- Dropdown Role -->
-            <div class="select-wrapper">
-            <select [(ngModel)]="signupData.role" name="role" required>
-                <option value="" disabled selected>Rôle</option>
-                <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
-            </select>
-            </div>
+              <div class="select-wrapper">
+                <select [(ngModel)]="signupData.role" name="role" required>
+                    <option value="" disabled selected>Rôle</option>
+                    <option value="RH_REGIONAL">RH_REGIONAL</option>
+                </select>
+              </div>
 
             <!-- Dropdown Region -->
-            <div class="select-wrapper">
-            <select [(ngModel)]="signupData.regionId" name="regionId" required>
-                <option value="" disabled selected>Région</option>
-                <option *ngFor="let region of regions" [value]="region.id">
-                {{ region.nom }}
-                </option>
-            </select>
-            </div>
+<div class="select-wrapper">
+  <select [(ngModel)]="signupData.regionId" name="regionId" required>
+      <option [ngValue]="undefined" disabled>DRT (Direction Régionale Tunisie)</option>
+      <option *ngFor="let region of regions" [value]="region.id">
+        {{ region.nom }}
+      </option>
+  </select>
+</div>
 
         <button type="submit">Sign Up</button>
         </form>

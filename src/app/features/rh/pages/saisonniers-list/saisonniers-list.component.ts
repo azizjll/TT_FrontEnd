@@ -232,4 +232,44 @@ this.affectationService.getStructuresByRegion(this.myRegion.id).subscribe({
       error: err => console.error(err)
     });
   }
+
+  // Ajouter ces propriétés et méthodes dans SaisonniersListComponent
+
+activeFilter: string = 'ALL';
+searchQuery:  string = '';
+
+// ── Getter filtré ─────────────────────────────────
+get filteredCandidatures() {
+  return this.candidatures.filter(c => {
+    const matchFilter = this.activeFilter === 'ALL' || c.statut === this.activeFilter;
+    const q = this.searchQuery.toLowerCase().trim();
+    const matchSearch = !q ||
+      c.saisonnier.nom.toLowerCase().includes(q) ||
+      c.saisonnier.prenom.toLowerCase().includes(q) ||
+      (c.saisonnier.email || '').toLowerCase().includes(q);
+    return matchFilter && matchSearch;
+  });
+}
+
+// ── Filtrer par statut ────────────────────────────
+setFilter(status: string): void {
+  this.activeFilter = status;
+}
+
+// ── Compter par statut ────────────────────────────
+countByStatus(status: string): number {
+  return this.candidatures.filter(c => c.statut === status).length;
+}
+
+// ── Label lisible du statut ───────────────────────
+statusLabel(statut: string): string {
+  const map: Record<string, string> = {
+    'EN_ATTENTE': 'En attente',
+    'ACCEPTEE':   'Acceptée',
+    'REFUSEE':    'Refusée',
+    'A_CORRIGER': 'À corriger',
+  };
+  return map[statut] || statut;
+}
+
 }
