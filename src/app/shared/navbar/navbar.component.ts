@@ -12,7 +12,7 @@ export class NavbarComponent {
 
   navLinks = [
     { name: 'Home', path: '/' },
-    { name: 'Products', path: '/products' },
+    { name: 'Espace Saisonnier', path: '/espace-saisonnier' },
     { name: 'Contact', path: '/contact' },
     { name: 'About', path: '/about' },
   ];

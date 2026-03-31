@@ -46,4 +46,14 @@ export class CandidatureService {
   updateCandidature(id: number, formData: FormData) {
   return this.http.put(`${this.baseUrl}/update/${id}`, formData);
 }
+
+getDocumentsBySaisonnier(saisonnierId: number) {
+  return this.http.get<any[]>(`${this.baseUrl}/documents?saisonnierId=${saisonnierId}`);
+}
+
+getSaisonnierById(id: number) {
+  return this.http.get<any>(`${this.baseUrl}/saisonnier/${id}`);
+}
+
+
 }

@@ -17,6 +17,8 @@ import { HomeGeneralComponent } from './pages/home-general/home-general.componen
 import { EspacesaisonnierComponent } from './saisonnier/espacesaisonnier/espacesaisonnier.component';
 import { HeroSliderComponent } from './shared/hero-slider/hero-slider.component';
 import { CommonModule } from '@angular/common';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
 import { DocumentsComponent } from './features/rh/pages/documents/documents.component';
 import { PresencePaiementComponent } from './features/rh/pages/presence-paiement/presence-paiement.component';
 
@@ -42,7 +44,9 @@ import { PresencePaiementComponent } from './features/rh/pages/presence-paiement
     AppRoutingModule,
     FormsModule,
     HttpClientModule,
-    CommonModule
+    CommonModule,
+    BrowserAnimationsModule
+    
     
   ],
   providers: [],

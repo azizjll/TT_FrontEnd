@@ -1,5 +1,6 @@
 import { animate, query, stagger, style, transition, trigger } from '@angular/animations';
 import { Component, OnInit } from '@angular/core';
+import { CandidatureService } from 'src/app/services/candidature.service';
 
 
 export interface Candidature {
@@ -64,22 +65,9 @@ export class EspacesaisonnierComponent implements OnInit {
   showDetailModal: boolean = false;
   selectedCandidature: Candidature | null = null;
   notificationCount: number = 3;
+  saisonnier: any = {};
  
-  saisonnier = {
-    prenom: 'Aziz',
-    nom: 'Chahlaoui',
-    email: 'aziz.chahlaoui@email.com',
-    telephone: '+33 6 12 34 56 78',
-    adresse: 'Tunis, Tunisie',
-    dateNaissance: '15/03/1995',
-    nationalite: 'Tunisienne',
-    avatar: null,
-    niveauExperience: 'Intermédiaire',
-    disponibilite: 'Juillet - Septembre 2025',
-    bio: 'Saisonnier expérimenté avec 3 saisons dans le secteur agricole. Motivé, sérieux et disponible pour des missions longues.',
-    competences: ['Conduite d\'engins', 'Travaux agricoles', 'Manutention', 'Logistique'],
-    langues: ['Arabe (natif)', 'Français (courant)', 'Anglais (scolaire)']
-  };
+  
  
   candidatures: Candidature[] = [
     {
@@ -148,7 +136,28 @@ export class EspacesaisonnierComponent implements OnInit {
     { id: 4, message: 'Nouvelle campagne disponible dans votre région', date: 'Il y a 3 jours', lu: true, type: 'info' },
   ];
  
-  ngOnInit(): void {}
+  constructor(private candidatureService: CandidatureService) {}
+
+  ngOnInit(): void {
+  const saisonnierId = 4; // ⚠️ remplace par ID réel (login plus tard)
+
+  // 🔹 récupérer profil
+  this.candidatureService.getSaisonnierById(saisonnierId)
+    .subscribe((data) => {
+      this.saisonnier = data;
+    });
+  this.candidatureService.getDocumentsBySaisonnier(saisonnierId)
+    .subscribe((data) => {
+      this.documents = data.map(doc => ({
+        id: doc.id,
+        nom: doc.nomFichier,
+        type: doc.type,
+        dateAjout: '', // tu peux ajouter côté backend si besoin
+        statut: 'VALIDE', // ou logique métier
+        taille: '' // optionne
+      }));
+    });
+}
  
   get filteredCandidatures(): Candidature[] {
     return this.candidatures.filter(c => {
