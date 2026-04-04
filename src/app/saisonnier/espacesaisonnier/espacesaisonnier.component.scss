@@ -4,6 +4,24 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
+// ── Variables ──────────────────────────────────────────────
+$font: 'Plus Jakarta Sans', sans-serif;
+$blue:    #2563eb;
+$blue-lt: #eff6ff;
+$blue-dk: #1d4ed8;
+$purple:  #7c3aed;
+$purple-lt: #f5f3ff;
+$green:   #059669;
+$green-lt: #ecfdf5;
+$text-dk: #0f172a;
+$text-md: #475569;
+$text-lt: #94a3b8;
+$border:  #e2e8f0;
+$bg:      #f1f5f9;
+$white:   #ffffff;
+$radius:  14px;
+$shadow:  0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
+
 :host {
   display: block;
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -1074,4 +1092,233 @@
   .modal-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.badge-active {
+  margin-left: 8px;
+  background: #22c55e;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+}
+
+// ── Modal ──────────────────────────────────────────────────
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, .55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn .2s ease;
+}
+
+.modal-box {
+  background: $white;
+  width: 680px;
+  max-width: 100%;
+  border-radius: $radius + 4px;
+  box-shadow: 0 25px 60px rgba(0,0,0,.2);
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: popUp .25s ease;
+
+  &::-webkit-scrollbar { width: 5px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: $border; border-radius: 50px; }
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid $border;
+  position: sticky;
+  top: 0;
+  background: $white;
+  z-index: 1;
+
+  .modal-title-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .modal-icon {
+    width: 44px; height: 44px;
+    background: $blue-lt;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    svg { width: 20px; height: 20px; color: $blue; }
+  }
+  h2 { font-size: 1.05rem; font-weight: 800; color: $text-dk; }
+  p  { font-size: .78rem; color: $text-lt; margin-top: 2px; font-weight: 500; }
+
+  .modal-close {
+    width: 36px; height: 36px;
+    background: $bg;
+    border: none;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: background .2s;
+    svg { width: 16px; height: 16px; color: $text-md; }
+    &:hover { background: darken($bg, 4%); }
+  }
+}
+
+.modal-form { padding: 24px 28px 28px; }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+  @media (max-width: 520px) { grid-template-columns: 1fr; }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: .78rem;
+    font-weight: 700;
+    color: $text-dk;
+  }
+  input, select {
+    padding: 11px 14px;
+    border: 1.5px solid $border;
+    border-radius: 10px;
+    font-family: $font;
+    font-size: .85rem;
+    color: $text-dk;
+    background: $white;
+    transition: border-color .2s, box-shadow .2s;
+    outline: none;
+
+    &::placeholder { color: $text-lt; }
+    &:focus {
+      border-color: $blue;
+      box-shadow: 0 0 0 3px rgba($blue, .1);
+    }
+  }
+  select { cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 36px;
+  }
+}
+
+// Files section
+.files-section {
+  border-top: 1px solid $border;
+  padding-top: 20px;
+  margin-bottom: 24px;
+
+  h4 {
+    font-size: .85rem;
+    font-weight: 800;
+    color: $text-dk;
+    margin-bottom: 14px;
+  }
+}
+
+.files-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  @media (max-width: 520px) { grid-template-columns: 1fr; }
+}
+
+.file-drop {
+  border: 2px dashed $border;
+  border-radius: $radius - 2px;
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  text-align: center;
+
+  svg { width: 28px; height: 28px; color: $text-lt; transition: color .2s; }
+  span { font-size: .75rem; font-weight: 700; color: $text-md; }
+  input[type="file"] { display: none; }
+
+  &:hover {
+    border-color: $blue;
+    background: $blue-lt;
+    svg { color: $blue; }
+  }
+}
+
+// Modal actions
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  .btn-cancel {
+    background: $bg;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 10px;
+    font-family: $font;
+    font-size: .85rem;
+    font-weight: 600;
+    color: $text-md;
+    cursor: pointer;
+    transition: background .2s;
+    &:hover { background: darken($bg, 4%); }
+  }
+  .btn-send {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: $blue;
+    color: $white;
+    border: none;
+    padding: 11px 24px;
+    border-radius: 10px;
+    font-family: $font;
+    font-size: .85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .2s, transform .15s;
+    svg { width: 15px; height: 15px; }
+    &:hover { background: $blue-dk; transform: translateY(-1px); }
+  }
+}
+
+// ── FAB ────────────────────────────────────────────────────
+.fab-assistance {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  background: $text-dk;
+  color: $white;
+  border: none;
+  border-radius: 50px;
+  padding: 13px 22px;
+  font-family: $font;
+  font-weight: 700;
+  font-size: .83rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.25);
+  transition: background .2s, transform .2s;
+  z-index: 500;
+  svg { width: 16px; height: 16px; }
+  &:hover { background: $blue; transform: translateY(-2px); }
 }

@@ -14,7 +14,12 @@
             </linearGradient>
           </defs>
         </svg>
-        <span class="logo-text">SaisonnierPro</span>
+        <div class="logo-text">
+  {{ activeCampagne?.libelle || 'Aucune campagne actuellement' }}
+  <small *ngIf="activeCampagne?.statut === 'ACTIVE'" class="badge-active">
+    ACTIVE
+  </small>
+</div>
       </div>
     </div>
 
@@ -69,7 +74,7 @@
   </aside>
 
   <!-- MAIN CONTENT -->
-  <main class="main-content">
+  <main class="main-content" *ngFor="let c of campagnes">
 
     <!-- ===== CANDIDATURES ===== -->
     <section *ngIf="activeTab === 'candidatures'" @fadeInUp>
@@ -78,7 +83,7 @@
           <h1 class="page-title">Mes Candidatures</h1>
           <p class="page-subtitle">Suivez l'état de toutes vos demandes de missions saisonnières</p>
         </div>
-        <button class="btn-primary">
+        <button class="btn-primary" (click)="deposerCandidature(c.id)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
@@ -389,5 +394,116 @@
       <button class="btn-outline" (click)="closeDetail()">Fermer</button>
       <button class="btn-primary" *ngIf="selectedCandidature.statut === 'ACCEPTEE'">Confirmer ma disponibilité</button>
     </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL ===================== -->
+<div class="modal-overlay" *ngIf="showCandidatureModal" (click)="closeModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <div class="modal-head">
+      <div class="modal-title-group">
+        <div class="modal-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
+        <div>
+          <h2>Déposer une candidature</h2>
+          <p>Remplissez les informations ci-dessous</p>
+        </div>
+      </div>
+      <button class="modal-close" (click)="closeModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <form (ngSubmit)="submitCandidature()" class="modal-form">
+
+      <div class="form-grid">
+        <div class="field">
+          <label>Prénom</label>
+          <input type="text" [(ngModel)]="form.prenom" name="prenom" placeholder="Votre prénom" required>
+        </div>
+        <div class="field">
+          <label>Nom</label>
+          <input type="text" [(ngModel)]="form.nom" name="nom" placeholder="Votre nom" required>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" [(ngModel)]="form.email" name="email" placeholder="email@exemple.com" required>
+        </div>
+        <div class="field">
+          <label>Téléphone</label>
+          <input type="text" [(ngModel)]="form.telephone" name="telephone" placeholder="+216 XX XXX XXX" required>
+        </div>
+        <div class="field">
+          <label>CIN</label>
+          <input type="number" [(ngModel)]="form.cin" name="cin" placeholder="Numéro CIN" required>
+        </div>
+        <div class="field">
+          <label>RIB</label>
+          <input type="text" [(ngModel)]="form.rib" name="rib" placeholder="Votre RIB bancaire" required>
+        </div>
+        <div class="field">
+          <label>Région</label>
+          <select [(ngModel)]="form.regionId" name="regionId" required (change)="loadStructuresByRegion(form.regionId)">
+            <option value="" disabled selected>Choisir une région</option>
+            <option *ngFor="let region of regions" [value]="region.id">{{ region.nom }}</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Structure</label>
+          <select [(ngModel)]="form.structureId" name="structureId" required>
+            <option value="" disabled selected>Choisir une structure</option>
+            <option *ngFor="let structure of structures" [value]="structure.id">{{ structure.nom }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="files-section">
+        <h4>Documents requis</h4>
+        <div class="files-grid">
+          <label class="file-drop">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            <span>CIN (PDF)</span>
+            <input type="file" accept=".pdf" (change)="onFileChange($event,'cin')" required>
+          </label>
+          <label class="file-drop">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+            </svg>
+            <span>Diplôme (PDF)</span>
+            <input type="file" accept=".pdf" (change)="onFileChange($event,'diplome')" required>
+          </label>
+          <label class="file-drop">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M9 11l3 3L22 4"/>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+            <span>Contrat (PDF)</span>
+            <input type="file" accept=".pdf" (change)="onFileChange($event,'contrat')" required>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="closeModal()">Annuler</button>
+        <button type="submit" class="btn-send">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+          Envoyer la candidature
+        </button>
+      </div>
+
+    </form>
   </div>
 </div>

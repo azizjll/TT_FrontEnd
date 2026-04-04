@@ -21,6 +21,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { DocumentsComponent } from './features/rh/pages/documents/documents.component';
 import { PresencePaiementComponent } from './features/rh/pages/presence-paiement/presence-paiement.component';
+import { SafePipe } from './shared/safe.pipe';
 
 @NgModule({
   declarations: [
@@ -36,6 +37,7 @@ import { PresencePaiementComponent } from './features/rh/pages/presence-paiement
     HomeGeneralComponent,
     EspacesaisonnierComponent,
     HeroSliderComponent,
+    SafePipe,
     
     
   ],

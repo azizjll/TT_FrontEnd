@@ -215,3 +215,37 @@
     height: 120px;
   }
 }
+/* ===== LOGO CENTRAL ===== */
+.center-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -80%);
+  z-index: 5;
+  animation: pulse 3s ease-in-out infinite;
+
+  img {
+    border-radius: 50%;          /* cache les coins blancs */
+    mix-blend-mode: screen;      /* fond blanc devient transparent sur le dégradé bleu */
+    filter: drop-shadow(0 8px 28px rgba(0,0,0,0.35));
+  }
+}
+
+/* ===== SIGLES DÉCORATIFS ===== */
+.tt-deco {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  animation: float 1s ease-in-out infinite;
+
+  img {
+    mix-blend-mode: screen;      /* fond blanc → transparent sur le bleu */
+    opacity: 0.7;
+    border-radius: 50%;
+  }
+}
+
+.tt-deco-1 { bottom: 20%; left: 8%;  animation-delay: 0.8s; }
+.tt-deco-2 { top: 28%;   right: 8%; animation-delay: 2.5s; }
+.tt-deco-3 { bottom: 28%; right: 20%; animation-delay: 1.5s; }
+.tt-deco-4 { bottom: 70%; right: 90%; animation-delay: 0.1s; }

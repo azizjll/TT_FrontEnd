@@ -20,7 +20,7 @@
     <nav class="sidebar-nav">
       <div class="nav-section-label">PILOTAGE</div>
 
-      <a class="nav-item active" (click)="setActive('campagnes')">
+      <a class="nav-item" [class.active]="activeSection === 'campagnes'" (click)="setActive('campagnes')">
         <span class="nav-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M3 3h18v18H3z"/><path d="M8 12h8M12 8v8"/>
@@ -30,7 +30,7 @@
         <span class="nav-badge">{{ stats.campagnesActives }}</span>
       </a>
 
-      <a class="nav-item" (click)="setActive('candidatures')">
+      <a class="nav-item" [class.active]="activeSection === 'candidatures'" (click)="setActive('candidatures')">
         <span class="nav-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -42,7 +42,7 @@
         <span class="nav-badge secondary">{{ stats.totalCandidatures }}</span>
       </a>
 
-      <a class="nav-item" (click)="setActive('utilisateurs')">
+      <a class="nav-item" [class.active]="activeSection === 'utilisateurs'" (click)="setActive('utilisateurs')">
         <span class="nav-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="8" r="4"/>
@@ -50,6 +50,32 @@
           </svg>
         </span>
         <span>Utilisateurs</span>
+      </a>
+
+      <div class="nav-section-label">DOCUMENTS</div>
+
+      <a class="nav-item" [class.active]="activeSection === 'memo'" (click)="setActive('memo')">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+        </span>
+        <span>Mذكرة الإنتداب</span>
+        <span class="nav-badge secondary">2025</span>
+      </a>
+
+      <a class="nav-item" [class.active]="activeSection === 'structures'" (click)="setActive('structures')">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+        </span>
+        <span>Structures par Région</span>
       </a>
 
       <div class="nav-section-label">SYSTÈME</div>
@@ -281,74 +307,48 @@
         </div>
       </div>
 
-     <div class="table-card">
-  <table class="data-table">
-    <thead>
-      <tr>
-        <th>Candidat</th>
-        <th>Campagne</th>
-        <th>CIN</th>
-        <th>Région</th>
-        <th>Date Dépôt</th>
-        <th>Statut</th>
-        <th>Documents</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      <tr *ngFor="let cand of candidatures" class="table-row">
-
-        <!-- CANDIDAT -->
-        <td>
-          <div class="user-cell">
-            <div class="user-avatar-sm">
-              {{ cand.saisonnier.nom[0] }}{{ cand.saisonnier.prenom[0] }}
-            </div>
-
-            <div>
-              <span class="name-primary">
-                {{ cand.saisonnier.nom }} {{ cand.saisonnier.prenom }}
-              </span>
-
-              <span class="name-secondary">
-                {{ cand.saisonnier.email }}
-              </span>
-            </div>
-          </div>
-        </td>
-
-        <!-- CAMPAGNE -->
-        <td>{{ cand.campagne.libelle }}</td>
-
-        <!-- CIN -->
-        <td>{{ cand.saisonnier.cin }}</td>
-
-        <!-- REGION -->
-        <td>{{ cand.saisonnier.region.nom }}</td>
-
-        <!-- DATE -->
-        <td>{{ cand.dateDepot }}</td>
-
-        <!-- STATUT -->
-        <td>
-          <span class="status-badge">
-            {{ cand.statut }}
-          </span>
-        </td>
-
-        <!-- DOCUMENTS -->
-        <td>
-          <div *ngFor="let doc of cand.documents">
-            <a [href]="doc.url" target="_blank">
-              {{ doc.type }}
-            </a>
-          </div>
-        </td>
-
-      </tr>
-    </tbody>
-  </table>
-</div>
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Candidat</th>
+              <th>Campagne</th>
+              <th>CIN</th>
+              <th>Région</th>
+              <th>Date Dépôt</th>
+              <th>Statut</th>
+              <th>Documents</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let cand of candidatures" class="table-row">
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar-sm">
+                    {{ cand.saisonnier.nom[0] }}{{ cand.saisonnier.prenom[0] }}
+                  </div>
+                  <div>
+                    <span class="name-primary">{{ cand.saisonnier.nom }} {{ cand.saisonnier.prenom }}</span>
+                    <span class="name-secondary">{{ cand.saisonnier.email }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>{{ cand.campagne.libelle }}</td>
+              <td>{{ cand.saisonnier.cin }}</td>
+              <td>{{ cand.saisonnier.region.nom }}</td>
+              <td>{{ cand.dateDepot }}</td>
+              <td>
+                <span class="status-badge">{{ cand.statut }}</span>
+              </td>
+              <td>
+                <div *ngFor="let doc of cand.documents">
+                  <a [href]="doc.url" target="_blank">{{ doc.type }}</a>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <!-- ===== SECTION: UTILISATEURS ===== -->
@@ -404,9 +404,331 @@
       </div>
     </section>
 
+    <!-- ===== SECTION: MEMO INTIDAB ===== -->
+    <section class="content-section" *ngIf="activeSection === 'memo'">
+      <div class="section-header">
+        <h2 class="section-title">مذكرة الإنتداب 2025</h2>
+        <div class="action-buttons">
+          <button class="btn btn-primary" (click)="openMemoUploadModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            Modifier le document
+          </button>
+        </div>
+      </div>
+
+      <div class="memo-layout">
+        <!-- Left Panel: Metadata -->
+        <div class="memo-sidebar-panel">
+          <div class="memo-doc-icon">
+            <svg viewBox="0 0 48 48" fill="none">
+              <rect x="6" y="4" width="28" height="36" rx="3" fill="#E0F2FF" stroke="#1E8BD4" stroke-width="1.5"/>
+              <path d="M28 4v10h10" stroke="#1E8BD4" stroke-width="1.5" fill="none"/>
+              <rect x="28" y="14" width="10" height="26" rx="2" fill="#1E8BD4" opacity="0.15"/>
+              <path d="M34 4l4 4v6h-6V4l2 0z" fill="#1E8BD4" opacity="0.3"/>
+              <line x1="12" y1="22" x2="30" y2="22" stroke="#1E8BD4" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="12" y1="27" x2="30" y2="27" stroke="#1E8BD4" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="12" y1="32" x2="22" y2="32" stroke="#1E8BD4" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="memo-doc-title">مذكرة حول انتداب أعوان متعاقدين لعمل موسمي</div>
+          <div class="memo-doc-year">سنة 2025</div>
+
+          <div class="memo-meta-list">
+            <div class="memo-meta-item">
+              <span class="memo-meta-key">النوع</span>
+              <span class="memo-meta-val">مذكرة إدارية</span>
+            </div>
+            <div class="memo-meta-item">
+              <span class="memo-meta-key">السنة</span>
+              <span class="memo-meta-val">2025</span>
+            </div>
+            <div class="memo-meta-item">
+              <span class="memo-meta-key">الصيغة</span>
+              <span class="memo-meta-val">PDF</span>
+            </div>
+            <div class="memo-meta-item">
+              <span class="memo-meta-key">الحالة</span>
+              <span class="memo-meta-val status-active-badge">سارية المفعول</span>
+            </div>
+          </div>
+
+          <div class="memo-actions-panel">
+            <button class="btn btn-primary w-full" (click)="downloadMemo()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+              </svg>
+              تحميل المذكرة
+            </button>
+            <button class="btn btn-outline w-full" (click)="printMemo()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                <rect x="6" y="14" width="12" height="8"/>
+              </svg>
+              طباعة
+            </button>
+          </div>
+
+          <div class="memo-summary-box">
+            <div class="memo-summary-title">ملخص المذكرة</div>
+            <ul class="memo-summary-list">
+              <li>تحديد عدد الأعوان المسموح بانتدابهم</li>
+              <li>شروط الانتداب وآجاله</li>
+              <li>الوثائق المطلوبة لكل ملف</li>
+              <li>إجراءات التوقيع والمصادقة</li>
+              <li>مراحل المعالجة الإدارية</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Right Panel: PDF Viewer -->
+<!-- Right Panel: PDF Viewer -->
+<div class="memo-viewer-panel">
+  
+
+  <div class="memo-viewer-content">
+
+    <!-- Chargement -->
+    <div class="memo-loading" *ngIf="isLoadingPdf">
+      <div class="memo-spinner"></div>
+      <span>Chargement du document...</span>
+    </div>
+
+    <ng-container *ngIf="!isLoadingPdf">
+
+      <!-- PDF chargé -->
+      <div class="memo-pdf-frame-wrap" *ngIf="memoDocument.hasFile; else noPdf">
+<object
+  [attr.data]="memoDocument.fileUrl"
+  type="application/pdf"
+  class="memo-pdf-object">
+  <div class="pdf-fallback-msg">
+    <p>Votre navigateur ne supporte pas l'affichage PDF.</p>
+    <a [href]="memoDocument.rawUrl" download class="btn btn-primary">Télécharger</a>
+  </div>
+</object>
+
+        <!-- Statut upload -->
+        <div class="memo-upload-status" *ngIf="isUploading || uploadSuccess || uploadError">
+          <span class="status-uploading" *ngIf="isUploading">⏳ Sauvegarde en cours...</span>
+          <span class="status-success"  *ngIf="uploadSuccess">✅ Document sauvegardé</span>
+          <span class="status-error"    *ngIf="uploadError">❌ {{ uploadError }}</span>
+        </div>
+      </div>
+
+      <!-- Aucun PDF -->
+      <ng-template #noPdf>
+        <div class="memo-empty-state"
+             (dragover)="$event.preventDefault(); memoDragOver = true"
+             (dragleave)="memoDragOver = false"
+             (drop)="onMemoDrop($event)"
+             [class.dragover]="memoDragOver">
+          <div class="memo-empty-icon">
+            <svg viewBox="0 0 64 64" fill="none">
+              <rect x="8" y="4" width="36" height="48" rx="4" fill="#D6F0FF" stroke="#4BBEF5" stroke-width="1.5"/>
+              <path d="M36 4v12h12" stroke="#4BBEF5" stroke-width="1.5" fill="none"/>
+              <rect x="36" y="16" width="12" height="36" rx="2" fill="#4BBEF5" opacity="0.15"/>
+              <line x1="16" y1="28" x2="36" y2="28" stroke="#4BBEF5" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="16" y1="34" x2="36" y2="34" stroke="#4BBEF5" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="16" y1="40" x2="28" y2="40" stroke="#4BBEF5" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <p class="memo-empty-title">Aucun document chargé</p>
+          <p class="memo-empty-sub">Glissez-déposez ou importez le PDF de la مذكرة الإنتداب</p>
+          <label class="btn btn-primary" style="cursor:pointer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+            </svg>
+            Charger le PDF
+            <input type="file" accept=".pdf" (change)="onMemoFileSelected($event)" style="display:none"/>
+          </label>
+          <span style="font-size:11px; color:var(--text-muted)">PDF uniquement — max 20 Mo</span>
+        </div>
+      </ng-template>
+
+    </ng-container>
+  </div>
+</div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION: STRUCTURES PAR RÉGION ===== -->
+    <section class="content-section" *ngIf="activeSection === 'structures'">
+      <div class="section-header">
+        <h2 class="section-title">Structures par Région — 2025</h2>
+        <div class="action-buttons">
+          <button class="btn btn-outline" (click)="exportStructures()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Télécharger XLSX
+          </button>
+          <button class="btn btn-primary" (click)="openStructureUploadModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            Modifier le fichier
+          </button>
+        </div>
+      </div>
+
+      <!-- Structures Stats -->
+      <div class="structures-stats-row">
+        <div class="struct-stat-card">
+          <span class="struct-stat-num">{{ structuresStats.gouvernorats }}</span>
+          <span class="struct-stat-lbl">Gouvernorats</span>
+        </div>
+        <div class="struct-stat-card">
+          <span class="struct-stat-num">{{ structuresStats.total }}</span>
+          <span class="struct-stat-lbl">Structures totales</span>
+        </div>
+        <div class="struct-stat-card highlight-blue">
+          <span class="struct-stat-num">{{ structuresStats.espacesCommerciaux }}</span>
+          <span class="struct-stat-lbl">Espaces Commerciaux</span>
+        </div>
+        <div class="struct-stat-card highlight-purple">
+          <span class="struct-stat-num">{{ structuresStats.centresTechnologiques }}</span>
+          <span class="struct-stat-lbl">Centres Technologiques</span>
+        </div>
+        <div class="struct-stat-card highlight-orange">
+          <span class="struct-stat-num">{{ structuresStats.saisonnersAutorises }}</span>
+          <span class="struct-stat-lbl">Saisonniers autorisés</span>
+        </div>
+        <div class="struct-stat-card highlight-green">
+          <span class="struct-stat-num">{{ structuresStats.saisonnersRecrutes }}</span>
+          <span class="struct-stat-lbl">Saisonniers recrutés</span>
+        </div>
+      </div>
+
+      <div class="structures-layout">
+        <!-- Left: Sidebar Filters -->
+        <div class="structures-filter-panel">
+          <div class="struct-filter-section">
+            <div class="struct-filter-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="struct-filter-title">Structures par Région</div>
+          <div class="struct-filter-subtitle">{{ structuresStats.gouvernorats }} gouvernorats — {{ structuresStats.total }} structures — 2025</div>
+
+          <div class="struct-filter-info">
+            <div class="struct-info-row"><span>Gouvernorats</span><span>{{ structuresStats.gouvernorats }}</span></div>
+            <div class="struct-info-row"><span>EC</span><span>{{ structuresStats.espacesCommerciaux }}</span></div>
+            <div class="struct-info-row"><span>CT</span><span>{{ structuresStats.centresTechnologiques }}</span></div>
+            <div class="struct-info-row"><span>Format</span><span class="format-badge">XLSX</span></div>
+          </div>
+
+          <button class="btn btn-success w-full" (click)="exportStructures()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Télécharger le fichier
+          </button>
+
+          <div class="struct-type-filters">
+            <div class="struct-filter-label">Filtrer par type</div>
+            <button class="struct-type-btn" [class.active]="structureTypeFilter === 'tous'" (click)="setStructureFilter('tous')">Tous</button>
+            <button class="struct-type-btn" [class.active]="structureTypeFilter === 'EC'" (click)="setStructureFilter('EC')">Espaces Commerciaux</button>
+            <button class="struct-type-btn" [class.active]="structureTypeFilter === 'CT'" (click)="setStructureFilter('CT')">Centres Technologiques</button>
+          </div>
+
+          <div class="struct-gov-list">
+            <div class="struct-filter-label">Gouvernorats ({{ structuresStats.gouvernorats }})</div>
+            <div class="struct-gov-item"
+                 *ngFor="let gov of gouvernorats"
+                 [class.active]="selectedGouvernorat === gov.nom"
+                 (click)="filterByGouvernorat(gov.nom)">
+              <span class="gov-dot"></span>
+              <span class="gov-name">{{ gov.nom }}</span>
+              <span class="gov-count">{{ gov.count }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Table -->
+        <div class="structures-table-area">
+          <div class="table-card">
+            <div class="struct-table-header">
+              <span class="struct-table-title">Récapitulatif global</span>
+              <span class="struct-table-count">{{ filteredStructures.length }} structures</span>
+              <button class="btn btn-outline btn-sm" (click)="toggleStructureView()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                  <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                </svg>
+                Vue globale
+              </button>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Gouvernorat</th>
+                  <th>Structure / Unité</th>
+                  <th>Type</th>
+                  <th>Adresse</th>
+                  <th>Autorisés</th>
+                  <th>Recrutés</th>
+                  <th>Restants</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of filteredStructures; let i = index" class="table-row">
+                  <td class="number-cell">{{ i + 1 }}</td>
+                  <td>
+                    <span class="gov-link" *ngIf="s.isFirstInGov">{{ s.region }}</span>
+                    <span *ngIf="!s.isFirstInGov" class="text-muted">—</span>
+                  </td>
+                  <td>
+                    <span class="name-primary">{{ s.nom }}</span>
+                  </td>
+                  <td>
+                    <span class="type-badge" [ngClass]="s.type === 'EC' ? 'type-ec' : 'type-ct'">{{ s.type }}</span>
+                  </td>
+                  <td>
+                    <span class="name-secondary">{{ s.adresse }}</span>
+                  </td>
+                  <td>
+                    <span class="autorises-cell">{{ s.autorises }}</span>
+                  </td>
+                  <td>
+                    <span class="recrutes-cell">{{ s.recrutes }}</span>
+                  </td>
+                  <td>
+                    <span class="restants-cell">{{ s.autorises - s.recrutes }}</span>
+                  </td>
+                  <td>
+                    <span class="status-badge" [ngClass]="s.autorises === s.recrutes ? 'active' : 'en-attente'">
+                      {{ s.autorises === s.recrutes ? 'Complet' : 'En cours' }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="row-actions">
+                      <button class="action-icon" title="Modifier" (click)="editStructure(s)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
 
-  <!-- Modal Création Campagne -->
+  <!-- ===== MODAL: CRÉATION CAMPAGNE ===== -->
   <div class="modal-overlay" *ngIf="showCreateModal" (click)="closeModal()">
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal-header">
@@ -436,7 +758,6 @@
           <label>Description</label>
           <textarea rows="3" placeholder="Description de la campagne..." [(ngModel)]="newCampagne.description"></textarea>
         </div>
-
         <div class="form-group">
           <label>Budget *</label>
           <input type="number" placeholder="Ex: 150000" [(ngModel)]="newCampagne.budget"/>
@@ -444,20 +765,193 @@
         <div class="form-group">
           <label>Régions concernées *</label>
           <select multiple [(ngModel)]="newCampagne.regionIds" (change)="onRegionChange()">
-
             <option [value]="0">Tous les gouvernorats</option>
-
-            <option *ngFor="let r of regions" [value]="r.id">
-              {{ r.nom }}
-            </option>
-
+            <option *ngFor="let r of regions" [value]="r.id">{{ r.nom }}</option>
           </select>
-      </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" (click)="closeModal()">Annuler</button>
         <button class="btn btn-outline" (click)="saveCampagne(false)">Enregistrer Brouillon</button>
         <button class="btn btn-primary" (click)="saveCampagne(true)">Créer & Activer</button>
+      </div>
+    </div>
+  </div>
+  
+
+  <!-- ===== MODAL: UPLOAD MEMO ===== -->
+  <div class="modal-overlay" *ngIf="showMemoUploadModal" (click)="closeMemoModal()">
+    <div class="modal modal-upload" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Modifier le document — مذكرة الإنتداب</h3>
+        <button class="modal-close" (click)="closeMemoModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="upload-zone" [class.dragover]="memoDragOver"
+             (dragover)="$event.preventDefault(); memoDragOver = true"
+             (dragleave)="memoDragOver = false"
+             (drop)="onMemoDrop($event)">
+          <div class="upload-icon">
+            <svg viewBox="0 0 48 48" fill="none">
+              <rect x="4" y="4" width="28" height="36" rx="3" fill="#E0F2FF" stroke="#1E8BD4" stroke-width="1.5"/>
+              <path d="M24 4v10h10" stroke="#1E8BD4" stroke-width="1.5"/>
+              <path d="M34 14h-10V4" fill="#1E8BD4" opacity="0.15"/>
+              <circle cx="36" cy="36" r="10" fill="#1E8BD4"/>
+              <path d="M36 31v10M31 36l5-5 5 5" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="upload-text">
+            <span class="upload-title">Glissez-déposez le nouveau PDF ici</span>
+            <span class="upload-sub">ou cliquez pour sélectionner un fichier</span>
+          </div>
+          <input type="file" accept=".pdf" #memoFileInput (change)="onMemoFileSelected($event)" style="display:none"/>
+          <button class="btn btn-outline" (click)="memoFileInput.click()">Choisir un fichier PDF</button>
+        </div>
+
+        <div class="upload-selected" *ngIf="memoSelectedFile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          <span>{{ memoSelectedFile.name }}</span>
+          <span class="file-size">{{ (memoSelectedFile.size / 1024 / 1024).toFixed(2) }} MB</span>
+          <button class="remove-file" (click)="memoSelectedFile = null">✕</button>
+        </div>
+
+        <div class="form-group">
+          <label>Année de référence</label>
+          <input type="number" [(ngModel)]="memoDocument.year" placeholder="2025"/>
+        </div>
+        <div class="form-group">
+          <label>Statut du document</label>
+          <select [(ngModel)]="memoDocument.statut">
+            <option value="actif">Sarie المفعول — ساري المفعول</option>
+            <option value="archive">Archivé</option>
+            <option value="brouillon">Brouillon</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="closeMemoModal()">Annuler</button>
+        <button class="btn btn-primary" (click)="saveMemoDocument()" [disabled]="!memoSelectedFile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+          </svg>
+          Enregistrer le document
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: UPLOAD STRUCTURES FILE ===== -->
+  <div class="modal-overlay" *ngIf="showStructureUploadModal" (click)="closeStructureModal()">
+    <div class="modal modal-upload" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Modifier le fichier Structures par Région</h3>
+        <button class="modal-close" (click)="closeStructureModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="upload-zone" [class.dragover]="structureDragOver"
+             (dragover)="$event.preventDefault(); structureDragOver = true"
+             (dragleave)="structureDragOver = false"
+             (drop)="onStructureDrop($event)">
+          <div class="upload-icon">
+            <svg viewBox="0 0 48 48" fill="none">
+              <rect x="4" y="6" width="40" height="36" rx="3" fill="#E0F2FF" stroke="#1E8BD4" stroke-width="1.5"/>
+              <line x1="4" y1="16" x2="44" y2="16" stroke="#1E8BD4" stroke-width="1"/>
+              <line x1="18" y1="6" x2="18" y2="42" stroke="#1E8BD4" stroke-width="1"/>
+              <circle cx="36" cy="36" r="10" fill="#1E8BD4"/>
+              <path d="M36 31v10M31 36l5-5 5 5" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="upload-text">
+            <span class="upload-title">Glissez-déposez le fichier XLSX ici</span>
+            <span class="upload-sub">ou cliquez pour sélectionner (format .xlsx, .xls, .csv)</span>
+          </div>
+          <input type="file" accept=".xlsx,.xls,.csv" #structureFileInput (change)="onStructureFileSelected($event)" style="display:none"/>
+          <button class="btn btn-outline" (click)="structureFileInput.click()">Choisir un fichier</button>
+        </div>
+
+        <div class="upload-selected" *ngIf="structureSelectedFile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="3" x2="9" y2="21"/>
+          </svg>
+          <span>{{ structureSelectedFile.name }}</span>
+          <span class="file-size">{{ (structureSelectedFile.size / 1024 / 1024).toFixed(2) }} MB</span>
+          <button class="remove-file" (click)="structureSelectedFile = null">✕</button>
+        </div>
+
+        <div class="form-group">
+          <label>Campagne concernée</label>
+          <select>
+            <option *ngFor="let c of campagnes" [value]="c.id">{{ c.nom }} ({{ c.code }})</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Note / Commentaire</label>
+          <textarea rows="2" placeholder="Précisions sur cette mise à jour..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="closeStructureModal()">Annuler</button>
+        <button class="btn btn-primary" (click)="saveStructureFile()" [disabled]="!structureSelectedFile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+          </svg>
+          Importer le fichier
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: EDIT STRUCTURE ===== -->
+  <div class="modal-overlay" *ngIf="showEditStructureModal" (click)="closeEditStructureModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Modifier la Structure</h3>
+        <button class="modal-close" (click)="closeEditStructureModal()">✕</button>
+      </div>
+      <div class="modal-body" *ngIf="editingStructure">
+        <div class="form-group">
+          <label>Nom de la structure</label>
+          <input type="text" [(ngModel)]="editingStructure.nom"/>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Type</label>
+            <select [(ngModel)]="editingStructure.type">
+              <option value="EC">Espace Commercial (EC)</option>
+              <option value="CT">Centre Technologique (CT)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Gouvernorat</label>
+            <select [(ngModel)]="editingStructure.region">
+              <option *ngFor="let g of gouvernorats" [value]="g.nom">{{ g.nom }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Adresse</label>
+          <input type="text" [(ngModel)]="editingStructure.adresse"/>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Saisonniers autorisés</label>
+            <input type="number" [(ngModel)]="editingStructure.autorises" min="0"/>
+          </div>
+          <div class="form-group">
+            <label>Saisonniers recrutés</label>
+            <input type="number" [(ngModel)]="editingStructure.recrutes" min="0"/>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="closeEditStructureModal()">Annuler</button>
+        <button class="btn btn-primary" (click)="saveEditStructure()">Enregistrer</button>
       </div>
     </div>
   </div>

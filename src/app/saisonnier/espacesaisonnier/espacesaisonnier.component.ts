@@ -1,6 +1,9 @@
 import { animate, query, stagger, style, transition, trigger } from '@angular/animations';
 import { Component, OnInit } from '@angular/core';
+import { AuthService, Region } from 'src/app/services/auth.service';
+import { Campagne, CampagneService } from 'src/app/services/campagne.service';
 import { CandidatureService } from 'src/app/services/candidature.service';
+import { StructureService } from 'src/app/structure.service';
 
 
 export interface Candidature {
@@ -66,7 +69,26 @@ export class EspacesaisonnierComponent implements OnInit {
   selectedCandidature: Candidature | null = null;
   notificationCount: number = 3;
   saisonnier: any = {};
- 
+ campagneIdSelectionnee!: number;
+  activeCampagne: Campagne | null = null;
+  showCandidatureModal = false;
+  campagnes: Campagne[] = [];
+    regions: Region[] = [];
+    structures: any[] = [];
+
+      form: any = {
+    nom: '',
+    prenom: '',
+    cin: '',
+    rib: '',
+    telephone: '',
+    email: '',
+    regionId: ''
+  };
+
+  cinFile!: File;
+  diplome!: File;
+  contrat!: File;
   
  
   candidatures: Candidature[] = [
@@ -136,7 +158,7 @@ export class EspacesaisonnierComponent implements OnInit {
     { id: 4, message: 'Nouvelle campagne disponible dans votre région', date: 'Il y a 3 jours', lu: true, type: 'info' },
   ];
  
-  constructor(private candidatureService: CandidatureService) {}
+  constructor(private candidatureService: CandidatureService,private campagneService: CampagneService,private authService: AuthService,private structureService: StructureService) {}
 
   ngOnInit(): void {
   const saisonnierId = 4; // ⚠️ remplace par ID réel (login plus tard)
@@ -157,8 +179,50 @@ export class EspacesaisonnierComponent implements OnInit {
         taille: '' // optionne
       }));
     });
+    this.campagneService.getCampagnesActives()
+    .subscribe((data) => {
+      if (data && data.length > 0) {
+        this.activeCampagne = data[0]; // prendre la première active
+      }
+    });
+    this.loadCampagnes();
+      this.loadRegions();
 }
+ loadCampagnes(): void {
+    this.campagneService.getToutesCampagnes().subscribe({
+      next: (data) => this.campagnes = data,
+      error: (err) => console.error('Erreur lors du chargement des campagnes', err)
+    });
+  }
+
+
+  loadStructuresByRegion(regionId: number) {
+  this.structureService.getStructuresByRegion(regionId).subscribe({
+    next: (data) => this.structures = data,
+    error: (err) => console.error("Erreur chargement structures", err)
+  });
+}
+
+ deposerCandidature(campagneId: number) {
+    this.campagneIdSelectionnee = campagneId;
+    this.showCandidatureModal = true;
+  }
+
+  loadRegions() {
+
+  this.authService.getRegions().subscribe({
+    next: (data) => {
+      this.regions = data;
+    },
+    error: (err) => {
+      console.error("Erreur chargement régions", err);
+    }
+  });
+
+}
+
  
+
   get filteredCandidatures(): Candidature[] {
     return this.candidatures.filter(c => {
       const matchStatut = this.filterStatut === 'TOUS' || c.statut === this.filterStatut;
@@ -232,5 +296,60 @@ export class EspacesaisonnierComponent implements OnInit {
   }
  
   getInitials(): string {
-    return `${this.saisonnier.prenom[0]}${this.saisonnier.nom[0]}`;
-  }}
+  if (!this.saisonnier || !this.saisonnier.prenom || !this.saisonnier.nom) {
+    return ''; // ou '??'
+  }
+  return `${this.saisonnier.prenom[0]}${this.saisonnier.nom[0]}`;
+}
+
+  closeModal() {
+    this.showCandidatureModal = false;
+  }
+
+
+  onFileChange(event: any, type: string) {
+
+    const file = event.target.files[0];
+
+    if (type === 'cin') this.cinFile = file;
+    if (type === 'diplome') this.diplome = file;
+    if (type === 'contrat') this.contrat = file;
+
+  }
+    submitCandidature() {
+
+    if (!this.cinFile || !this.diplome || !this.contrat) {
+      alert("Tous les fichiers sont obligatoires");
+      return;
+    }
+
+    const formData = new FormData();
+
+    formData.append('nom', this.form.nom);
+    formData.append('prenom', this.form.prenom);
+    formData.append('cin', this.form.cin);
+    formData.append('rib', this.form.rib);
+    formData.append('telephone', this.form.telephone);
+    formData.append('email', this.form.email);
+    formData.append('regionId', this.form.regionId);
+    formData.append('structureId', this.form.structureId); // obligatoire
+    formData.append('campagneId', this.campagneIdSelectionnee.toString());
+
+    formData.append('cinFile', this.cinFile);
+    formData.append('diplome', this.diplome);
+    formData.append('contrat', this.contrat);
+
+    this.candidatureService.deposerCandidature(formData).subscribe({
+      next: () => {
+        alert("Candidature envoyée avec succès");
+        this.closeModal();
+      },
+      error: err => {
+        console.error(err);
+        alert("Erreur lors de l'envoi");
+      }
+    });
+  }
+  
+
+}
