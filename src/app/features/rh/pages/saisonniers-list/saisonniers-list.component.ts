@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { AffectationService } from 'src/app/services/affectation.service';
 import { AuthService, Region } from 'src/app/services/auth.service';
 import { CandidatureService } from 'src/app/services/candidature.service';
-import { StructureService } from 'src/app/structure.service';
+import { StructureDTO, StructureService } from 'src/app/structure.service';
 
 export interface Structure {
   id: number;
@@ -47,13 +47,27 @@ export class SaisonniersListComponent implements OnInit {
   regions: Region[] = []; // toutes les régions
   myRegion!: Region;      // région du RH connecté
 
-  structuresCommerciaux: Structure[] = [];
-  structuresTech: Structure[] = [];
+
+  structuresCommerciaux: StructureDTO[] = [];
+structuresTech: StructureDTO[] = [];
+structures: StructureDTO[] = [];
 
   selectedCandidatureForAffect: any = null;
   showAffectModal = false;
-  structures: Structure[] = [];
   selectedStructureId: number | null = null;
+
+  get structuresEC(): StructureDTO[] {
+  return this.structures.filter(s => s.type === 'ESPACE_COMMERCIAL');
+}
+
+get structuresCT(): StructureDTO[] {
+  return this.structures.filter(s => s.type === 'CENTRE_TECHNOLOGIQUE');
+}
+
+// ← getter pour éviter arrow function dans le template
+get toutesCompletes(): boolean {
+  return this.structures.length > 0 && this.structures.every(s => !s.disponible);
+}
 
   constructor(
     private route: ActivatedRoute,
@@ -109,7 +123,7 @@ export class SaisonniersListComponent implements OnInit {
   if (!regionId) return;
 
   this.structureService.getStructuresByRegion(regionId).subscribe({
-    next: (data: Structure[]) => {
+    next: (data: StructureDTO[]) => {
       this.structures = data;
     },
     error: err => console.error("Erreur chargement structures", err)
@@ -208,7 +222,7 @@ export class SaisonniersListComponent implements OnInit {
     this.selectedStructureId = null;
 
 this.affectationService.getStructuresByRegion(this.myRegion.id).subscribe({
-  next: (data: Structure[]) => {
+  next: (data: any[]) => {
     this.structuresCommerciaux = data.filter(s => s.type === 'ESPACE_COMMERCIAL');
     this.structuresTech = data.filter(s => s.type === 'CENTRE_TECHNOLOGIQUE');
     this.structures = [...this.structuresCommerciaux, ...this.structuresTech];

@@ -52,6 +52,20 @@
         <span>Utilisateurs</span>
       </a>
 
+      <!-- NOUVEAU: Présence & Paiement -->
+      <a class="nav-item" [class.active]="activeSection === 'presence'" (click)="setActive('presence')">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2"/>
+            <path d="M16 3l-4 4-4-4"/>
+            <line x1="12" y1="12" x2="12" y2="16"/>
+            <line x1="10" y1="14" x2="14" y2="14"/>
+          </svg>
+        </span>
+        <span>Présence & Paiement</span>
+        <span class="nav-badge secondary">{{ presenceStats.totalSaisonniers }}</span>
+      </a>
+
       <div class="nav-section-label">DOCUMENTS</div>
 
       <a class="nav-item" [class.active]="activeSection === 'memo'" (click)="setActive('memo')">
@@ -64,7 +78,7 @@
             <polyline points="10 9 9 9 8 9"/>
           </svg>
         </span>
-        <span>Mذكرة الإنتداب</span>
+        <span>مذكرة الإنتداب</span>
         <span class="nav-badge secondary">2025</span>
       </a>
 
@@ -241,7 +255,18 @@
               <td>
                 <span class="status-badge" [ngClass]="campagne.statut">{{ campagne.statutLabel }}</span>
               </td>
-              <td class="number-cell">{{ campagne.candidatures }}</td>
+              <td>
+                <span class="candidatures-count-badge" 
+                      [class.zero]="campagne.candidatures === 0"
+                      (click)="voirCandidaturesCampagne(campagne)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" 
+                      style="width:13px;height:13px">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                  </svg>
+                  {{ campagne.candidatures }}
+                </span>
+              </td>
               <td>
                 <div class="affectation-cell">
                   <span>{{ campagne.affectations }}</span>
@@ -257,14 +282,23 @@
               </td>
               <td>
                 <div class="row-actions">
-                  <button class="action-icon" title="Voir">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <button class="action-icon" title="Voir" (click)="ouvrirVoirCampagne(campagne)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
                   </button>
-                  <button class="action-icon" title="Modifier">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  <button class="action-icon" title="Modifier" (click)="ouvrirModifierCampagne(campagne)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
                   </button>
                   <button class="action-icon danger" title="Supprimer">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
                   </button>
                 </div>
               </td>
@@ -404,6 +438,235 @@
       </div>
     </section>
 
+    <!-- ===== SECTION: PRÉSENCE & PAIEMENT ===== -->
+    <section class="content-section" *ngIf="activeSection === 'presence'">
+
+      <!-- Header -->
+      <div class="section-header">
+        <h2 class="section-title">Présence & Paiement</h2>
+        <div class="action-buttons">
+          <button class="btn btn-outline" (click)="exportPresencePDF()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            Exporter PDF
+          </button>
+          <button class="btn btn-primary" (click)="exportPresenceExcel()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Exporter Excel
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Cards Présence -->
+      <div class="stats-grid presence-stats">
+        <div class="stat-card presence-card-blue">
+          <div class="stat-icon presence-icon-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <div class="stat-data">
+            <span class="stat-value">{{ presenceStats.totalSaisonniers }}</span>
+            <span class="stat-label">Saisonniers</span>
+          </div>
+        </div>
+        <div class="stat-card presence-card-green">
+          <div class="stat-icon presence-icon-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="1" x2="12" y2="23"/>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </div>
+          <div class="stat-data">
+            <span class="stat-value">{{ presenceStats.masseSalariale | number:'1.0-0' }} DT</span>
+            <span class="stat-label">Masse salariale</span>
+          </div>
+        </div>
+        <div class="stat-card presence-card-orange">
+          <div class="stat-icon presence-icon-orange">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div class="stat-data">
+            <span class="stat-value">{{ presenceStats.joursAbsence }}</span>
+            <span class="stat-label">Jours d'absence</span>
+          </div>
+        </div>
+        <div class="stat-card presence-card-purple">
+          <div class="stat-icon presence-icon-purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2"/>
+              <line x1="8" y1="21" x2="16" y2="21"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+          </div>
+          <div class="stat-data">
+            <span class="stat-value">{{ presenceStats.tauxJournalier }} DT</span>
+            <span class="stat-label">Taux journalier</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formula Bar -->
+      <div class="presence-formula-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#4A9EFF" stroke-width="2" style="width:16px;height:16px;flex-shrink:0">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span>
+          Salaire brut = {{ presenceConfig.dureeContrat }} × {{ presenceConfig.tauxJournalier }} =
+          <strong>{{ presenceConfig.dureeContrat * presenceConfig.tauxJournalier }} DT</strong>
+          &nbsp;|&nbsp;
+          Net = ({{ presenceConfig.dureeContrat }} - absences) × {{ presenceConfig.tauxJournalier }}
+        </span>
+      </div>
+
+      <!-- Config Bar -->
+      <div class="presence-config-bar">
+        <div class="config-field">
+          <label>Taux journalier (DT)</label>
+          <input type="number" [(ngModel)]="presenceConfig.tauxJournalier" (ngModelChange)="recalculerPresence()" min="1" />
+        </div>
+        <div class="config-field">
+          <label>Durée contrat (jours)</label>
+          <input type="number" [(ngModel)]="presenceConfig.dureeContrat" (ngModelChange)="recalculerPresence()" min="1" />
+        </div>
+        <div class="config-field">
+          <label>Date de prise de fonction</label>
+          <input type="date" [(ngModel)]="presenceConfig.datePriseFonction" />
+        </div>
+        <div class="config-field">
+          <label>Campagne</label>
+          <select [(ngModel)]="presenceConfig.campagneId" (ngModelChange)="onPresenceCampagneChange()">
+            <option *ngFor="let c of campagnes" [value]="c.id">{{ c.nom }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Search & Filters -->
+      <div class="table-card">
+        <div class="presence-table-toolbar">
+          <div class="search-box presence-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input type="text" placeholder="Rechercher un saisonnier..." [(ngModel)]="presenceSearchQuery" (ngModelChange)="filterPresence()" />
+          </div>
+          <div class="presence-filter-tabs">
+            <button class="filter-tab" [class.active]="presenceFilter === 'tous'" (click)="setPresenceFilter('tous')">Tous</button>
+            <button class="filter-tab" [class.active]="presenceFilter === 'payes'" (click)="setPresenceFilter('payes')">Payés</button>
+            <button class="filter-tab" [class.active]="presenceFilter === 'impayes'" (click)="setPresenceFilter('impayes')">Impayés</button>
+          </div>
+        </div>
+
+        <!-- Présence Table -->
+        <div class="presence-table-wrap">
+          <table class="data-table presence-table">
+            <thead>
+              <tr>
+                <th class="col-num">عد</th>
+                <th class="col-name">الاسم واللقب المرتب</th>
+                <th class="col-cin">رقم بطاقة التعريف</th>
+                <th class="col-date">تاريخ المباشرة</th>
+                <th class="col-duree">مدة العمل</th>
+                <th class="col-absences">الغيابات</th>
+                <th class="col-montant">المبلغ الصافي (DT)</th>
+                <th class="col-rib">رقم الحساب</th>
+                <th class="col-statut">الحالة</th>
+                <th class="col-actions">إجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of filteredPresenceRows; let i = index" class="table-row presence-row">
+                <td class="number-cell">{{ i + 1 }}</td>
+                <td>
+                  <span class="name-primary">{{ row.nom }}</span>
+                </td>
+                <td class="mono-cell">{{ row.cin }}</td>
+                <td>
+                  <input type="date"
+                         class="presence-date-input"
+                         [(ngModel)]="row.dateMbacharaa"
+                         (ngModelChange)="onPresenceRowChange(row)" />
+                </td>
+                <td>
+                  <span class="duree-badge">{{ row.dureeContrat }}</span>
+                </td>
+                <td>
+                  <button class="absence-btn"
+                          [class.has-absences]="row.absences > 0"
+                          (click)="openAbsenceModal(row)">
+                    {{ row.absences }}
+                  </button>
+                </td>
+                <td>
+                  <span class="montant-value">{{ row.montantNet | number:'1.3-3' }} DT</span>
+                </td>
+                <td>
+                  <input type="text"
+                         class="rib-input"
+                         placeholder="RIB / N° compte..."
+                         [(ngModel)]="row.rib"
+                         (ngModelChange)="onPresenceRowChange(row)" />
+                </td>
+                <td>
+                  <span class="paiement-badge"
+                        [class.paye]="row.statut === 'paye'"
+                        [class.impaye]="row.statut === 'impaye'"
+                        (click)="togglePaiementStatut(row)">
+                    <span class="badge-dot"></span>
+                    {{ row.statut === 'paye' ? 'Payé' : 'Impayé' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="row-actions">
+                    <button class="action-icon" title="Marquer payé" (click)="marquerPaye(row)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    </button>
+                    <button class="action-icon danger" title="Marquer impayé" (click)="marquerImpaye(row)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="15" y1="9" x2="9" y2="15"/>
+                        <line x1="9" y1="9" x2="15" y2="15"/>
+                      </svg>
+                    </button>
+                    <button class="action-icon" title="Voir détail" (click)="voirDetailSaisonnier(row)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+            <!-- Footer totals -->
+            <tfoot>
+              <tr class="presence-totals-row">
+                <td colspan="3" class="totals-label">المجموع الإجمالي</td>
+                <td></td>
+                <td><strong>{{ presenceTotals.totalJours }}</strong></td>
+                <td><strong>{{ presenceTotals.totalAbsences }}</strong></td>
+                <td><strong class="total-montant">{{ presenceTotals.totalMontant | number:'1.3-3' }} DT</strong></td>
+                <td colspan="3"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <!-- ===== SECTION: MEMO INTIDAB ===== -->
     <section class="content-section" *ngIf="activeSection === 'memo'">
       <div class="section-header">
@@ -420,7 +683,6 @@
       </div>
 
       <div class="memo-layout">
-        <!-- Left Panel: Metadata -->
         <div class="memo-sidebar-panel">
           <div class="memo-doc-icon">
             <svg viewBox="0 0 48 48" fill="none">
@@ -483,74 +745,63 @@
           </div>
         </div>
 
-        <!-- Right Panel: PDF Viewer -->
-<!-- Right Panel: PDF Viewer -->
-<div class="memo-viewer-panel">
-  
+        <div class="memo-viewer-panel">
+          <div class="memo-viewer-content">
+            <div class="memo-loading" *ngIf="isLoadingPdf">
+              <div class="memo-spinner"></div>
+              <span>Chargement du document...</span>
+            </div>
 
-  <div class="memo-viewer-content">
+            <ng-container *ngIf="!isLoadingPdf">
+              <div class="memo-pdf-frame-wrap" *ngIf="memoDocument.hasFile; else noPdf">
+                <object
+                  [attr.data]="memoDocument.fileUrl"
+                  type="application/pdf"
+                  class="memo-pdf-object">
+                  <div class="pdf-fallback-msg">
+                    <p>Votre navigateur ne supporte pas l'affichage PDF.</p>
+                    <a [href]="memoDocument.rawUrl" download class="btn btn-primary">Télécharger</a>
+                  </div>
+                </object>
 
-    <!-- Chargement -->
-    <div class="memo-loading" *ngIf="isLoadingPdf">
-      <div class="memo-spinner"></div>
-      <span>Chargement du document...</span>
-    </div>
+                <div class="memo-upload-status" *ngIf="isUploading || uploadSuccess || uploadError">
+                  <span class="status-uploading" *ngIf="isUploading">⏳ Sauvegarde en cours...</span>
+                  <span class="status-success"  *ngIf="uploadSuccess">✅ Document sauvegardé</span>
+                  <span class="status-error"    *ngIf="uploadError">❌ {{ uploadError }}</span>
+                </div>
+              </div>
 
-    <ng-container *ngIf="!isLoadingPdf">
-
-      <!-- PDF chargé -->
-      <div class="memo-pdf-frame-wrap" *ngIf="memoDocument.hasFile; else noPdf">
-<object
-  [attr.data]="memoDocument.fileUrl"
-  type="application/pdf"
-  class="memo-pdf-object">
-  <div class="pdf-fallback-msg">
-    <p>Votre navigateur ne supporte pas l'affichage PDF.</p>
-    <a [href]="memoDocument.rawUrl" download class="btn btn-primary">Télécharger</a>
-  </div>
-</object>
-
-        <!-- Statut upload -->
-        <div class="memo-upload-status" *ngIf="isUploading || uploadSuccess || uploadError">
-          <span class="status-uploading" *ngIf="isUploading">⏳ Sauvegarde en cours...</span>
-          <span class="status-success"  *ngIf="uploadSuccess">✅ Document sauvegardé</span>
-          <span class="status-error"    *ngIf="uploadError">❌ {{ uploadError }}</span>
-        </div>
-      </div>
-
-      <!-- Aucun PDF -->
-      <ng-template #noPdf>
-        <div class="memo-empty-state"
-             (dragover)="$event.preventDefault(); memoDragOver = true"
-             (dragleave)="memoDragOver = false"
-             (drop)="onMemoDrop($event)"
-             [class.dragover]="memoDragOver">
-          <div class="memo-empty-icon">
-            <svg viewBox="0 0 64 64" fill="none">
-              <rect x="8" y="4" width="36" height="48" rx="4" fill="#D6F0FF" stroke="#4BBEF5" stroke-width="1.5"/>
-              <path d="M36 4v12h12" stroke="#4BBEF5" stroke-width="1.5" fill="none"/>
-              <rect x="36" y="16" width="12" height="36" rx="2" fill="#4BBEF5" opacity="0.15"/>
-              <line x1="16" y1="28" x2="36" y2="28" stroke="#4BBEF5" stroke-width="1.2" stroke-linecap="round"/>
-              <line x1="16" y1="34" x2="36" y2="34" stroke="#4BBEF5" stroke-width="1.2" stroke-linecap="round"/>
-              <line x1="16" y1="40" x2="28" y2="40" stroke="#4BBEF5" stroke-width="1.2" stroke-linecap="round"/>
-            </svg>
+              <ng-template #noPdf>
+                <div class="memo-empty-state"
+                     (dragover)="$event.preventDefault(); memoDragOver = true"
+                     (dragleave)="memoDragOver = false"
+                     (drop)="onMemoDrop($event)"
+                     [class.dragover]="memoDragOver">
+                  <div class="memo-empty-icon">
+                    <svg viewBox="0 0 64 64" fill="none">
+                      <rect x="8" y="4" width="36" height="48" rx="4" fill="#D6F0FF" stroke="#4BBEF5" stroke-width="1.5"/>
+                      <path d="M36 4v12h12" stroke="#4BBEF5" stroke-width="1.5" fill="none"/>
+                      <rect x="36" y="16" width="12" height="36" rx="2" fill="#4BBEF5" opacity="0.15"/>
+                      <line x1="16" y1="28" x2="36" y2="28" stroke="#4BBEF5" stroke-width="1.2" stroke-linecap="round"/>
+                      <line x1="16" y1="34" x2="36" y2="34" stroke="#4BBEF5" stroke-width="1.2" stroke-linecap="round"/>
+                      <line x1="16" y1="40" x2="28" y2="40" stroke="#4BBEF5" stroke-width="1.2" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+                  <p class="memo-empty-title">Aucun document chargé</p>
+                  <p class="memo-empty-sub">Glissez-déposez ou importez le PDF de la مذكرة الإنتداب</p>
+                  <label class="btn btn-primary" style="cursor:pointer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                    </svg>
+                    Charger le PDF
+                    <input type="file" accept=".pdf" (change)="onMemoFileSelected($event)" style="display:none"/>
+                  </label>
+                  <span style="font-size:11px; color:var(--text-muted)">PDF uniquement — max 20 Mo</span>
+                </div>
+              </ng-template>
+            </ng-container>
           </div>
-          <p class="memo-empty-title">Aucun document chargé</p>
-          <p class="memo-empty-sub">Glissez-déposez ou importez le PDF de la مذكرة الإنتداب</p>
-          <label class="btn btn-primary" style="cursor:pointer">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
-            </svg>
-            Charger le PDF
-            <input type="file" accept=".pdf" (change)="onMemoFileSelected($event)" style="display:none"/>
-          </label>
-          <span style="font-size:11px; color:var(--text-muted)">PDF uniquement — max 20 Mo</span>
         </div>
-      </ng-template>
-
-    </ng-container>
-  </div>
-</div>
       </div>
     </section>
 
@@ -575,7 +826,6 @@
         </div>
       </div>
 
-      <!-- Structures Stats -->
       <div class="structures-stats-row">
         <div class="struct-stat-card">
           <span class="struct-stat-num">{{ structuresStats.gouvernorats }}</span>
@@ -604,7 +854,6 @@
       </div>
 
       <div class="structures-layout">
-        <!-- Left: Sidebar Filters -->
         <div class="structures-filter-panel">
           <div class="struct-filter-section">
             <div class="struct-filter-icon">
@@ -652,7 +901,6 @@
           </div>
         </div>
 
-        <!-- Right: Table -->
         <div class="structures-table-area">
           <div class="table-card">
             <div class="struct-table-header">
@@ -737,8 +985,20 @@
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label>Nom de la campagne *</label>
-          <input type="text" placeholder="Ex: Recrutement Cadres 2025" [(ngModel)]="newCampagne.nom"/>
+          <label>Année de la campagne *</label>
+          <input type="number" 
+                placeholder="Ex: 2025" 
+                [(ngModel)]="newCampagneAnnee"
+                (ngModelChange)="onAnneeChange()"
+                min="2020" max="2099" />
+        </div>
+
+        <div class="form-group">
+          <label>Nom généré automatiquement</label>
+          <input type="text" 
+                [value]="newCampagne.nom" 
+                readonly 
+                style="background: var(--surface-2); color: var(--text-muted); cursor: not-allowed;" />
         </div>
         <div class="form-group">
           <label>Code campagne</label>
@@ -777,7 +1037,60 @@
       </div>
     </div>
   </div>
-  
+
+  <!-- ===== MODAL: ABSENCES ===== -->
+  <div class="modal-overlay" *ngIf="showAbsenceModal" (click)="closeAbsenceModal()">
+    <div class="modal modal-absence" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Gérer les absences — {{ editingPresenceRow?.nom }}</h3>
+        <button class="modal-close" (click)="closeAbsenceModal()">✕</button>
+      </div>
+      <div class="modal-body" *ngIf="editingPresenceRow">
+        <div class="absence-summary">
+          <div class="absence-summary-item">
+            <span class="absence-key">Durée contrat</span>
+            <span class="absence-val">{{ editingPresenceRow.dureeContrat }} jours</span>
+          </div>
+          <div class="absence-summary-item">
+            <span class="absence-key">Taux journalier</span>
+            <span class="absence-val">{{ presenceConfig.tauxJournalier }} DT</span>
+          </div>
+          <div class="absence-summary-item">
+            <span class="absence-key">Salaire brut</span>
+            <span class="absence-val">{{ editingPresenceRow.dureeContrat * presenceConfig.tauxJournalier }} DT</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Nombre de jours d'absence</label>
+          <div class="absence-counter">
+            <button class="counter-btn" (click)="decrementAbsence()">−</button>
+            <input type="number"
+                   [(ngModel)]="editingPresenceRow.absences"
+                   (ngModelChange)="recalculerLigne(editingPresenceRow)"
+                   min="0"
+                   [max]="editingPresenceRow.dureeContrat" />
+            <button class="counter-btn" (click)="incrementAbsence()">+</button>
+          </div>
+        </div>
+
+        <div class="absence-calc-preview">
+          <div class="calc-row">
+            <span>Jours travaillés</span>
+            <strong>{{ editingPresenceRow.dureeContrat - editingPresenceRow.absences }}</strong>
+          </div>
+          <div class="calc-row highlight">
+            <span>Montant net à payer</span>
+            <strong>{{ (editingPresenceRow.dureeContrat - editingPresenceRow.absences) * presenceConfig.tauxJournalier | number:'1.3-3' }} DT</strong>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="closeAbsenceModal()">Annuler</button>
+        <button class="btn btn-primary" (click)="saveAbsence()">Enregistrer</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ===== MODAL: UPLOAD MEMO ===== -->
   <div class="modal-overlay" *ngIf="showMemoUploadModal" (click)="closeMemoModal()">
@@ -955,5 +1268,270 @@
       </div>
     </div>
   </div>
+
+  <!-- ===== MODAL: AVERTISSEMENT CAMPAGNE ACTIVE ===== -->
+<div class="modal-overlay" *ngIf="showActiveCampagneWarning" (click)="fermerWarning()">
+  <div class="modal modal-warning" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>⚠️ Campagne active existante</h3>
+      <button class="modal-close" (click)="fermerWarning()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Icône alerte -->
+      <div class="warning-icon-wrap">
+        <svg viewBox="0 0 64 64" fill="none">
+          <circle cx="32" cy="32" r="30" fill="rgba(245,158,11,0.12)" stroke="#F59E0B" stroke-width="2"/>
+          <path d="M32 18v18" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="32" cy="44" r="2.5" fill="#F59E0B"/>
+        </svg>
+      </div>
+
+      <!-- Message principal -->
+      <p class="warning-title">Une campagne est déjà active</p>
+      <p class="warning-message">
+        La campagne <strong>« {{ activeCampagneNom }} »</strong> est actuellement active.
+        Il ne peut y avoir qu'une seule campagne active à la fois.
+      </p>
+
+      <!-- Options -->
+      <div class="warning-options">
+        <div class="warning-option" (click)="cloturerEtActiver()">
+          <div class="warning-option-icon danger">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </div>
+          <div class="warning-option-text">
+            <strong>Clôturer et activer</strong>
+            <span>Clôturer la campagne active et activer la nouvelle</span>
+          </div>
+        </div>
+
+        <div class="warning-option" (click)="saveCampagne(false); fermerWarning()">
+          <div class="warning-option-icon info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+              <polyline points="17 21 17 13 7 13 7 21"/>
+            </svg>
+          </div>
+          <div class="warning-option-text">
+            <strong>Enregistrer en brouillon</strong>
+            <span>Créer la campagne sans l'activer</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="fermerWarning()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: VOIR CAMPAGNE ===== -->
+<div class="modal-overlay" *ngIf="showViewModal" (click)="fermerVoirModal()">
+  <div class="modal modal-view" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>
+        <span class="view-modal-dot" [ngClass]="viewingCampagne?.statut"></span>
+        {{ viewingCampagne?.nom }}
+      </h3>
+      <button class="modal-close" (click)="fermerVoirModal()">✕</button>
+    </div>
+    <div class="modal-body" *ngIf="viewingCampagne">
+
+      <!-- Statut + Code -->
+      <div class="view-top-row">
+        <span class="status-badge" [ngClass]="viewingCampagne.statut">
+          {{ viewingCampagne.statutLabel }}
+        </span>
+        <span class="view-code">{{ viewingCampagne.code }}</span>
+      </div>
+
+      <!-- Infos principales -->
+      <div class="view-info-grid">
+        <div class="view-info-card">
+          <div class="view-info-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <div>
+            <span class="view-info-label">Date de début</span>
+            <span class="view-info-val">{{ viewingCampagne.dateDebut }}</span>
+          </div>
+        </div>
+
+        <div class="view-info-card">
+          <div class="view-info-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <div>
+            <span class="view-info-label">Date de fin</span>
+            <span class="view-info-val">{{ viewingCampagne.dateFin }}</span>
+          </div>
+        </div>
+
+        <div class="view-info-card">
+          <div class="view-info-icon blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div>
+            <span class="view-info-label">Candidatures</span>
+            <span class="view-info-val highlight-blue">{{ viewingCampagne.candidatures }}</span>
+          </div>
+        </div>
+
+        <div class="view-info-card">
+          <div class="view-info-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div>
+            <span class="view-info-label">Affectations</span>
+            <span class="view-info-val highlight-green">{{ viewingCampagne.affectations }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="view-description" *ngIf="viewingCampagne.description">
+        <span class="view-desc-label">Description</span>
+        <p class="view-desc-text">{{ viewingCampagne.description }}</p>
+      </div>
+
+      <!-- Candidatures list -->
+      <div class="view-candidatures-section" *ngIf="viewingCampagneCandidatures.length > 0">
+        <div class="view-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               style="width:16px;height:16px">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+          </svg>
+          Candidatures ({{ viewingCampagneCandidatures.length }})
+        </div>
+        <div class="view-cand-list">
+          <div class="view-cand-item" *ngFor="let cand of viewingCampagneCandidatures">
+            <div class="user-avatar-sm">
+              {{ cand.saisonnier.nom[0] }}{{ cand.saisonnier.prenom[0] }}
+            </div>
+            <div class="view-cand-info">
+              <span class="name-primary">{{ cand.saisonnier.nom }} {{ cand.saisonnier.prenom }}</span>
+              <span class="name-secondary">{{ cand.saisonnier.cin }} — {{ cand.saisonnier.region.nom }}</span>
+            </div>
+            <span class="status-badge" [ngClass]="cand.statut.toLowerCase()">{{ cand.statut }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="view-empty-cand" *ngIf="viewingCampagneCandidatures.length === 0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             style="width:32px;height:32px;color:var(--text-muted)">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+        </svg>
+        <span>Aucune candidature pour cette campagne</span>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="fermerVoirModal()">Fermer</button>
+      <button class="btn btn-primary" (click)="fermerVoirModal(); ouvrirModifierCampagne(viewingCampagne!)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        Modifier
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: MODIFIER CAMPAGNE ===== -->
+<div class="modal-overlay" *ngIf="showEditModal" (click)="fermerEditModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Modifier la Campagne</h3>
+      <button class="modal-close" (click)="fermerEditModal()">✕</button>
+    </div>
+    <div class="modal-body" *ngIf="editingCampagne">
+
+      <div class="form-group">
+        <label>Nom de la campagne *</label>
+        <input type="text" [(ngModel)]="editingCampagne.nom" />
+      </div>
+
+      <div class="form-group">
+        <label>Code campagne</label>
+        <input type="text" [(ngModel)]="editingCampagne.code" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date de début *</label>
+          <input type="date" [(ngModel)]="editingCampagne.dateDebut" />
+        </div>
+        <div class="form-group">
+          <label>Date de fin *</label>
+          <input type="date" [(ngModel)]="editingCampagne.dateFin" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea rows="3" [(ngModel)]="editingCampagne.description"></textarea>
+      </div>
+
+      <!-- Changer statut -->
+      <div class="form-group">
+        <label>Statut</label>
+        <div class="statut-selector">
+          <div class="statut-option"
+               [class.selected]="editingCampagne.statut === 'brouillon'"
+               (click)="changerStatutCampagne('BROUILLON')">
+            <span class="campagne-dot brouillon"></span>
+            Brouillon
+          </div>
+          <div class="statut-option"
+               [class.selected]="editingCampagne.statut === 'active'"
+               (click)="changerStatutCampagne('ACTIVE')">
+            <span class="campagne-dot active"></span>
+            Active
+          </div>
+          <div class="statut-option"
+               [class.selected]="editingCampagne.statut === 'termine'"
+               (click)="changerStatutCampagne('CLOTUREE')">
+            <span class="campagne-dot termine"></span>
+            Clôturée
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="fermerEditModal()">Annuler</button>
+      <button class="btn btn-primary" (click)="sauvegarderModificationCampagne()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+        </svg>
+        Enregistrer
+      </button>
+    </div>
+  </div>
+</div>
 
 </div>

@@ -12,6 +12,7 @@ import { HomeGeneralComponent } from './pages/home-general/home-general.componen
 import { EspacesaisonnierComponent } from './saisonnier/espacesaisonnier/espacesaisonnier.component';
 import { DocumentsComponent } from './features/rh/pages/documents/documents.component';
 import { PresencePaiementComponent } from './features/rh/pages/presence-paiement/presence-paiement.component';
+import { LoginAdminComponent } from './features/admin/pages/login-admin/login-admin.component';
 
 const routes: Routes = [
 
@@ -38,6 +39,7 @@ const routes: Routes = [
   { path: 'saisonniers/validation', component: SaisonniersValidationComponent },
   {path: 'admin', component: HomeAdminComponent},
   {path: 'espace-saisonnier', component: EspacesaisonnierComponent},
+  { path: 'admin/login', component: LoginAdminComponent },
 
   { path: '', redirectTo: '/home-ge', pathMatch: 'full' }
 ];

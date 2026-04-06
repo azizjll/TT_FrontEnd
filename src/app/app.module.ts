@@ -22,6 +22,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DocumentsComponent } from './features/rh/pages/documents/documents.component';
 import { PresencePaiementComponent } from './features/rh/pages/presence-paiement/presence-paiement.component';
 import { SafePipe } from './shared/safe.pipe';
+import { LoginAdminComponent } from './features/admin/pages/login-admin/login-admin.component';
 
 @NgModule({
   declarations: [
@@ -38,6 +39,7 @@ import { SafePipe } from './shared/safe.pipe';
     EspacesaisonnierComponent,
     HeroSliderComponent,
     SafePipe,
+    LoginAdminComponent,
     
     
   ],

@@ -1,0 +1,635 @@
+<!-- login-admin.component.html -->
+<div class="login-wrapper">
+
+  <!-- ═══ PANNEAU GAUCHE — Visuel animé ═══ -->
+  <aside class="login-visual">
+    <div class="grid-overlay"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="visual-content">
+      <div class="logo-wrap">
+        <div class="logo-gem">
+          <svg viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="24" r="22" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+            <path d="M14 24 L24 14 L34 24 L24 34 Z" fill="rgba(255,255,255,0.9)"/>
+            <circle cx="24" cy="24" r="5" fill="#1E8BD4"/>
+            <path d="M24 14L24 19 M24 29L24 34 M14 24L19 24 M29 24L34 24"
+                  stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <span class="logo-name">GovPilot</span>
+          <span class="logo-tagline">Portail Administratif</span>
+        </div>
+      </div>
+
+      <!-- Headline qui change selon la vue -->
+      <div class="visual-headline">
+        <h2 class="headline-line" [class.fade-change]="isAnimating">
+          {{ currentView === 'login'  ? 'Pilotage'    :
+             currentView === 'signup' ? 'Rejoignez'   :
+             currentView === 'forgot' ? 'Récupérez'   :
+             currentView === 'reset'  ? 'Sécurisez'   : 'Vérifiez' }}
+        </h2>
+        <h2 class="headline-line accent" [class.fade-change]="isAnimating">
+          {{ currentView === 'login'  ? 'Intelligent'  :
+             currentView === 'signup' ? 'l\'équipe'    :
+             currentView === 'forgot' ? 'votre accès'  :
+             currentView === 'reset'  ? 'votre compte' : 'votre identité' }}
+        </h2>
+        <h2 class="headline-line" [class.fade-change]="isAnimating">
+          {{ currentView === 'login'  ? 'des Campagnes' :
+             currentView === 'signup' ? 'GovPilot'      :
+             currentView === 'forgot' ? 'rapidement'    :
+             currentView === 'reset'  ? 'en toute sécurité' : 'par e-mail' }}
+        </h2>
+      </div>
+
+      <p class="visual-desc">
+        Gérez les recrutements saisonniers, suivez les candidatures et pilotez les structures régionales depuis un portail unique.
+      </p>
+
+      <!-- Indicateurs de vue -->
+      <div class="view-indicators">
+        <button class="view-dot" [class.active]="currentView==='login'"  (click)="switchView('login')"  title="Connexion"></button>
+        <button class="view-dot" [class.active]="currentView==='signup'" (click)="switchView('signup')" title="Inscription"></button>
+        <button class="view-dot" [class.active]="currentView==='forgot'" (click)="switchView('forgot')" title="Mot de passe"></button>
+        <button class="view-dot" [class.active]="currentView==='verify'" (click)="switchView('verify')" title="Vérification"></button>
+      </div>
+
+      <!-- Stats -->
+      <div class="floating-stats">
+        <div class="fstat"><span class="fstat-num">17</span><span class="fstat-lbl">Gouvernorats</span></div>
+        <div class="fstat-sep"></div>
+        <div class="fstat"><span class="fstat-num">87</span><span class="fstat-lbl">Structures</span></div>
+        <div class="fstat-sep"></div>
+        <div class="fstat"><span class="fstat-num">342</span><span class="fstat-lbl">Candidatures</span></div>
+      </div>
+
+      <div class="security-badge">
+        <svg viewBox="0 0 20 20" fill="none">
+          <path d="M10 2L3 5v5c0 4.4 3 8.5 7 9.5C14 18.5 17 14.4 17 10V5l-7-3z"
+                fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.5)" stroke-width="1.2"/>
+          <polyline points="7 10 9 12 13 8" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span>Connexion sécurisée SSL</span>
+      </div>
+    </div>
+
+    <div class="visual-waves">
+      <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <path d="M0,60 C200,100 400,20 600,60 C800,100 1000,20 1200,60 L1200,120 L0,120 Z" fill="rgba(255,255,255,0.04)"/>
+        <path d="M0,80 C200,40 400,100 600,80 C800,60 1000,100 1200,80 L1200,120 L0,120 Z" fill="rgba(255,255,255,0.03)"/>
+      </svg>
+    </div>
+  </aside>
+
+  <!-- ═══ PANNEAU DROIT — Formulaires ═══ -->
+  <main class="login-form-panel">
+
+    <!-- Top bar -->
+    <div class="top-bar">
+      <div class="breadcrumb-nav">
+        <button class="crumb" [class.active]="currentView==='login'"  (click)="switchView('login')">Connexion</button>
+        <span class="crumb-sep">·</span>
+        <button class="crumb" [class.active]="currentView==='signup'" (click)="switchView('signup')">Inscription</button>
+      </div>
+      <div class="lang-switch">
+        <button class="lang-btn active">FR</button>
+        <button class="lang-btn">AR</button>
+      </div>
+    </div>
+
+    <!-- Conteneur de toutes les vues -->
+    <div class="form-center">
+
+      <!-- ─── En-tête commun ─── -->
+      <div class="form-header" [class.slide-out]="isAnimating">
+        <div class="form-avatar" [ngClass]="'avatar-' + currentView">
+          <!-- Login icon -->
+          <svg *ngIf="currentView==='login'" viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="15" r="7" fill="#1E8BD4" opacity="0.9"/>
+            <path d="M6 38c0-8 6-14 14-14s14 6 14 14" stroke="#1E8BD4" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.6"/>
+          </svg>
+          <!-- Signup icon -->
+          <svg *ngIf="currentView==='signup'" viewBox="0 0 40 40" fill="none">
+            <circle cx="16" cy="14" r="6" fill="#10B981" opacity="0.8"/>
+            <path d="M4 36c0-7 5.4-12 12-12s12 5 12 12" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.6"/>
+            <path d="M32 10v8M28 14h8" stroke="#10B981" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          <!-- Forgot icon -->
+          <svg *ngIf="currentView==='forgot'" viewBox="0 0 40 40" fill="none">
+            <rect x="8" y="18" width="24" height="17" rx="2" fill="#F59E0B" opacity="0.2" stroke="#F59E0B" stroke-width="1.8"/>
+            <path d="M13 18v-5a7 7 0 1 1 14 0v5" stroke="#F59E0B" stroke-width="2" fill="none"/>
+            <circle cx="20" cy="27" r="2.5" fill="#F59E0B"/>
+            <line x1="20" y1="29.5" x2="20" y2="32" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <!-- Reset icon -->
+          <svg *ngIf="currentView==='reset'" viewBox="0 0 40 40" fill="none">
+            <path d="M20 8 A12 12 0 1 0 32 20" stroke="#8B5CF6" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+            <path d="M32 8v12h-12" stroke="#8B5CF6" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="20" cy="20" r="5" fill="#8B5CF6" opacity="0.25"/>
+            <circle cx="20" cy="20" r="2" fill="#8B5CF6"/>
+          </svg>
+          <!-- Verify icon -->
+          <svg *ngIf="currentView==='verify'" viewBox="0 0 40 40" fill="none">
+            <path d="M20 4L5 10v10c0 9 6.5 17 15 18.5C29.5 37 36 29 36 20V10L20 4z"
+                  fill="rgba(14,165,233,0.15)" stroke="#0EA5E9" stroke-width="1.8"/>
+            <polyline *ngIf="verifyResult!=='error'" points="13 20 18 25 27 16"
+                      stroke="#0EA5E9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <line *ngIf="verifyResult==='error'" x1="14" y1="14" x2="26" y2="26" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
+            <line *ngIf="verifyResult==='error'" x1="26" y1="14" x2="14" y2="26" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <h1 class="form-title">{{ viewTitle }}</h1>
+        <p class="form-subtitle">{{ viewSubtitle }}</p>
+      </div>
+
+      <!-- ─── Message succès global ─── -->
+      <div class="alert-success" *ngIf="globalSuccess">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M10 2a8 8 0 1 0 0 16A8 8 0 0 0 10 2z"/>
+          <polyline points="7 10 9 12 13 8"/>
+        </svg>
+        {{ globalSuccess }}
+      </div>
+
+      <!-- ─── Message erreur global ─── -->
+      <div class="alert-error" *ngIf="globalError">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="10" cy="10" r="8"/>
+          <line x1="10" y1="6" x2="10" y2="10"/>
+          <circle cx="10" cy="14" r="0.5" fill="currentColor"/>
+        </svg>
+        {{ globalError }}
+      </div>
+
+      <!-- ════════════════════════════════════════════════════════ -->
+      <!-- VUE LOGIN                                               -->
+      <!-- ════════════════════════════════════════════════════════ -->
+      <form class="auth-form view-form" *ngIf="currentView==='login'"
+            [class.slide-in]="!isAnimating" [class.slide-out]="isAnimating"
+            (ngSubmit)="onLogin()" novalidate>
+
+        <div class="field-group" [class.filled]="loginData.email" [class.has-error]="errors['email']">
+          <div class="field-wrap">
+            <span class="field-icon">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M2.5 6.5l7.5 5 7.5-5M3 4h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/>
+              </svg>
+            </span>
+            <input type="email" id="l-email" name="email" class="field-input"
+                   [(ngModel)]="loginData.email" (ngModelChange)="clearField('email')"
+                   placeholder=" " autocomplete="email"/>
+            <label class="field-label" for="l-email">Adresse e-mail</label>
+          </div>
+          <span class="field-error" *ngIf="errors['email']">{{ errors['email'] }}</span>
+        </div>
+
+        <div class="field-group" [class.filled]="loginData.password" [class.has-error]="errors['password']">
+          <div class="field-wrap">
+            <span class="field-icon">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="4" y="9" width="12" height="9" rx="1.5"/><path d="M7 9V6.5a3 3 0 1 1 6 0V9"/>
+              </svg>
+            </span>
+            <input [type]="showLoginPassword ? 'text' : 'password'" id="l-pwd" name="password"
+                   class="field-input" [(ngModel)]="loginData.password"
+                   (ngModelChange)="clearField('password')" placeholder=" " autocomplete="current-password"/>
+            <label class="field-label" for="l-pwd">Mot de passe</label>
+            <button type="button" class="eye-btn" (click)="showLoginPassword = !showLoginPassword">
+              <svg *ngIf="!showLoginPassword" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M1 10s3.5-7 9-7 9 7 9 7-3.5 7-9 7-9-7-9-7z"/><circle cx="10" cy="10" r="3"/>
+              </svg>
+              <svg *ngIf="showLoginPassword" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M2 2l16 16M7.5 7.6A3 3 0 0 0 10 13a3 3 0 0 0 2.4-1.2M5 5c-1.8 1.5-3 3.2-3.5 4 0 0 3.5 7 8.5 7 1.5 0 2.8-.4 4-1"/>
+                <path d="M9 4.1A8.6 8.6 0 0 1 10 4c5 0 8.5 6 8.5 6-.4.7-1 1.6-1.8 2.5"/>
+              </svg>
+            </button>
+          </div>
+          <span class="field-error" *ngIf="errors['password']">{{ errors['password'] }}</span>
+        </div>
+
+        <div class="form-options">
+          <label class="remember-me">
+            <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe"/>
+            <span class="checkbox-custom"></span>
+            <span>Se souvenir de moi</span>
+          </label>
+          <button type="button" class="link-btn" (click)="switchView('forgot')">Mot de passe oublié ?</button>
+        </div>
+
+        <button type="submit" class="submit-btn btn-blue" [class.loading]="isLoading" [disabled]="isLoading">
+          <span class="btn-content" *ngIf="!isLoading">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h14M10 3l7 7-7 7"/></svg>
+            Se connecter
+          </span>
+          <span class="btn-loader" *ngIf="isLoading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+        </button>
+
+        <div class="form-switch">
+          Pas encore de compte ?
+          <button type="button" class="link-btn strong" (click)="switchView('signup')">Créer un compte</button>
+        </div>
+      </form>
+
+      <!-- ════════════════════════════════════════════════════════ -->
+      <!-- VUE SIGNUP                                              -->
+      <!-- ════════════════════════════════════════════════════════ -->
+      <form class="auth-form view-form signup-form" *ngIf="currentView==='signup'"
+            [class.slide-in]="!isAnimating" [class.slide-out]="isAnimating"
+            (ngSubmit)="onSignup()" novalidate>
+
+        <div class="field-row">
+          <div class="field-group" [class.filled]="signupData.nom" [class.has-error]="errors['nom']">
+            <div class="field-wrap">
+              <span class="field-icon">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <circle cx="10" cy="7" r="4"/><path d="M2 18c0-5 3.5-8 8-8s8 3 8 8"/>
+                </svg>
+              </span>
+              <input type="text" id="s-nom" name="nom" class="field-input"
+                     [(ngModel)]="signupData.nom" (ngModelChange)="clearField('nom')" placeholder=" "/>
+              <label class="field-label" for="s-nom">Nom</label>
+            </div>
+            <span class="field-error" *ngIf="errors['nom']">{{ errors['nom'] }}</span>
+          </div>
+
+          <div class="field-group" [class.filled]="signupData.prenom" [class.has-error]="errors['prenom']">
+            <div class="field-wrap">
+              <span class="field-icon">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <circle cx="10" cy="7" r="4"/><path d="M2 18c0-5 3.5-8 8-8s8 3 8 8"/>
+                </svg>
+              </span>
+              <input type="text" id="s-prenom" name="prenom" class="field-input"
+                     [(ngModel)]="signupData.prenom" (ngModelChange)="clearField('prenom')" placeholder=" "/>
+              <label class="field-label" for="s-prenom">Prénom</label>
+            </div>
+            <span class="field-error" *ngIf="errors['prenom']">{{ errors['prenom'] }}</span>
+          </div>
+        </div>
+
+        <div class="field-group" [class.filled]="signupData.email" [class.has-error]="errors['signupEmail']">
+          <div class="field-wrap">
+            <span class="field-icon">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M2.5 6.5l7.5 5 7.5-5M3 4h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/>
+              </svg>
+            </span>
+            <input type="email" id="s-email" name="signupEmail" class="field-input"
+                   [(ngModel)]="signupData.email" (ngModelChange)="clearField('signupEmail')" placeholder=" " autocomplete="email"/>
+            <label class="field-label" for="s-email">Adresse e-mail</label>
+          </div>
+          <span class="field-error" *ngIf="errors['signupEmail']">{{ errors['signupEmail'] }}</span>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group" [class.filled]="signupData.cin">
+            <div class="field-wrap">
+              <span class="field-icon">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <rect x="2" y="5" width="16" height="12" rx="2"/>
+                  <line x1="5" y1="9" x2="10" y2="9"/><line x1="5" y1="12" x2="8" y2="12"/>
+                </svg>
+              </span>
+              <input type="text" id="s-cin" name="cin" class="field-input"
+                     [(ngModel)]="signupData.cin" placeholder=" "/>
+              <label class="field-label" for="s-cin">CIN</label>
+            </div>
+          </div>
+          <div class="field-group" [class.filled]="signupData.telephone">
+            <div class="field-wrap">
+              <span class="field-icon">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M3 4a1 1 0 0 1 1-1h3l1.5 4-2 1.5A12 12 0 0 0 12.5 13.5L14 11.5l4 1.5v3a1 1 0 0 1-1 1A15 15 0 0 1 3 4z"/>
+                </svg>
+              </span>
+              <input type="tel" id="s-tel" name="telephone" class="field-input"
+                     [(ngModel)]="signupData.telephone" placeholder=" "/>
+              <label class="field-label" for="s-tel">Téléphone</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group" [class.filled]="signupData.role">
+            <div class="field-wrap select-wrap">
+              <span class="field-icon">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M9 3H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/>
+                  <path d="M15 3l2 2-6 6H9v-2l6-6z"/>
+                </svg>
+              </span>
+              <select id="s-role" name="role" class="field-select"
+                      [(ngModel)]="signupData.role">
+                <option value="" disabled selected></option>
+                <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+              </select>
+              <label class="field-label select-label" for="s-role">Rôle</label>
+            </div>
+          </div>
+          <div class="field-group" [class.filled]="signupData.regionId">
+            <div class="field-wrap select-wrap">
+              <span class="field-icon">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M10 2a6 6 0 0 0-6 6c0 5 6 10 6 10s6-5 6-10a6 6 0 0 0-6-6z"/><circle cx="10" cy="8" r="2"/>
+                </svg>
+              </span>
+              <select id="s-region" name="regionId" class="field-select"
+                      [(ngModel)]="signupData.regionId">
+                <option [value]="undefined" disabled selected></option>
+                <option *ngFor="let r of regions" [value]="r.id">{{ r.nom }}</option>
+              </select>
+              <label class="field-label select-label" for="s-region">Région</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group" [class.filled]="signupData.password" [class.has-error]="errors['signupPassword']">
+          <div class="field-wrap">
+            <span class="field-icon">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="4" y="9" width="12" height="9" rx="1.5"/><path d="M7 9V6.5a3 3 0 1 1 6 0V9"/>
+              </svg>
+            </span>
+            <input [type]="showSignupPassword ? 'text' : 'password'" id="s-pwd" name="signupPassword"
+                   class="field-input" [(ngModel)]="signupData.password"
+                   (ngModelChange)="clearField('signupPassword')" placeholder=" "/>
+            <label class="field-label" for="s-pwd">Mot de passe</label>
+            <button type="button" class="eye-btn" (click)="showSignupPassword = !showSignupPassword">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M1 10s3.5-7 9-7 9 7 9 7-3.5 7-9 7-9-7-9-7z"/>
+                <circle cx="10" cy="10" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <span class="field-error" *ngIf="errors['signupPassword']">{{ errors['signupPassword'] }}</span>
+        </div>
+
+        <div class="field-group" [class.filled]="signupConfirmPassword" [class.has-error]="errors['confirmPassword']">
+          <div class="field-wrap">
+            <span class="field-icon">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="4" y="9" width="12" height="9" rx="1.5"/><path d="M7 9V6.5a3 3 0 1 1 6 0V9"/>
+              </svg>
+            </span>
+            <input [type]="showConfirmPassword ? 'text' : 'password'" id="s-cpwd" name="confirmPassword"
+                   class="field-input" [(ngModel)]="signupConfirmPassword"
+                   (ngModelChange)="clearField('confirmPassword')" placeholder=" "/>
+            <label class="field-label" for="s-cpwd">Confirmer le mot de passe</label>
+            <button type="button" class="eye-btn" (click)="showConfirmPassword = !showConfirmPassword">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M1 10s3.5-7 9-7 9 7 9 7-3.5 7-9 7-9-7-9-7z"/>
+                <circle cx="10" cy="10" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <span class="field-error" *ngIf="errors['confirmPassword']">{{ errors['confirmPassword'] }}</span>
+        </div>
+
+        <button type="submit" class="submit-btn btn-green" [class.loading]="isLoading" [disabled]="isLoading">
+          <span class="btn-content" *ngIf="!isLoading">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 2a8 8 0 1 0 0 16A8 8 0 0 0 10 2z"/>
+              <path d="M10 6v4l2.5 1.5"/>
+            </svg>
+            Créer mon compte
+          </span>
+          <span class="btn-loader" *ngIf="isLoading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+        </button>
+
+        <div class="form-switch">
+          Déjà un compte ?
+          <button type="button" class="link-btn strong" (click)="switchView('login')">Se connecter</button>
+        </div>
+      </form>
+
+      <!-- ════════════════════════════════════════════════════════ -->
+      <!-- VUE FORGOT PASSWORD                                     -->
+      <!-- ════════════════════════════════════════════════════════ -->
+      <form class="auth-form view-form" *ngIf="currentView==='forgot'"
+            [class.slide-in]="!isAnimating" [class.slide-out]="isAnimating"
+            (ngSubmit)="onForgotPassword()" novalidate>
+
+        <ng-container *ngIf="!forgotSent">
+          <div class="info-box warning">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+              <circle cx="10" cy="10" r="8"/><line x1="10" y1="6" x2="10" y2="10"/><circle cx="10" cy="14" r="0.5" fill="currentColor"/>
+            </svg>
+            <span>Saisissez l'adresse e-mail associée à votre compte et nous vous enverrons un lien de réinitialisation.</span>
+          </div>
+
+          <div class="field-group" [class.filled]="forgotData.email" [class.has-error]="errors['forgotEmail']">
+            <div class="field-wrap">
+              <span class="field-icon">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M2.5 6.5l7.5 5 7.5-5M3 4h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/>
+                </svg>
+              </span>
+              <input type="email" id="f-email" name="forgotEmail" class="field-input"
+                     [(ngModel)]="forgotData.email" (ngModelChange)="clearField('forgotEmail')" placeholder=" " autocomplete="email"/>
+              <label class="field-label" for="f-email">Adresse e-mail</label>
+            </div>
+            <span class="field-error" *ngIf="errors['forgotEmail']">{{ errors['forgotEmail'] }}</span>
+          </div>
+
+          <button type="submit" class="submit-btn btn-orange" [class.loading]="isLoading" [disabled]="isLoading">
+            <span class="btn-content" *ngIf="!isLoading">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2.5 6.5l7.5 5 7.5-5M3 4h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/>
+              </svg>
+              Envoyer le lien
+            </span>
+            <span class="btn-loader" *ngIf="isLoading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+          </button>
+        </ng-container>
+
+        <!-- État "envoyé" -->
+        <div class="sent-state" *ngIf="forgotSent">
+          <div class="sent-icon">
+            <svg viewBox="0 0 64 64" fill="none">
+              <circle cx="32" cy="32" r="28" fill="rgba(245,158,11,0.1)" stroke="#F59E0B" stroke-width="2"/>
+              <path d="M10 28l22 14L54 28M10 20h44v24H10z" stroke="#F59E0B" stroke-width="2" fill="none" stroke-linejoin="round"/>
+              <polyline points="20 35 10 44 54 44 44 35" stroke="#F59E0B" stroke-width="2" fill="none" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <p class="sent-title">E-mail envoyé !</p>
+          <p class="sent-desc">Consultez <strong>{{ forgotData.email }}</strong> et cliquez sur le lien de réinitialisation.</p>
+          <button type="button" class="submit-btn btn-orange" style="margin-top:8px" (click)="switchView('reset')">
+            <span class="btn-content">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h14M10 3l7 7-7 7"/></svg>
+              Saisir le token manuellement
+            </span>
+          </button>
+        </div>
+
+        <div class="form-switch">
+          <button type="button" class="link-btn" (click)="switchView('login')">← Retour à la connexion</button>
+        </div>
+      </form>
+
+      <!-- ════════════════════════════════════════════════════════ -->
+      <!-- VUE RESET PASSWORD                                      -->
+      <!-- ════════════════════════════════════════════════════════ -->
+      <form class="auth-form view-form" *ngIf="currentView==='reset'"
+            [class.slide-in]="!isAnimating" [class.slide-out]="isAnimating"
+            (ngSubmit)="onResetPassword()" novalidate>
+
+        <div class="field-group" [class.filled]="resetData.token" [class.has-error]="errors['resetToken']">
+          <div class="field-wrap">
+            <span class="field-icon">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M8 11a3 3 0 1 0 6 0 3 3 0 0 0-6 0zm10 0a7 7 0 1 1-14 0 7 7 0 0 1 14 0z" opacity=".4"/>
+                <path d="M8.5 8.5l-5-5M5 5L2 8"/>
+              </svg>
+            </span>
+            <input type="text" id="r-token" name="resetToken" class="field-input"
+                   [(ngModel)]="resetData.token" (ngModelChange)="clearField('resetToken')"
+                   placeholder=" " autocomplete="off"/>
+            <label class="field-label" for="r-token">Token de réinitialisation</label>
+          </div>
+          <span class="field-error" *ngIf="errors['resetToken']">{{ errors['resetToken'] }}</span>
+        </div>
+
+        <div class="field-group" [class.filled]="resetData.newPassword" [class.has-error]="errors['newPassword']">
+          <div class="field-wrap">
+            <span class="field-icon">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="4" y="9" width="12" height="9" rx="1.5"/><path d="M7 9V6.5a3 3 0 1 1 6 0V9"/>
+              </svg>
+            </span>
+            <input [type]="showResetPassword ? 'text' : 'password'" id="r-pwd" name="newPassword"
+                   class="field-input" [(ngModel)]="resetData.newPassword"
+                   (ngModelChange)="clearField('newPassword')" placeholder=" "/>
+            <label class="field-label" for="r-pwd">Nouveau mot de passe</label>
+            <button type="button" class="eye-btn" (click)="showResetPassword = !showResetPassword">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M1 10s3.5-7 9-7 9 7 9 7-3.5 7-9 7-9-7-9-7z"/><circle cx="10" cy="10" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <span class="field-error" *ngIf="errors['newPassword']">{{ errors['newPassword'] }}</span>
+        </div>
+
+        <!-- Indicateur force mot de passe -->
+        <div class="password-strength" *ngIf="resetData.newPassword">
+          <div class="strength-bar">
+            <div class="strength-fill"
+                 [style.width.%]="resetData.newPassword.length >= 12 ? 100 : resetData.newPassword.length >= 8 ? 66 : resetData.newPassword.length >= 6 ? 33 : 0"
+                 [ngClass]="resetData.newPassword.length >= 12 ? 'strong' : resetData.newPassword.length >= 8 ? 'medium' : 'weak'">
+            </div>
+          </div>
+          <span class="strength-label"
+                [ngClass]="resetData.newPassword.length >= 12 ? 'text-strong' : resetData.newPassword.length >= 8 ? 'text-medium' : 'text-weak'">
+            {{ resetData.newPassword.length >= 12 ? 'Fort' : resetData.newPassword.length >= 8 ? 'Moyen' : 'Faible' }}
+          </span>
+        </div>
+
+        <button type="submit" class="submit-btn btn-purple" [class.loading]="isLoading" [disabled]="isLoading || resetSuccess">
+          <span class="btn-content" *ngIf="!isLoading && !resetSuccess">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 8 A4 4 0 1 0 14 12" stroke-linecap="round"/>
+              <path d="M14 8v4h-4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Réinitialiser le mot de passe
+          </span>
+          <span class="btn-content success-state" *ngIf="resetSuccess">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="4 10 8 14 16 6"/>
+            </svg>
+            Réinitialisé !
+          </span>
+          <span class="btn-loader" *ngIf="isLoading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+        </button>
+
+        <div class="form-switch">
+          <button type="button" class="link-btn" (click)="switchView('login')">← Retour à la connexion</button>
+        </div>
+      </form>
+
+      <!-- ════════════════════════════════════════════════════════ -->
+      <!-- VUE VERIFY TOKEN                                        -->
+      <!-- ════════════════════════════════════════════════════════ -->
+      <form class="auth-form view-form" *ngIf="currentView==='verify'"
+            [class.slide-in]="!isAnimating" [class.slide-out]="isAnimating"
+            (ngSubmit)="onVerifyToken()" novalidate>
+
+        <div class="info-box info">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="10" cy="10" r="8"/><line x1="10" y1="9" x2="10" y2="14"/><circle cx="10" cy="6.5" r="0.5" fill="currentColor"/>
+          </svg>
+          <span>Un e-mail de vérification vous a été envoyé lors de votre inscription. Collez le token ci-dessous.</span>
+        </div>
+
+        <div class="field-group" [class.filled]="verifyTokenValue" [class.has-error]="errors['verifyToken']"
+             [class.is-success]="verifyResult==='success'" [class.is-error-state]="verifyResult==='error'">
+          <div class="field-wrap">
+            <span class="field-icon">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M10 2L4 5v5c0 3.9 2.5 7.4 6 8.2C13.5 17.4 16 13.9 16 10V5l-6-3z"/>
+              </svg>
+            </span>
+            <input type="text" id="v-token" name="verifyToken" class="field-input token-input"
+                   [(ngModel)]="verifyTokenValue" (ngModelChange)="clearField('verifyToken'); verifyResult='idle'"
+                   placeholder=" " autocomplete="off"/>
+            <label class="field-label" for="v-token">Token de vérification</label>
+
+            <!-- Icône résultat -->
+            <span class="result-icon" *ngIf="verifyResult==='success'">
+              <svg viewBox="0 0 20 20" fill="none" stroke="#10B981" stroke-width="2"><polyline points="4 10 8 14 16 6"/></svg>
+            </span>
+            <span class="result-icon error" *ngIf="verifyResult==='error'">
+              <svg viewBox="0 0 20 20" fill="none" stroke="#EF4444" stroke-width="2"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg>
+            </span>
+          </div>
+          <span class="field-error" *ngIf="errors['verifyToken']">{{ errors['verifyToken'] }}</span>
+        </div>
+
+        <!-- État succès animé -->
+        <div class="verify-success-anim" *ngIf="verifyResult==='success'">
+          <div class="checkmark-circle">
+            <svg viewBox="0 0 60 60" fill="none">
+              <circle cx="30" cy="30" r="28" stroke="#10B981" stroke-width="2" fill="rgba(16,185,129,0.08)"
+                      stroke-dasharray="176" stroke-dashoffset="0" class="circle-anim"/>
+              <polyline points="18 30 25 38 42 22" stroke="#10B981" stroke-width="3"
+                        stroke-linecap="round" stroke-linejoin="round" class="check-anim"/>
+            </svg>
+          </div>
+          <p>Compte vérifié ! Redirection...</p>
+        </div>
+
+        <button type="submit" class="submit-btn btn-cyan" [class.loading]="isLoading"
+                [disabled]="isLoading || verifyResult!=='idle' && verifyResult!=='error'"
+                *ngIf="verifyResult !== 'success'">
+          <span class="btn-content" *ngIf="!isLoading">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 2L4 5v5c0 3.9 2.5 7.4 6 8.2C13.5 17.4 16 13.9 16 10V5l-6-3z"/>
+              <polyline points="7 10 9 12 13 8"/>
+            </svg>
+            Vérifier le token
+          </span>
+          <span class="btn-loader" *ngIf="isLoading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+        </button>
+
+        <div class="form-switch">
+          <button type="button" class="link-btn" (click)="switchView('login')">← Retour à la connexion</button>
+        </div>
+      </form>
+
+      <!-- ─── Footer ─── -->
+      <div class="form-footer">
+        <span>GovPilot © 2025</span>
+        <span class="dot">·</span>
+        <a href="#">Confidentialité</a>
+        <span class="dot">·</span>
+        <a href="#">Aide</a>
+      </div>
+
+    </div>
+  </main>
+
+</div>

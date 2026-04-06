@@ -242,13 +242,41 @@
             <option *ngFor="let region of regions" [value]="region.id">{{ region.nom }}</option>
           </select>
         </div>
-        <div class="field">
-          <label>Structure</label>
-          <select [(ngModel)]="form.structureId" name="structureId" required>
-            <option value="" disabled selected>Choisir une structure</option>
-            <option *ngFor="let structure of structures" [value]="structure.id">{{ structure.nom }}</option>
-          </select>
-        </div>
+<div class="field">
+  <label>Structure</label>
+  <select [(ngModel)]="form.structureId" name="structureId" required>
+    <option value="" disabled selected>Choisir une structure</option>
+
+    <!-- Espaces Commerciaux — utiliser le getter structuresEC -->
+    <optgroup label="🏪 Espaces Commerciaux" *ngIf="structuresEC.length > 0">
+      <option *ngFor="let s of structuresEC"
+              [value]="s.id"
+              [disabled]="!s.disponible">
+        {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+        {{ s.disponible ? '' : '⛔ COMPLET' }}
+      </option>
+    </optgroup>
+
+    <!-- Centres Technologiques — utiliser le getter structuresCT -->
+    <optgroup label="💻 Centres Technologiques" *ngIf="structuresCT.length > 0">
+      <option *ngFor="let s of structuresCT"
+              [value]="s.id"
+              [disabled]="!s.disponible">
+        {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+        {{ s.disponible ? '' : '⛔ COMPLET' }}
+      </option>
+    </optgroup>
+  </select>
+
+  <!-- Utiliser le getter toutesCompletes — pas d'arrow function -->
+  <small style="color:#e74c3c" *ngIf="toutesCompletes">
+    ⚠️ Toutes les structures de cette région sont complètes.
+  </small>
+
+  <small style="color:#999" *ngIf="form.regionId && structures.length === 0">
+    Aucune structure trouvée pour cette région.
+  </small>
+</div>
       </div>
 
       <div class="files-section">

@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { AuthService, Region } from 'src/app/services/auth.service';
 import { Campagne, CampagneService } from 'src/app/services/campagne.service';
 import { CandidatureService } from 'src/app/services/candidature.service';
-import { StructureService } from 'src/app/structure.service';
+import { StructureDTO, StructureService } from 'src/app/structure.service';
 
 @Component({
   selector: 'app-home',
@@ -14,8 +14,7 @@ export class HomeComponent implements OnInit {
 
   campagnes: Campagne[] = [];
   regions: Region[] = [];
-  structures: any[] = [];
-
+  structures: StructureDTO[] = [];
   showCandidatureModal = false;
   campagneIdSelectionnee!: number;
 
@@ -53,12 +52,31 @@ export class HomeComponent implements OnInit {
     });
   }
 
-loadStructuresByRegion(regionId: number) {
-  this.structureService.getStructuresByRegion(regionId).subscribe({
-    next: (data) => this.structures = data,
-    error: (err) => console.error("Erreur chargement structures", err)
-  });
+get structuresEC(): StructureDTO[] {
+    return this.structures.filter(s => s.type === 'ESPACE_COMMERCIAL');
+  }
+
+  get structuresCT(): StructureDTO[] {
+    return this.structures.filter(s => s.type === 'CENTRE_TECHNOLOGIQUE');
+  }
+
+  // ← getter pour éviter arrow function dans le template
+get toutesCompletes(): boolean {
+  return this.structures.length > 0 && this.structures.every(s => !s.disponible);
 }
+
+  loadStructuresByRegion(regionId: number): void {
+    this.structures = [];
+    this.form.structureId = '';
+    if (!regionId) return;
+
+    this.structureService.getStructuresByRegion(regionId).subscribe({
+      next: (data: StructureDTO[]) => this.structures = data,
+      error: (err) => console.error('Erreur chargement structures', err)
+    });
+  }
+
+
 
   loadRegions() {
 
