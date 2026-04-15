@@ -13,6 +13,9 @@ import { EspacesaisonnierComponent } from './saisonnier/espacesaisonnier/espaces
 import { DocumentsComponent } from './features/rh/pages/documents/documents.component';
 import { PresencePaiementComponent } from './features/rh/pages/presence-paiement/presence-paiement.component';
 import { LoginAdminComponent } from './features/admin/pages/login-admin/login-admin.component';
+import { AuthGuard } from './security/auth.guard';
+import { RhGuard } from './security/rh.guard';
+import { LoginSaisonnierComponent } from './features/saisonnier/login-saisonnier/login-saisonnier.component';
 
 const routes: Routes = [
 
@@ -23,7 +26,7 @@ const routes: Routes = [
 
   {
     path: 'entreprise',
-    component: RhLayoutComponent,
+    component: RhLayoutComponent,canActivate: [RhGuard],
     children: [
       { path: 'saisonniers', component: SaisonniersListComponent },
       { path: 'saisonniers/add', component: SaisonnierAddComponent },
@@ -35,9 +38,12 @@ const routes: Routes = [
   },
   {path: 'home-ge', component: HomeGeneralComponent},
 
+  { path: 'saisonnier/login', component: LoginSaisonnierComponent },
+{ path: 'saisonnier/reset-password', component: LoginSaisonnierComponent },
+
   
   { path: 'saisonniers/validation', component: SaisonniersValidationComponent },
-  {path: 'admin', component: HomeAdminComponent},
+  {path: 'admin', component: HomeAdminComponent,canActivate: [AuthGuard]},
   {path: 'espace-saisonnier', component: EspacesaisonnierComponent},
   { path: 'admin/login', component: LoginAdminComponent },
 

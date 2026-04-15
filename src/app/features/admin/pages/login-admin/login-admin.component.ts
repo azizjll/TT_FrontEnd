@@ -32,7 +32,7 @@ export class LoginAdminComponent implements OnInit {
   // ── Signup ───────────────────────────────────────────────────────
   signupData: SignupRequest = {
     nom: '', prenom: '', email: '', password: '',
-    cin: '', telephone: '', role: '', regionId: undefined
+    cin: '', telephone: '', role: 'ADMIN', regionId: undefined
   };
   showSignupPassword = false;
   signupConfirmPassword = '';
@@ -75,11 +75,7 @@ export class LoginAdminComponent implements OnInit {
         this.resetData.token = params['token'];
         this.switchView('reset');
       }
-      if (params['verify']) {
-        this.verifyTokenValue = params['verify'];
-        this.switchView('verify');
-        this.onVerifyToken();
-      }
+      
     });
 
     // Charger régions & rôles pour le signup
@@ -109,6 +105,11 @@ export class LoginAdminComponent implements OnInit {
 
     this.authService.signin(this.loginData).subscribe({
       next: (res) => {
+          console.log('Réponse backend :', res); // ← vérifier la structure
+      this.authService.setToken(res.token);
+      console.log('Token sauvegardé :', localStorage.getItem('token')); // ← vérifier
+     
+        console.log('res.token :', res.token);
         this.authService.setToken(res.token);
         if (this.rememberMe) {
           localStorage.setItem('adminEmail', this.loginData.email);
@@ -139,19 +140,22 @@ export class LoginAdminComponent implements OnInit {
   // SIGNUP
   // ════════════════════════════════════════════════════════════════
   onSignup(): void {
-    this.clearAll();
-    if (!this.validateSignup()) return;
-    this.isLoading = true;
+  this.clearAll();
+  if (!this.validateSignup()) return;
+  this.isLoading = true;
 
-    this.authService.signup(this.signupData).subscribe({
-      next: () => {
-        this.isLoading = false;
-        this.globalSuccess = 'Compte créé ! Vérifiez votre e-mail pour activer votre compte.';
-        setTimeout(() => this.switchView('verify'), 2500);
-      },
-      error: (err) => { this.isLoading = false; this.handleError(err); }
-    });
-  }
+  this.authService.signup(this.signupData).subscribe({
+    next: () => {
+      this.isLoading = false;
+      // Rediriger vers login avec message
+      this.switchView('login');
+      setTimeout(() => {
+        this.globalSuccess = '✅ Compte créé ! Vérifiez votre e-mail pour activer votre compte, puis connectez-vous.';
+      }, 320); // après l'animation switchView (300ms)
+    },
+    error: (err) => { this.isLoading = false; this.handleError(err); }
+  });
+}
 
   private validateSignup(): boolean {
     let ok = true;

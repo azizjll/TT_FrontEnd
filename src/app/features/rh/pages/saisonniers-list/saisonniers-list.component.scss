@@ -665,6 +665,34 @@ $shadow-lg:  0 8px 30px rgba(0,0,0,.12);
   &:hover { background: $blue; transform: translateY(-2px); }
 }
 
+
+
+.file-name {
+  font-size: 0.7rem;
+  color: #2563eb;
+  font-weight: 600;
+  margin-top: 4px;
+  display: block;
+  word-break: break-all;
+}
+
+.input-error {
+  border-color: #e74c3c !important;
+  background-color: #fff5f5;
+}
+
+.error-msg {
+  color: #e74c3c;
+  font-size: 0.75rem;
+  margin-top: 4px;
+  display: block;
+}
+
+.file-error {
+  border: 2px dashed #e74c3c !important;
+  background-color: #fff5f5;
+}
+
 // ── Animations ────────────────────────────────────
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(10px); }

@@ -9,19 +9,34 @@
 </a>
 
     <!-- Desktop -->
-    <div class="hidden md:flex gap-8">
-      <a *ngFor="let link of navLinks"
-         [routerLink]="link.path"
-         routerLinkActive="font-bold"
-         class="hover:underline">
-        {{ link.name }}
-      </a>
+    <!-- Desktop -->
+<div class="hidden md:flex gap-8 items-center">
+  <a *ngFor="let link of navLinks"
+     [routerLink]="link.path"
+     routerLinkActive="font-bold"
+     class="hover:underline">
+    {{ link.name }}
+  </a>
 
-      <button class="border px-4 py-1 rounded-full">New Launch</button>
-      <button routerLink="/login" class="bg-black text-white px-6 py-2 rounded-full">
-        Login
-      </button>
-    </div>
+  <!-- ✅ Si connecté : nom + bouton déconnexion -->
+  <ng-container *ngIf="isLoggedIn; else loginBtn">
+    <span class="border px-4 py-1 rounded-full font-medium">
+      👤 {{ nomUtilisateur }}
+    </span>
+    <button (click)="logout()"
+            class="bg-red-500 text-white px-6 py-2 rounded-full hover:bg-red-600">
+      Déconnexion
+    </button>
+  </ng-container>
+
+  <!-- ✅ Si non connecté : bouton Login -->
+  <ng-template #loginBtn>
+    <button routerLink="/login"
+            class="bg-black text-white px-6 py-2 rounded-full">
+      Login
+    </button>
+  </ng-template>
+</div>
 
     <!-- Mobile -->
     <div class="md:hidden" (click)="toggleMenu()">☰</div>
@@ -29,22 +44,35 @@
   </div>
 
   <!-- Mobile menu -->
-  <div *ngIf="isMenuOpen"
-       class="fixed inset-0 bg-white flex flex-col items-center justify-center gap-6 text-lg">
+  <!-- Mobile menu -->
+<div *ngIf="isMenuOpen"
+     class="fixed inset-0 bg-white flex flex-col items-center justify-center gap-6 text-lg z-50">
 
-    <button class="absolute top-4 right-4" (click)="toggleMenu()">✖</button>
+  <button class="absolute top-4 right-4" (click)="toggleMenu()">✖</button>
 
-    <a *ngFor="let link of navLinks"
-       [routerLink]="link.path"
-       (click)="toggleMenu()">
-      {{ link.name }}
-    </a>
+  <a *ngFor="let link of navLinks"
+     [routerLink]="link.path"
+     (click)="toggleMenu()">
+    {{ link.name }}
+  </a>
 
+  <!-- ✅ Si connecté -->
+  <ng-container *ngIf="isLoggedIn; else loginMobile">
+    <span class="font-medium text-gray-700">👤 {{ nomUtilisateur }}</span>
+    <button (click)="logout(); toggleMenu()"
+            class="bg-red-500 text-white px-6 py-2 rounded-full">
+      Déconnexion
+    </button>
+  </ng-container>
+
+  <!-- ✅ Si non connecté -->
+  <ng-template #loginMobile>
     <button routerLink="/login"
             (click)="toggleMenu()"
             class="bg-black text-white px-6 py-2 rounded-full">
       Login
     </button>
-  </div>
+  </ng-template>
+</div>
 
 </nav>

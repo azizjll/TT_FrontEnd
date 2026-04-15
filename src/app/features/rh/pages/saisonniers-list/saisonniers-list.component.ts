@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
+import { NgForm } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AffectationService } from 'src/app/services/affectation.service';
 import { AuthService, Region } from 'src/app/services/auth.service';
 import { CandidatureService } from 'src/app/services/candidature.service';
 import { StructureDTO, StructureService } from 'src/app/structure.service';
+import Swal from 'sweetalert2';
 
 export interface Structure {
   id: number;
@@ -29,6 +31,13 @@ export class SaisonniersListComponent implements OnInit {
   candidatures: any[] = []; // stocke les candidatures filtrées
   selectedCandidature: any = null; // pour popup dossier
   showDossierModal = false;
+  formSubmitted = false;
+
+
+  cinFileName: string = '';
+diplomeFileName: string = '';
+contratFileName: string = '';
+
 
   form: any = {
     nom: '',
@@ -140,55 +149,117 @@ get toutesCompletes(): boolean {
     this.selectedCandidature = null;
   }
 
-  openModal() {
-    this.showModal = true;
-    this.activeTab = 'collaborateur';
+openModal(): void {
+  this.showModal = true;
+  this.activeTab = 'collaborateur';
+  this.formSubmitted = false;
+  // Pré-remplir la région du RH et charger ses structures
+  this.form.regionId = this.myRegion?.id || '';
+  if (this.form.regionId) {
+    this.loadStructuresByRegion(this.form.regionId);
   }
+}
 
-  closeModal() {
-    this.showModal = false;
-  }
+// ── Remplacer closeModal() ──
+closeModal(): void {
+  this.showModal = false;
+  this.formSubmitted = false;
+}
 
   setTab(tab: 'collaborateur' | 'dossier') {
     this.activeTab = tab;
   }
 
-  onFileChange(event: any, type: string) {
-    const file = event.target.files[0];
-    if (type === 'cin') this.cinFile = file;
-    if (type === 'diplome') this.diplome = file;
-    if (type === 'contrat') this.contrat = file;
+onFileChange(event: any, type: string) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (type === 'cin') {
+    this.cinFile = file;
+    this.cinFileName = file.name;
   }
 
-  submit() {
-    if (!this.cinFile || !this.diplome || !this.contrat) {
-      alert("❌ Tous les fichiers sont obligatoires");
-      return;
-    }
+  if (type === 'diplome') {
+    this.diplome = file;
+    this.diplomeFileName = file.name;
+  }
 
-    const formData = new FormData();
-    formData.append('nom', this.form.nom);
-    formData.append('prenom', this.form.prenom);
-    formData.append('cin', this.form.cin.toString());
-    formData.append('rib', this.form.rib);
-    formData.append('telephone', this.form.telephone);
-    formData.append('email', this.form.email);
-    formData.append('regionId', this.form.regionId.toString());
-    formData.append('structureId', this.form.structureId.toString());
-    formData.append('campagneId', this.campagneId.toString());
+  if (type === 'contrat') {
+    this.contrat = file;
+    this.contratFileName = file.name;
+  }
+}
 
-    formData.append('cinFile', this.cinFile);
-    formData.append('diplome', this.diplome);
-    formData.append('contrat', this.contrat);
+submit(saisonnierForm: NgForm): void {
 
-    this.candidatureService.deposerCandidature(formData).subscribe({
-      next: () => {
-        console.log("✅ Candidature envoyée avec succès");
-        this.closeModal();
-      },
-      error: err => console.error("❌ Erreur ajout saisonnier", err)
+  this.formSubmitted = true;
+  saisonnierForm.form.markAllAsTouched();
+
+  if (saisonnierForm.invalid) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Formulaire incomplet',
+      text: 'Veuillez corriger les erreurs signalées avant d\'envoyer.'
     });
+    return;
   }
+
+  if (!this.cinFile || !this.diplome || !this.contrat) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Documents manquants',
+      text: 'Veuillez joindre tous les fichiers PDF obligatoires (CIN, Diplôme, Contrat).'
+    });
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('nom', this.form.nom);
+  formData.append('prenom', this.form.prenom);
+  formData.append('cin', this.form.cin.toString());
+  formData.append('rib', this.form.rib);
+  formData.append('telephone', this.form.telephone);
+  formData.append('email', this.form.email);
+  formData.append('nomPrenomParent', this.form.nomPrenomParent);
+  formData.append('matriculeParent', this.form.matriculeParent);
+  formData.append('niveauEtude', this.form.niveauEtude);
+  formData.append('diplomeNom', this.form.diplomeNom);
+  formData.append('specialiteDiplome', this.form.specialiteDiplome);
+  formData.append('regionId', this.form.regionId.toString());
+  formData.append('structureId', this.form.structureId.toString());
+  formData.append('campagneId', this.campagneId.toString());
+  formData.append('cinFile', this.cinFile);
+  formData.append('diplome', this.diplome);
+  formData.append('contrat', this.contrat);
+
+  Swal.fire({
+    title: 'Envoi en cours...',
+    text: 'Veuillez patienter',
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
+
+  this.candidatureService.deposerCandidature(formData).subscribe({
+    next: () => {
+      Swal.fire({
+        icon: 'success',
+        title: 'Succès',
+        text: 'Candidature envoyée avec succès',
+        timer: 2000,
+        showConfirmButton: false
+      });
+      this.closeModal();
+    },
+    error: err => {
+      console.error(err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Erreur',
+        text: "Erreur lors de l'ajout du saisonnier"
+      });
+    }
+  });
+}
 
   updateCandidature() {
     const formData = new FormData();
@@ -202,16 +273,39 @@ get toutesCompletes(): boolean {
     formData.append("statut", this.selectedCandidature.statut);
     formData.append("commentaire", this.selectedCandidature.commentaire);
 
-    this.candidatureService.updateCandidature(this.selectedCandidature.id, formData)
-      .subscribe({
-        next: () => {
-          alert("✅ Modification enregistrée");
-          this.closeDossier();
-          this.loadCandidatures(this.myRegion.id);
-        },
-        error: err => console.error("Erreur modification", err)
-      });
-  }
+     Swal.fire({
+    title: 'Mise à jour...',
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
+
+  this.candidatureService.updateCandidature(this.selectedCandidature.id, formData)
+    .subscribe({
+      next: () => {
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Modification réussie',
+          timer: 1500,
+          showConfirmButton: false
+        });
+
+        this.closeDossier();
+        this.loadCandidatures(this.myRegion.id);
+      },
+      error: err => {
+
+        console.error(err);
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Erreur',
+          text: 'Erreur lors de la modification'
+        });
+
+      }
+    });
+}
 
   // ==========================
   // Affectation

@@ -265,10 +265,10 @@
             <thead>
               <tr>
                 <th>#</th>
-                <th>Gouvernorat</th>
+                <th>Direction de rattachement</th>
                 <th>Structure / Unité</th>
                 <th>Type</th>
-                <th>Adresse</th>
+                
                 <th>Autorisés</th>
                 <th>Recrutés</th>
                 <th>Restants</th>
@@ -292,7 +292,7 @@
                       {{ s.type === 'ESPACE_COMMERCIAL' ? 'EC' : 'CT' }}
                     </span>
                   </td>
-                  <td class="td-adresse">{{ s.adresse }}</td>
+                  
                   <td class="td-num editable">
                     <input type="number" [(ngModel)]="structureData[r.name+'|'+s.name+'|auth']" min="0" (change)="updateStats()">
                   </td>

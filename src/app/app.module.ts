@@ -23,6 +23,7 @@ import { DocumentsComponent } from './features/rh/pages/documents/documents.comp
 import { PresencePaiementComponent } from './features/rh/pages/presence-paiement/presence-paiement.component';
 import { SafePipe } from './shared/safe.pipe';
 import { LoginAdminComponent } from './features/admin/pages/login-admin/login-admin.component';
+import { LoginSaisonnierComponent } from './features/saisonnier/login-saisonnier/login-saisonnier.component';
 
 @NgModule({
   declarations: [
@@ -40,6 +41,7 @@ import { LoginAdminComponent } from './features/admin/pages/login-admin/login-ad
     HeroSliderComponent,
     SafePipe,
     LoginAdminComponent,
+    LoginSaisonnierComponent,
     
     
   ],

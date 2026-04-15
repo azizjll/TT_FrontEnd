@@ -1299,6 +1299,167 @@ $shadow:  0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
   }
 }
 
+.file-name {
+  font-size: 0.7rem;
+  color: #2563eb;
+  font-weight: 600;
+  margin-top: 4px;
+  display: block;
+  word-break: break-all;
+}
+
+.input-error {
+  border-color: #e74c3c !important;
+  background-color: #fff5f5;
+}
+
+.error-msg {
+  color: #e74c3c;
+  font-size: 0.75rem;
+  margin-top: 4px;
+  display: block;
+}
+
+
+.login-required-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.48);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 1rem;
+}
+ 
+.login-required-box {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 2rem 2rem 1.75rem;
+  max-width: 360px;
+  width: 100%;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
+  text-align: center;
+  animation: lrPopIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+ 
+  .lr-icon {
+    width: 60px;
+    height: 60px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem;
+    color: #2563eb;
+  }
+ 
+  .lr-title {
+    font-size: 19px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px;
+    letter-spacing: -0.025em;
+  }
+ 
+  .lr-message {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0 0 1.75rem;
+    line-height: 1.55;
+ 
+    strong {
+      color: #374151;
+      font-weight: 600;
+    }
+  }
+ 
+  .lr-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+ 
+  .lr-btn-cancel {
+    padding: 9px 20px;
+    border: 1.5px solid #e5e7eb;
+    background: white;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 180ms ease;
+ 
+    &:hover {
+      background: #f9fafb;
+      border-color: #d1d5db;
+    }
+  }
+ 
+  .lr-btn-login {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 20px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 180ms ease;
+ 
+    &:hover {
+      background: #1d4ed8;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    }
+  }
+}
+ 
+@keyframes lrPopIn {
+  from { transform: scale(0.86); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.welcome-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 60vh;
+
+  .welcome-content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    max-width: 400px;
+
+    .welcome-icon {
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    p {
+      color: #64748b;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+  }
+}
+
+
 // ── FAB ────────────────────────────────────────────────────
 .fab-assistance {
   position: fixed;

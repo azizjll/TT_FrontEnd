@@ -1933,6 +1933,87 @@
   font-weight: 600;
 }
 
+.excel-upload-zone {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--surface-2);
+  min-height: 70px;
+
+  &:hover {
+    border-color: #4CAF50;
+    background: rgba(76, 175, 80, 0.04);
+  }
+
+  &.dragover {
+    border-color: #4A9EFF;
+    background: rgba(74, 158, 255, 0.08);
+    transform: scale(1.01);
+  }
+
+  &.has-file {
+    border-style: solid;
+    border-color: #4CAF50;
+    background: rgba(76, 175, 80, 0.05);
+  }
+}
+
+.remove-file {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+  }
+}
+
+
+
+.nav-chevron {
+  margin-left: auto;
+  width: 16px; height: 16px;
+  color: rgba(255,255,255,0.5);
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+}
+.nav-chevron svg { width: 100%; height: 100%; }
+.nav-chevron.open { transform: rotate(180deg); }
+
+.nav-submenu {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+.nav-submenu.open { max-height: 160px; }
+
+.nav-sub-item {
+  padding-left: 36px !important;
+  font-size: 13px;
+}
+
+.nav-sub-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  flex-shrink: 0;
+}
+
+.nav-sub-item.active .nav-sub-dot {
+  background: #ffffff;
+  box-shadow: 0 0 5px rgba(255,255,255,0.6);
+}
 .remove-file:hover { color: var(--danger); background: rgba(239,68,68,0.08); }
 
 /* ===== SCROLLBAR ===== */

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Router } from '@angular/router';
 
 export interface SignupRequest {
   nom: string;
@@ -74,6 +75,7 @@ export class AuthService {
   // Sauvegarder le token
 setToken(token: string): void {
   localStorage.setItem('token', token);
+  console.log('Token stocké :', localStorage.getItem('token')); // vérification
 }
 
 // Récupérer le token
@@ -87,9 +89,9 @@ logout(): void {
 }
 
 // Construire headers avec Bearer
-private authHeaders(): HttpHeaders {
+// Changer private en public
+public authHeaders(): HttpHeaders {
   const token = this.getToken();
-
   return new HttpHeaders({
     Authorization: `Bearer ${token}`
   });
@@ -99,5 +101,46 @@ private authHeaders(): HttpHeaders {
 getMyRegion(): Observable<Region> {
   const headers = this.authHeaders(); // ton header avec token
   return this.http.get<Region>(`${this.baseUrl}/my-region`, { headers });
+}
+
+// Ajouter ces méthodes dans auth.service.ts
+
+// Décoder le token JWT (sans librairie externe)
+private decodeToken(): any {
+  const token = this.getToken();
+  if (!token) return null;
+  try {
+    const payload = token.split('.')[1];
+    return JSON.parse(atob(payload));
+  } catch {
+    return null;
+  }
+}
+
+// Récupérer le nom complet
+getNomComplet(): string {
+  const decoded = this.decodeToken();
+  if (!decoded) return 'Utilisateur';
+  
+  const prenom = decoded.prenom || '';
+  const nom    = decoded.nom    || '';
+  
+  return `${prenom} ${nom}`.trim() || decoded.sub || 'Utilisateur';
+}
+
+getRole(): string {
+  const decoded = this.decodeToken();
+  if (!decoded) return '';
+  
+  // Nettoyer le préfixe ROLE_
+  const role = decoded.role || (decoded.roles?.[0]) || '';
+  return role.replace('ROLE_', '');
+  // Résultat : "ADMIN", "RH_REGIONAL", "SAISONNIER"
+}
+
+// Logout + redirection
+logoutAndRedirect(router: Router): void {
+  localStorage.removeItem('token');
+  router.navigate(['/admin/login']);
 }
 }

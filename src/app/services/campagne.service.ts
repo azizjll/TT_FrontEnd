@@ -43,6 +43,14 @@ export class CampagneService {
   return this.http.post<Campagne>(this.baseUrl, dto, this.getAuthHeaders());
 }
 
+// Ajouter cette méthode dans campagne.service.ts
+creerCampagneAvecExcel(dto: CampagneRequestDTO, fichierExcel: File): Observable<Campagne> {
+  const formData = new FormData();
+  formData.append('campagne', new Blob([JSON.stringify(dto)], { type: 'application/json' }));
+  formData.append('fichier', fichierExcel);
+  return this.http.post<Campagne>(`${this.baseUrl}/avec-excel`, formData, this.getAuthHeaders());
+}
+
   // READ
   getToutesCampagnes(): Observable<Campagne[]> {
     return this.http.get<Campagne[]>(this.baseUrl, this.getAuthHeaders());
@@ -74,4 +82,10 @@ export class CampagneService {
   cloturerCampagne(id: number): Observable<Campagne> {
     return this.http.put<Campagne>(`${this.baseUrl}/${id}/cloturer`, {});
   }
+
+  getMesCampagnes(): Observable<Campagne[]> {
+  return this.http.get<Campagne[]>(`${this.baseUrl}/mes-campagnes`, this.getAuthHeaders());
+}
+
+
 }

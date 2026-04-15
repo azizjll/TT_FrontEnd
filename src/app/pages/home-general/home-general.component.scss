@@ -236,7 +236,7 @@
   position: absolute;
   z-index: 1;
   pointer-events: none;
-  animation: float 1s ease-in-out infinite;
+  animation: float 9s ease-in-out infinite;
 
   img {
     mix-blend-mode: screen;      /* fond blanc → transparent sur le bleu */
@@ -248,4 +248,4 @@
 .tt-deco-1 { bottom: 20%; left: 8%;  animation-delay: 0.8s; }
 .tt-deco-2 { top: 28%;   right: 8%; animation-delay: 2.5s; }
 .tt-deco-3 { bottom: 28%; right: 20%; animation-delay: 1.5s; }
-.tt-deco-4 { bottom: 70%; right: 90%; animation-delay: 0.1s; }
+.tt-deco-4 { bottom: 84%; right: 90%; animation-delay: 0.1s; }

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 // Une seule interface — plus de Structure
@@ -20,6 +20,14 @@ export class StructureService {
 
   constructor(private http: HttpClient) {}
 
+   // ── helper privé ─────────────────────────────────────────────
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token'); // même clé que authService.setToken()
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+  }
+
   getStructuresByRegion(regionId: number): Observable<StructureDTO[]> {
     return this.http.get<StructureDTO[]>(`${this.baseUrl}/region/${regionId}`);
   }
@@ -27,4 +35,19 @@ export class StructureService {
   updateStructure(id: number, dto: Partial<StructureDTO>): Observable<any> {
   return this.http.put(`${this.baseUrl}/${id}`, dto, { responseType: 'text' });
 }
+ getStructuresCampagneActive(): Observable<StructureDTO[]> {
+    return this.http.get<StructureDTO[]>(
+      `${this.baseUrl}/campagne-active`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  // Structures de la campagne active — sans JWT (public)
+getStructuresCampagneActivePublique(): Observable<StructureDTO[]> {
+  return this.http.get<StructureDTO[]>(
+    `${this.baseUrl}/campagne-active/publique`
+  );
+}
+
+
 }

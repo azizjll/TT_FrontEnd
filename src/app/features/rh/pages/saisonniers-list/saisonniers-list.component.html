@@ -7,14 +7,7 @@
       <p class="header-sub">Consultez et gérez les candidatures de votre équipe saisonnière</p>
     </div>
     <div class="header-actions">
-      <button class="btn-outline-dark">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
-        Saisonniers effectués
-      </button>
+      
       <button class="btn-primary-action" (click)="openModal()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -45,11 +38,7 @@
       <span class="stat-num refused">{{ countByStatus('REFUSEE') }}</span>
       <span class="stat-lbl">Refusées</span>
     </div>
-    <div class="stat-divider"></div>
-    <div class="stat-item">
-      <span class="stat-num correct">{{ countByStatus('A_CORRIGER') }}</span>
-      <span class="stat-lbl">À corriger</span>
-    </div>
+    
   </div>
 
   <!-- SUB TABS + SEARCH -->
@@ -59,7 +48,6 @@
       <button class="sub-tab" [class.active]="activeFilter === 'EN_ATTENTE'" (click)="setFilter('EN_ATTENTE')">En attente</button>
       <button class="sub-tab" [class.active]="activeFilter === 'ACCEPTEE'" (click)="setFilter('ACCEPTEE')">Acceptés</button>
       <button class="sub-tab" [class.active]="activeFilter === 'REFUSEE'" (click)="setFilter('REFUSEE')">Refusés</button>
-      <button class="sub-tab" [class.active]="activeFilter === 'A_CORRIGER'" (click)="setFilter('A_CORRIGER')">À corriger</button>
     </div>
     <div class="search-box">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -226,7 +214,7 @@
             <input [(ngModel)]="selectedCandidature.saisonnier.rib" placeholder="RIB">
           </div>
           <div class="field-group">
-            <label>Région</label>
+            <label>Direction de rattachement</label>
             <select [(ngModel)]="selectedCandidature.saisonnier.region.id">
               <option *ngFor="let r of regions" [value]="r.id">{{ r.nom }}</option>
             </select>
@@ -327,74 +315,228 @@
     </div>
 
     <div class="modal-content">
-      <form (ngSubmit)="submit()">
+      <form #saisonnierForm="ngForm" (ngSubmit)="submit(saisonnierForm)">
+
         <div class="form-grid-2">
+
+          <!-- Prénom -->
           <div class="field-group">
-            <label>Prénom</label>
-            <input type="text" [(ngModel)]="form.prenom" name="prenom" placeholder="Prénom" required>
+            <label>Prénom *</label>
+            <input type="text" [(ngModel)]="form.prenom" name="prenom"
+                   #prenom="ngModel" required placeholder="Prénom"
+                   [class.input-error]="prenom.invalid && prenom.touched">
+            <small class="error-msg" *ngIf="prenom.touched && prenom.errors?.['required']">
+              ⚠️ Le prénom est obligatoire.
+            </small>
           </div>
+
+          <!-- Nom -->
           <div class="field-group">
-            <label>Nom</label>
-            <input type="text" [(ngModel)]="form.nom" name="nom" placeholder="Nom" required>
+            <label>Nom *</label>
+            <input type="text" [(ngModel)]="form.nom" name="nom"
+                   #nom="ngModel" required placeholder="Nom"
+                   [class.input-error]="nom.invalid && nom.touched">
+            <small class="error-msg" *ngIf="nom.touched && nom.errors?.['required']">
+              ⚠️ Le nom est obligatoire.
+            </small>
           </div>
+
+          <!-- Email -->
           <div class="field-group">
-            <label>Email</label>
-            <input type="email" [(ngModel)]="form.email" name="email" placeholder="email@exemple.com" required>
+            <label>Email *</label>
+            <input type="email" [(ngModel)]="form.email" name="email"
+                   #email="ngModel" required email placeholder="email@exemple.com"
+                   [class.input-error]="email.invalid && email.touched">
+            <small class="error-msg" *ngIf="email.touched && email.errors?.['required']">
+              ⚠️ L'email est obligatoire.
+            </small>
+            <small class="error-msg" *ngIf="email.touched && email.errors?.['email']">
+              ⚠️ Format d'email invalide.
+            </small>
           </div>
+
+          <!-- Téléphone -->
           <div class="field-group">
-            <label>Téléphone</label>
-            <input type="text" [(ngModel)]="form.telephone" name="telephone" placeholder="+216 XX XXX XXX" required>
+            <label>Téléphone *</label>
+            <input type="text" [(ngModel)]="form.telephone" name="telephone"
+                   #telephone="ngModel" required pattern="^\d{8}$" placeholder="XX XXX XXX"
+                   [class.input-error]="telephone.invalid && telephone.touched">
+            <small class="error-msg" *ngIf="telephone.touched && telephone.errors?.['required']">
+              ⚠️ Le téléphone est obligatoire.
+            </small>
+            <small class="error-msg" *ngIf="telephone.touched && telephone.errors?.['pattern']">
+              ⚠️ Le téléphone doit contenir exactement 8 chiffres.
+            </small>
           </div>
+
+          <!-- CIN -->
           <div class="field-group">
-            <label>CIN</label>
-            <input type="number" [(ngModel)]="form.cin" name="cin" placeholder="Numéro CIN" required>
+            <label>CIN *</label>
+            <input type="text" [(ngModel)]="form.cin" name="cin"
+                   #cin="ngModel" required pattern="^\d{8}$" placeholder="Numéro CIN"
+                   [class.input-error]="cin.invalid && cin.touched">
+            <small class="error-msg" *ngIf="cin.touched && cin.errors?.['required']">
+              ⚠️ Le CIN est obligatoire.
+            </small>
+            <small class="error-msg" *ngIf="cin.touched && cin.errors?.['pattern']">
+              ⚠️ Le CIN doit contenir exactement 8 chiffres.
+            </small>
           </div>
+
+          <!-- RIB -->
           <div class="field-group">
-            <label>RIB</label>
-            <input type="text" [(ngModel)]="form.rib" name="rib" placeholder="RIB bancaire" required>
+            <label>RIB *</label>
+            <input type="text" [(ngModel)]="form.rib" name="rib"
+                   #rib="ngModel" required pattern="^\d{20}$" placeholder="RIB bancaire"
+                   [class.input-error]="rib.invalid && rib.touched">
+            <small class="error-msg" *ngIf="rib.touched && rib.errors?.['required']">
+              ⚠️ Le RIB est obligatoire.
+            </small>
+            <small class="error-msg" *ngIf="rib.touched && rib.errors?.['pattern']">
+              ⚠️ Le RIB doit contenir exactement 20 chiffres.
+            </small>
           </div>
+
+        </div>
+
+        <!-- ====== Informations du parent ====== -->
+        <h4 class="section-title">Informations du parent</h4>
+        <div class="form-grid-2">
+
           <div class="field-group">
-            <label>Région</label>
-            <select [(ngModel)]="form.regionId" name="regionId" required (change)="loadStructuresByRegion(form.regionId)">
+            <label>Nom & Prénom du parent</label>
+            <input type="text" [(ngModel)]="form.nomPrenomParent" name="nomPrenomParent"
+                   placeholder="Nom et prénom du parent">
+          </div>
+
+          <div class="field-group">
+            <label>Matricule du parent</label>
+            <input type="text" [(ngModel)]="form.matriculeParent" name="matriculeParent"
+                   placeholder="Matricule du parent">
+          </div>
+
+        </div>
+
+        <!-- ====== Formation ====== -->
+        <h4 class="section-title">Formation</h4>
+        <div class="form-grid-2">
+
+          <div class="field-group">
+            <label>Niveau d'étude</label>
+            <input type="text" [(ngModel)]="form.niveauEtude" name="niveauEtude"
+                   placeholder="Ex: BAC+2">
+          </div>
+
+          <div class="field-group">
+            <label>Diplôme</label>
+            <input type="text" [(ngModel)]="form.diplomeNom" name="diplomeNom"
+                   placeholder="Ex: BTS, Licence...">
+          </div>
+
+          <div class="field-group">
+            <label>Spécialité Diplôme</label>
+            <input type="text" [(ngModel)]="form.specialiteDiplome" name="specialiteDiplome"
+                   placeholder="Votre spécialité">
+          </div>
+
+        </div>
+
+        <!-- ====== Affectation ====== -->
+        <h4 class="section-title">Affectation</h4>
+        <div class="form-grid-2">
+
+          <!-- Direction -->
+          <div class="field-group">
+            <label>Direction de rattachement *</label>
+            <select [(ngModel)]="form.regionId" name="regionId"
+                    #regionId="ngModel" required
+                    (ngModelChange)="loadStructuresByRegion($event)"
+                    [class.input-error]="regionId.invalid && regionId.touched">
               <option value="" disabled selected>Choisir une région</option>
               <option *ngFor="let region of regions" [value]="region.id">{{ region.nom }}</option>
             </select>
+            <small class="error-msg" *ngIf="regionId.touched && regionId.errors?.['required']">
+              ⚠️ La direction est obligatoire.
+            </small>
           </div>
+
+          <!-- Structure -->
           <div class="field-group">
-            <label>Structure</label>
-            <select [(ngModel)]="form.structureId" name="structureId" required>
+            <label>Structure *</label>
+            <select [(ngModel)]="form.structureId" name="structureId"
+                    #structureId="ngModel" required
+                    [class.input-error]="structureId.invalid && structureId.touched">
               <option value="" disabled selected>Choisir une structure</option>
-              <option *ngFor="let structure of structures" [value]="structure.id">{{ structure.nom }}</option>
+
+              <optgroup label="🏪 Espaces Commerciaux" *ngIf="structuresEC.length > 0">
+                <option *ngFor="let s of structuresEC"
+                        [value]="s.id"
+                        [disabled]="!s.disponible">
+                  {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+                  {{ s.disponible ? '' : '⛔ COMPLET' }}
+                </option>
+              </optgroup>
+
+              <optgroup label="💻 Centres Technologiques" *ngIf="structuresCT.length > 0">
+                <option *ngFor="let s of structuresCT"
+                        [value]="s.id"
+                        [disabled]="!s.disponible">
+                  {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+                  {{ s.disponible ? '' : '⛔ COMPLET' }}
+                </option>
+              </optgroup>
             </select>
+
+            <small class="error-msg" *ngIf="structureId.touched && structureId.errors?.['required']">
+              ⚠️ La structure est obligatoire.
+            </small>
+            <small style="color:#e74c3c" *ngIf="toutesCompletes">
+              ⚠️ Toutes les structures de cette région sont complètes.
+            </small>
+            <small style="color:#999" *ngIf="form.regionId && structures.length === 0">
+              Aucune structure trouvée pour cette région.
+            </small>
           </div>
+
         </div>
 
+        <!-- ====== Documents requis ====== -->
         <div class="files-section">
           <h4>Documents requis</h4>
           <div class="files-row">
-            <label class="file-zone">
+
+            <label class="file-zone" [class.file-error]="formSubmitted && !cinFile">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
               </svg>
               <span>CIN (PDF)</span>
-              <input type="file" accept=".pdf" (change)="onFileChange($event,'cin')" required>
+              <small *ngIf="cinFileName" class="file-name">{{ cinFileName }}</small>
+              <small class="error-msg" *ngIf="formSubmitted && !cinFile">⚠️ Fichier CIN obligatoire.</small>
+              <input type="file" accept=".pdf" (change)="onFileChange($event,'cin')">
             </label>
-            <label class="file-zone">
+
+            <label class="file-zone" [class.file-error]="formSubmitted && !diplome">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
               </svg>
               <span>Diplôme (PDF)</span>
-              <input type="file" accept=".pdf" (change)="onFileChange($event,'diplome')" required>
+              <small *ngIf="diplomeFileName" class="file-name">{{ diplomeFileName }}</small>
+              <small class="error-msg" *ngIf="formSubmitted && !diplome">⚠️ Fichier Diplôme obligatoire.</small>
+              <input type="file" accept=".pdf" (change)="onFileChange($event,'diplome')">
             </label>
-            <label class="file-zone">
+
+            <label class="file-zone" [class.file-error]="formSubmitted && !contrat">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M9 11l3 3L22 4"/>
                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
               </svg>
               <span>Contrat (PDF)</span>
-              <input type="file" accept=".pdf" (change)="onFileChange($event,'contrat')" required>
+              <small *ngIf="contratFileName" class="file-name">{{ contratFileName }}</small>
+              <small class="error-msg" *ngIf="formSubmitted && !contrat">⚠️ Fichier Contrat obligatoire.</small>
+              <input type="file" accept=".pdf" (change)="onFileChange($event,'contrat')">
             </label>
+
           </div>
         </div>
 
@@ -410,6 +552,7 @@
             Créer le saisonnier
           </button>
         </div>
+
       </form>
     </div>
 

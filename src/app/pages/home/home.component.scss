@@ -556,6 +556,24 @@ $shadow:  0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
   }
 }
 
+.section-title {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 20px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.file-name {
+  font-size: 0.7rem;
+  color: #2563eb;
+  font-weight: 600;
+  margin-top: 4px;
+  display: block;
+  word-break: break-all;
+}
+
 // Files section
 .files-section {
   border-top: 1px solid $border;
@@ -660,6 +678,18 @@ $shadow:  0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
   z-index: 500;
   svg { width: 16px; height: 16px; }
   &:hover { background: $blue; transform: translateY(-2px); }
+}
+
+.input-error {
+  border-color: #e74c3c !important;
+  background-color: #fff5f5;
+}
+
+.error-msg {
+  color: #e74c3c;
+  font-size: 0.75rem;
+  margin-top: 4px;
+  display: block;
 }
 
 // ── Animations ─────────────────────────────────────────────

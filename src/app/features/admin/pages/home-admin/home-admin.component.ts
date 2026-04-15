@@ -1,5 +1,6 @@
 import { Component, OnInit, SecurityContext } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 import { AuthService, Region } from 'src/app/services/auth.service';
 import { CampagneService, CampagneRequestDTO } from 'src/app/services/campagne.service';
 import { CandidatureService } from 'src/app/services/candidature.service';
@@ -194,6 +195,13 @@ export class HomeAdminComponent implements OnInit {
   showActiveCampagneWarning = false;
   activeCampagneNom = '';
 
+  // ── Nouvelles propriétés pour l'upload Excel campagne ─────────────
+campagneExcelFile: File | null = null;
+campagneExcelDragOver = false;
+regionsDetectees: string[] = [];
+isSavingCampagne = false;
+isLoading = false;
+
   // ── Candidatures ──────────────────────────────────────────────────
   candidatures: Candidature[] = [];
 
@@ -275,7 +283,11 @@ export class HomeAdminComponent implements OnInit {
     private documentService: DocumentService,
     private structureimportService: StructureImportService,
     private structureService: StructureService,
+    private router: Router,
   ) {}
+
+  nomUtilisateur = '';
+roleUtilisateur = '';
 
   // ─── Lifecycle ────────────────────────────────────────────────────
 
@@ -289,14 +301,49 @@ export class HomeAdminComponent implements OnInit {
     this.loadCirculaireFromServer();
     this.loadStructures();
     this.loadPresenceRows();
+    this.nomUtilisateur = this.authService.getNomComplet();
+  this.roleUtilisateur = this.authService.getRole();
   }
 
   // ─── Navigation ───────────────────────────────────────────────────
 
   setActive(section: 'campagnes' | 'candidatures' | 'utilisateurs' | 'memo' | 'structures' | 'presence'): void {
-    this.activeSection = section;
-    this.updatePageMeta();
+  this.activeSection = section;
+
+  if (section === 'campagnes' || section === 'memo' || section === 'structures') {
+    this.campagnesOpen = true;
   }
+
+  this.updatePageMeta();
+
+  // 🔄 Rafraîchir les données selon la section
+  switch (section) {
+    case 'campagnes':
+      this.loadCampagnes();
+      this.loadCandidatures();
+      break;
+
+    case 'candidatures':
+      this.loadCandidatures();
+      break;
+
+    case 'utilisateurs':
+      // this.loadUtilisateurs(); // ← à connecter quand tu as le service
+      break;
+
+    case 'memo':
+      this.loadCirculaireFromServer();
+      break;
+
+    case 'structures':
+      this.loadStructures();
+      break;
+
+    case 'presence':
+      this.loadPresenceRows();
+      break;
+  }
+}
 
   private updatePageMeta(): void {
     const meta: Record<string, { title: string; subtitle: string }> = {
@@ -345,11 +392,10 @@ export class HomeAdminComponent implements OnInit {
   }
 
 loadCampagnes(): void {
-  this.campagneService.getToutesCampagnes().subscribe({
+  this.campagneService.getMesCampagnes().subscribe({   // ← changement ici
     next: (data) => {
       this.campagnes = (data as any[]).map(c => {
 
-        // Mapping exact selon enum backend
         const statutMap: Record<string, { statut: Campagne['statut'], label: string }> = {
           'BROUILLON': { statut: 'brouillon', label: 'Brouillon' },
           'ACTIVE':    { statut: 'active',    label: 'Active'    },
@@ -397,10 +443,16 @@ voirCandidaturesCampagne(campagne: Campagne): void {
   openCreateModal(): void {
     this.showCreateModal = true;
     this.newCampagne = this.emptyNewCampagne();
+    this.campagneExcelFile = null;
+  this.regionsDetectees = [];
+  this.isSavingCampagne = false;
   }
 
   closeModal(): void {
     this.showCreateModal = false;
+     this.campagneExcelFile = null;
+  this.regionsDetectees = [];
+  this.isSavingCampagne = false;
   }
 
 saveCampagne(activer: boolean): void {
@@ -409,15 +461,22 @@ saveCampagne(activer: boolean): void {
     return;
   }
 
-  // ── Vérification : une seule campagne ACTIVE à la fois ──────────
+  if (!this.campagneExcelFile) {
+    alert('Veuillez sélectionner le fichier Excel des structures');
+    return;
+  }
+
+  // Vérification : une seule campagne ACTIVE à la fois
   if (activer) {
     const campagneActiveExistante = this.campagnes.find(c => c.statut === 'active');
     if (campagneActiveExistante) {
       this.showActiveCampagneWarning = true;
       this.activeCampagneNom = campagneActiveExistante.nom;
-      return; // bloquer la création
+      return;
     }
   }
+
+  this.isSavingCampagne = true;
 
   const dto: CampagneRequestDTO = {
     libelle: this.newCampagne.nom,
@@ -425,20 +484,34 @@ saveCampagne(activer: boolean): void {
     dateDebut: this.newCampagne.dateDebut,
     dateFin: this.newCampagne.dateFin,
     description: this.newCampagne.description,
-    regionIds: this.newCampagne.regionIds || []
+    regionIds: [] // sera rempli automatiquement depuis l'Excel par le backend
   };
 
-  this.campagneService.creerCampagne(dto).subscribe({
-    next: res => {
+  this.campagneService.creerCampagneAvecExcel(dto, this.campagneExcelFile).subscribe({
+    next: (res) => {
       if (activer) {
-        this.campagneService.activerCampagne(res.id).subscribe();
+        this.campagneService.activerCampagne(res.id).subscribe({
+          next: () => {
+            this.loadCampagnes();
+            this.closeModal();
+            this.isSavingCampagne = false;
+          },
+          error: () => {
+            this.loadCampagnes();
+            this.closeModal();
+            this.isSavingCampagne = false;
+          }
+        });
+      } else {
+        this.loadCampagnes();
+        this.closeModal();
+        this.isSavingCampagne = false;
       }
-      this.loadCampagnes();
-      this.closeModal();
     },
-    error: err => {
+    error: (err) => {
       console.error(err);
       alert('Erreur lors de la création de la campagne');
+      this.isSavingCampagne = false;
     }
   });
 }
@@ -644,17 +717,26 @@ private updateCandidaturesParCampagne(): void {
 
   // ─── Structures par Région ────────────────────────────────────────
 
-  loadStructures(): void {
-    this.structureimportService.getAll().subscribe({
-      next: (data: StructureDTO[]) => {
-        this.structures = data.map(s => ({ ...s, isFirstInGov: false }));
-        this.buildGouvernorats();
-        this.applyStructureFilter();
-        this.updateStructuresStats();
-      },
-      error: err => console.error('Erreur chargement structures', err)
-    });
-  }
+loadStructures(): void {
+  this.structureService.getStructuresCampagneActive().subscribe({
+    next: (data) => {
+      this.structures = data.map(s => ({
+        ...s,
+        type: s.type === 'ESPACE_COMMERCIAL' ? 'EC' : 'CT' as 'EC' | 'CT', // ← conversion
+        isFirstInGov: false
+      }));
+      this.buildGouvernorats();
+      this.applyStructureFilter();
+      this.updateStructuresStats();
+    },
+    error: () => {
+      this.structures = [];
+      this.buildGouvernorats();
+      this.applyStructureFilter();
+      this.updateStructuresStats();
+    }
+  });
+}
 
   buildGouvernorats(): void {
     const govMap: Record<string, number> = {};
@@ -1050,5 +1132,69 @@ changerStatutCampagne(nouveauStatut: string): void {
     this.editingCampagne.statut = info.statut;
     this.editingCampagne.statutLabel = info.label;
   }
+}
+
+
+// ── Handler sélection fichier ─────────────────────────────────────
+onCampagneExcelSelected(event: Event): void {
+  const file = (event.target as HTMLInputElement).files?.[0];
+  if (file) {
+    this.campagneExcelFile = file;
+    this.lireRegionsExcel(file);
+  }
+}
+
+// ── Handler drag & drop ───────────────────────────────────────────
+onCampagneExcelDrop(event: DragEvent): void {
+  event.preventDefault();
+  this.campagneExcelDragOver = false;
+  const file = event.dataTransfer?.files[0];
+  if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
+    this.campagneExcelFile = file;
+    this.lireRegionsExcel(file);
+  } else {
+    alert('Veuillez déposer un fichier Excel (.xlsx ou .xls)');
+  }
+}
+
+// ── Lire les régions depuis l'Excel (prévisualisation) ────────────
+lireRegionsExcel(file: File): void {
+  // Lecture côté frontend pour afficher un aperçu des régions
+  // On utilise FileReader + SheetJS si disponible, sinon on laisse le backend gérer
+  this.regionsDetectees = [];
+
+  import('xlsx').then(XLSX => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target?.result as ArrayBuffer);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+      const regionsSet = new Set<string>();
+      rows.slice(1).forEach((row: any[]) => {
+        if (row[0] && String(row[0]).trim()) {
+          regionsSet.add(String(row[0]).trim());
+        }
+      });
+      this.regionsDetectees = Array.from(regionsSet);
+    };
+    reader.readAsArrayBuffer(file);
+  }).catch(() => {
+    // SheetJS pas disponible, on ignore la prévisualisation
+    this.regionsDetectees = [];
+  });
+}
+
+
+campagnesOpen = false;
+
+toggleCampagnes(): void {
+  this.campagnesOpen = !this.campagnesOpen;
+}
+
+logout(): void {
+  this.authService.logout();
+  this.router.navigate(['/admin/login']);
 }
 }

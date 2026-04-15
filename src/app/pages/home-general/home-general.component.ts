@@ -13,7 +13,7 @@ export class HomeGeneralComponent {
 
 
    goSaisonnier() {
-    this.router.navigate(['/home']);
+    this.router.navigate(['/admin/login']);
   }
 
 
