@@ -24,11 +24,9 @@ export class CandidatureService {
   /**
    * Dépose une candidature sans JWT
    */
-  deposerCandidature(formData: FormData): Observable<string> {
-    return this.http.post(`${this.baseUrl}/depot`, formData, {
-      responseType: 'text'  // réponse texte pour éviter erreur JSON
-    });
-  }
+  deposerCandidature(formData: FormData) {
+  return this.http.post<any>(`${this.baseUrl}/depot`, formData);
+}
 
   /**
    * Récupère les candidatures filtrées par campagne et région
@@ -54,6 +52,14 @@ getDocumentsBySaisonnier(saisonnierId: number) {
 getSaisonnierById(id: number) {
   return this.http.get<any>(`${this.baseUrl}/saisonnier/${id}`);
 }
+getMonHistorique(): Observable<any[]> {
+  const token = localStorage.getItem('token');
 
+  return this.http.get<any[]>(`${this.baseUrl}/mon-historique`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+}
 
 }

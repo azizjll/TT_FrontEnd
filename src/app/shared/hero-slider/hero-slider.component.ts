@@ -10,9 +10,15 @@ import { CommonModule } from '@angular/common';
 export class HeroSliderComponent implements OnInit, OnDestroy {
   
   slides = [
-    { image: 'assets/slides/slide1.jpg', alt: 'Promo Pass Roaming Omra' },
-    { image: 'assets/slides/slide2.jpg', alt: 'Fibre TT WiFi Mesh' },
-    { image: 'assets/slides/slide3.jpg', alt: 'Big Bonus 500%' },
+    
+        { image: 'assets/slides/slide5.jpg', alt: 'Big Bonus 500%' },
+
+            { image: 'assets/slides/slide6.jpg', alt: 'Big Bonus 500%' },
+
+                { image: 'assets/slides/Tunisie-Telecom.jpg', alt: 'Big Bonus 500%' },
+
+
+
   ];
 
   currentIndex = 0;

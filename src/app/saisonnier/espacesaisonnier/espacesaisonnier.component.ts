@@ -12,6 +12,7 @@ import { Router } from '@angular/router';
 import { AuthService, Region } from 'src/app/services/auth.service';
 import { Campagne, CampagneService } from 'src/app/services/campagne.service';
 import { CandidatureService } from 'src/app/services/candidature.service';
+import { DocumentCampagneDTO, DocumentCampagneService } from 'src/app/services/document-campagne.service';
 import { StructureDTO, StructureService } from 'src/app/structure.service';
 import Swal from 'sweetalert2';
 
@@ -100,6 +101,9 @@ activeTab: 'candidatures' | 'documents' | 'profil' | 'notifications' | '' = '';
   regions: Region[] = [];
   structures: any[] = [];
   formSubmitted = false;
+
+  documentsCampagne: DocumentCampagneDTO[] = [];
+loadingDocsCampagne = false;
 
   form: any = {
     nom: '', prenom: '', cin: '', rib: '',
@@ -198,6 +202,7 @@ activeTab: 'candidatures' | 'documents' | 'profil' | 'notifications' | '' = '';
     private authService: AuthService,
     private structureService: StructureService,
     private router: Router,                      // ← ✅ NOUVEAU : injecter Router
+    private documentCampagneService: DocumentCampagneService,
   ) {}
 
   ngOnInit(): void {
@@ -206,6 +211,7 @@ activeTab: 'candidatures' | 'documents' | 'profil' | 'notifications' | '' = '';
   } else {
     this.activeTab = 'candidatures'; // ← ICI
     this.loadSaisonnierProfile();
+    this.loadMesCandidatures(); 
   }
 
   this.campagneService.getCampagnesActives().subscribe(data => {
@@ -213,10 +219,38 @@ activeTab: 'candidatures' | 'documents' | 'profil' | 'notifications' | '' = '';
       this.activeCampagne = data[0];
       this.campagneIdSelectionnee = data[0].id;
       this.loadStructuresCampagneActive();
+      this.loadDocumentsCampagne(data[0].id)
     }
   });
 
   this.loadRegions();
+}
+
+loadDocumentsCampagne(campagneId: number): void {
+  this.loadingDocsCampagne = true;
+  this.documentCampagneService.getDocumentsByCampagne(campagneId).subscribe({
+    next: (data) => {
+      this.documentsCampagne = data;
+      this.loadingDocsCampagne = false;
+    },
+    error: (err) => {
+      console.error('Erreur docs campagne:', err);
+      this.loadingDocsCampagne = false;
+    }
+  });
+}
+
+telechargerDocument(doc: DocumentCampagneDTO): void {
+  window.open(doc.url, '_blank');
+}
+
+getDocTypIcon(type: string): string {
+  const icons: Record<string, string> = {
+    'CONTRAT':     'M9 11l3 3L22 4 M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11',
+    'NOTICE':      'M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z M14 2v6h6',
+    'FORMULAIRE':  'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2 M9 5a2 2 0 002 2h2a2 2 0 002-2',
+  };
+  return icons[type] ?? 'M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z M14 2v6h6';
 }
 
   // ─────────────────────────────────────────────────────────
@@ -399,44 +433,94 @@ activeTab: 'candidatures' | 'documents' | 'profil' | 'notifications' | '' = '';
   }
 
   submitCandidature(candidatureForm: NgForm): void {
-    this.formSubmitted = true;
-    candidatureForm.form.markAllAsTouched();
+  this.formSubmitted = true;
+  candidatureForm.form.markAllAsTouched();
 
-    if (candidatureForm.invalid) {
-      Swal.fire({ icon: 'warning', title: 'Formulaire incomplet', text: 'Veuillez corriger les erreurs.' });
-      return;
-    }
-
-    if (!this.cinFile || !this.diplome || !this.contrat) {
-      Swal.fire({ icon: 'warning', title: 'Documents manquants', text: 'Joignez tous les fichiers PDF (CIN, Diplôme, Contrat).' });
-      return;
-    }
-
-    const formData = new FormData();
-    Object.entries(this.form).forEach(([k, v]) => formData.append(k, v as string));
-    formData.append('campagneId', this.campagneIdSelectionnee.toString());
-    formData.append('cinFile', this.cinFile);
-    formData.append('diplome', this.diplome);
-    formData.append('contrat', this.contrat);
-
-    Swal.fire({ title: 'Envoi en cours...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-    this.candidatureService.deposerCandidature(formData).subscribe({
-      next: () => {
-        Swal.fire({
-          icon: 'success',
-          title: '✅ Candidature envoyée !',
-          html: `<p>Votre candidature a été soumise avec succès.</p>
-                 <p>Un email avec vos <strong>identifiants de connexion</strong> vous a été envoyé.</p>`,
-          confirmButtonText: 'Compris !',
-          confirmButtonColor: '#3b82f6',
-        });
-        this.closeModal();
-      },
-      error: err => {
-        console.error(err);
-        Swal.fire({ icon: 'error', title: 'Erreur', text: "Erreur lors de l'envoi." });
-      },
+  if (candidatureForm.invalid) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Formulaire incomplet',
+      text: 'Veuillez corriger les erreurs.'
     });
+    return;
   }
+
+  if (!this.cinFile || !this.diplome || !this.contrat) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Documents manquants',
+      text: 'Joignez tous les fichiers PDF (CIN, Diplôme, Contrat).'
+    });
+    return;
+  }
+
+  const formData = new FormData();
+  Object.entries(this.form).forEach(([k, v]) => formData.append(k, v as string));
+  formData.append('campagneId', this.campagneIdSelectionnee.toString());
+  formData.append('cinFile', this.cinFile);
+  formData.append('diplome', this.diplome);
+  formData.append('contrat', this.contrat);
+
+  Swal.fire({
+    title: 'Envoi en cours...',
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
+
+  this.candidatureService.deposerCandidature(formData).subscribe({
+
+    next: (res) => {
+      Swal.fire({
+        icon: 'success',
+        title: '✅ Candidature envoyée !',
+        html: `<p>${res.message}</p>`,
+        confirmButtonText: 'Compris !',
+        confirmButtonColor: '#3b82f6',
+      });
+      this.closeModal();
+    },
+
+    error: (err) => {
+      console.error(err);
+
+      let message = "Erreur lors de l'envoi.";
+
+      // 🔥 CAS 1 : message backend
+      if (err.error && err.error.message) {
+        message = err.error.message;
+      }
+
+      // 🔥 CAS 2 : 403
+      else if (err.status === 403) {
+        message = "Accès refusé (403)";
+      }
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Erreur',
+        text: message
+      });
+    }
+  });
+}
+
+  loadMesCandidatures(): void {
+  this.candidatureService.getMonHistorique().subscribe({
+    next: (data) => {
+      this.candidatures = data.map(c => ({
+        id:              c.id,
+        campagne:        c.campagne?.libelle ?? 'Campagne inconnue',
+        entreprise:      c.campagne?.libelle ?? '—',
+        localisation:    c.saisonnier?.region?.nom ?? '—',
+        datePostulation: c.dateDepot,
+        dateDebut:       c.campagne?.dateDebut ?? '—',
+        dateFin:         c.campagne?.dateFin ?? '—',
+        statut:          c.statut,
+        poste:           c.saisonnier?.diplome ?? '—',
+        message:         c.commentaire ?? undefined,
+      }));
+    },
+    error: (err) => console.error('Erreur historique:', err)
+  });
+}
 }

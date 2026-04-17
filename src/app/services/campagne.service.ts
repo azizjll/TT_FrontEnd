@@ -9,8 +9,9 @@ export interface CampagneRequestDTO {
   dateDebut: string;
   dateFin: string;
   description?: string;
-  budget?: number;
+  budget?: number ;
   regionIds: number[];
+  statut?: string;
 }
 
 export interface Campagne {

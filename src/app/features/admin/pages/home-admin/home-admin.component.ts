@@ -4,9 +4,11 @@ import { Router } from '@angular/router';
 import { AuthService, Region } from 'src/app/services/auth.service';
 import { CampagneService, CampagneRequestDTO } from 'src/app/services/campagne.service';
 import { CandidatureService } from 'src/app/services/candidature.service';
+import { DocumentCampagneDTO, DocumentCampagneService } from 'src/app/services/document-campagne.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { StructureDTO, StructureImportService } from 'src/app/services/structure-import.service';
 import { StructureService } from 'src/app/structure.service';
+import * as XLSX from 'xlsx';
 
 // ─── Interfaces ───────────────────────────────────────────────────
 
@@ -273,6 +275,15 @@ isLoading = false;
     totalMontant: 0
   };
 
+
+  // ── Dans la classe, nouvelles propriétés ──────────────────────────
+documentsCampagne: DocumentCampagneDTO[] = [];
+documentFile: File | null = null;
+documentNom = '';
+documentType = 'مذكرة الإنتداب';  // valeur par défaut
+isUploadingDoc = false;
+
+
   // ─── Constructor ──────────────────────────────────────────────────
 
   constructor(
@@ -284,6 +295,7 @@ isLoading = false;
     private structureimportService: StructureImportService,
     private structureService: StructureService,
     private router: Router,
+    private docCampagneService: DocumentCampagneService,
   ) {}
 
   nomUtilisateur = '';
@@ -305,6 +317,69 @@ roleUtilisateur = '';
   this.roleUtilisateur = this.authService.getRole();
   }
 
+
+  loadDocumentsCampagne(campagneId: number): void {
+  this.docCampagneService.getDocumentsByCampagne(campagneId).subscribe({
+    next: docs => this.documentsCampagne = docs,
+    error: err => console.error('Erreur chargement documents', err)
+  });
+}
+/** Upload un document vers la campagne sélectionnée */
+uploadDocumentCampagne(): void {
+  if (!this.documentFile || !this.presenceConfig.campagneId) {
+    alert('Sélectionnez un fichier et une campagne');
+    return;
+  }
+  this.isUploadingDoc = true;
+
+  this.docCampagneService.uploadDocument(
+    this.presenceConfig.campagneId,
+    this.documentNom || this.documentFile.name,
+    this.documentType,
+    this.documentFile
+  ).subscribe({
+    next: doc => {
+      this.documentsCampagne.push(doc);
+      this.documentFile = null;
+      this.documentNom = '';
+      this.isUploadingDoc = false;
+      this.showToast('✅ Document ajouté avec succès');
+    },
+    error: err => {
+      console.error(err);
+      this.isUploadingDoc = false;
+      this.showToast('❌ Erreur lors de l\'upload');
+    }
+  });
+}
+
+/** Supprime un document */
+supprimerDocument(doc: DocumentCampagneDTO): void {
+  if (!confirm(`Supprimer "${doc.nom}" ?`)) return;
+  this.docCampagneService.deleteDocument(doc.id).subscribe({
+    next: () => {
+      this.documentsCampagne = this.documentsCampagne.filter(d => d.id !== doc.id);
+      this.showToast('✅ Document supprimé');
+    },
+    error: () => this.showToast('❌ Erreur suppression')
+  });
+}
+
+/** Handler sélection fichier document */
+onDocumentFileSelected(event: Event): void {
+  const file = (event.target as HTMLInputElement).files?.[0];
+  if (file) {
+    this.documentFile = file;
+    if (!this.documentNom) {
+      this.documentNom = file.name.replace(/\.[^.]+$/, '');
+    }
+  }
+}
+
+
+ouvrirLienDoc(url: string): void {
+  window.open(url, '_blank');
+}
   // ─── Navigation ───────────────────────────────────────────────────
 
   setActive(section: 'campagnes' | 'candidatures' | 'utilisateurs' | 'memo' | 'structures' | 'presence'): void {
@@ -480,10 +555,11 @@ saveCampagne(activer: boolean): void {
 
   const dto: CampagneRequestDTO = {
     libelle: this.newCampagne.nom,
-    code: this.newCampagne.code || `CAM-${Date.now()}`,
+    code: this.newCampagne.code,
     dateDebut: this.newCampagne.dateDebut,
     dateFin: this.newCampagne.dateFin,
     description: this.newCampagne.description,
+    budget: this.newCampagne.budget ? Number(this.newCampagne.budget) : undefined,
     regionIds: [] // sera rempli automatiquement depuis l'Excel par le backend
   };
 
@@ -559,19 +635,23 @@ fermerWarning(): void {
   }
 
   private emptyNewCampagne(): Campagne {
-    const annee = new Date().getFullYear();
-    return {
-      id: 0, 
-      nom: `Campagne de recrutement des saisonniers pour ${annee}`,
-      code: '', dateDebut: '', dateFin: '',
-      statut: 'brouillon', statutLabel: 'Brouillon',
-      candidatures: 0, affectations: 0, verrouille: false,
-      description: '', budget: '', regionIds: []
-    };
-  }
+  const annee = new Date().getFullYear();
+  const codeAuto = `CAM-${annee}-${String(Date.now()).slice(-4)}`;
+  return {
+    id: 0,
+    nom: `Campagne de recrutement des saisonniers pour ${annee}`,
+    code: codeAuto,  // ← généré automatiquement
+    dateDebut: '', dateFin: '',
+    statut: 'brouillon', statutLabel: 'Brouillon',
+    candidatures: 0, affectations: 0, verrouille: false,
+    description: '', budget: '', regionIds: []
+  };
+}
 
   onAnneeChange(): void {
   this.newCampagne.nom = `Campagne de recrutement des saisonniers pour ${this.newCampagneAnnee}`;
+  // Générer le code automatiquement
+  this.newCampagne.code = `CAM-${this.newCampagneAnnee}-${String(Date.now()).slice(-4)}`;
 }
   // ─── Candidatures ─────────────────────────────────────────────────
 
@@ -1035,9 +1115,88 @@ loadStructures(): void {
   }
 
   exportPresenceExcel(): void {
-    // TODO: Appeler service backend pour générer Excel
-    alert('Export Excel — à connecter au service backend.');
-  }
+  // 1. Préparer les données
+  const data = this.filteredPresenceRows.map((row, index) => ({
+  'الحالة': row.statut === 'paye' ? 'مدفوع' : 'غير مدفوع',
+  'رقم الحساب (RIB)': row.rib || '',
+  'المبلغ الصافي (DT)': row.montantNet.toFixed(3),
+  'الأيام المشغولة': row.dureeContrat - row.absences,
+  'الغيابات': row.absences,
+  'مدة العمل (أيام)': row.dureeContrat,
+  'تاريخ المباشرة': row.dateMbacharaa,
+  'رقم بطاقة التعريف': row.cin,
+  'الاسم واللقب': row.nom,
+  'عد': index + 1,
+}));
+
+  // 2. Ajouter une ligne de totaux
+  data.push({
+    'عد': '',
+    'الاسم واللقب': 'المجموع الإجمالي',
+    'رقم بطاقة التعريف': '',
+    'تاريخ المباشرة': '',
+    'مدة العمل (أيام)': this.presenceTotals.totalJours,
+    'الغيابات': this.presenceTotals.totalAbsences,
+    'الأيام المشغولة': this.presenceTotals.totalJours - this.presenceTotals.totalAbsences,
+    'المبلغ الصافي (DT)': this.presenceTotals.totalMontant.toFixed(3),
+    'رقم الحساب (RIB)': '',
+    'الحالة': '',
+  } as any);
+
+  // 3. Créer le workbook
+  const worksheet = XLSX.utils.json_to_sheet(data);
+
+worksheet['!rtl'] = true;  // 4. Définir la largeur des colonnes
+  worksheet['!cols'] = [
+    { wch: 5 },   // عد
+    { wch: 25 },  // الاسم
+    { wch: 15 },  // CIN
+    { wch: 15 },  // تاريخ المباشرة
+    { wch: 15 },  // مدة العمل
+    { wch: 10 },  // الغيابات
+    { wch: 15 },  // الأيام المشغولة
+    { wch: 18 },  // المبلغ
+    { wch: 25 },  // RIB
+    { wch: 12 },  // الحالة
+  ];
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Présence & Paiement');
+
+  // 5. Ajouter une feuille de récapitulatif
+  const recapData = [
+    { 'Paramètre': 'Campagne', 'Valeur': this.getCampagneNom() },
+    { 'Paramètre': 'Taux journalier', 'Valeur': `${this.presenceConfig.tauxJournalier} DT` },
+    { 'Paramètre': 'Durée contrat', 'Valeur': `${this.presenceConfig.dureeContrat} jours` },
+    { 'Paramètre': 'Total saisonniers', 'Valeur': this.presenceStats.totalSaisonniers },
+    { 'Paramètre': 'Masse salariale', 'Valeur': `${this.presenceStats.masseSalariale.toFixed(3)} DT` },
+    { 'Paramètre': 'Total absences', 'Valeur': this.presenceTotals.totalAbsences },
+    { 'Paramètre': 'Date export', 'Valeur': new Date().toLocaleDateString('fr-TN') },
+  ];
+
+  const recapSheet = XLSX.utils.json_to_sheet(recapData);
+  recapSheet['!rtl'] = true;
+  recapSheet['!cols'] = [{ wch: 20 }, { wch: 30 }];
+  XLSX.utils.book_append_sheet(workbook, recapSheet, 'Récapitulatif');
+
+  // 6. Générer et télécharger le fichier
+  const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+const blob = new Blob([excelBuffer], {
+  type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+});
+const url = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = `presence_paiement_${Date}.xlsx`;
+a.click();
+URL.revokeObjectURL(url);
+}
+
+// Méthode helper pour récupérer le nom de la campagne sélectionnée
+private getCampagneNom(): string {
+  const campagne = this.campagnes.find(c => c.id === this.presenceConfig.campagneId);
+  return campagne?.nom ?? 'campagne';
+}
 
   voirDetailSaisonnier(row: PresenceRow): void {
     // TODO: Naviguer vers le détail ou ouvrir un modal
@@ -1081,18 +1240,25 @@ sauvegarderModificationCampagne(): void {
     return;
   }
 
+  // Mapper statut local → statut backend
+  const statutBackendMap: Record<string, string> = {
+    'active':    'ACTIVE',
+    'brouillon': 'BROUILLON',
+    'termine':   'CLOTUREE',
+  };
+
   const dto: CampagneRequestDTO = {
     libelle: this.editingCampagne.nom,
     code: this.editingCampagne.code,
     dateDebut: this.editingCampagne.dateDebut,
     dateFin: this.editingCampagne.dateFin,
     description: this.editingCampagne.description,
-    regionIds: this.editingCampagne.regionIds || []
+    regionIds: this.editingCampagne.regionIds || [],
+    statut: statutBackendMap[this.editingCampagne.statut] || 'BROUILLON'  // ← AJOUTER
   };
 
   this.campagneService.updateCampagne(this.editingCampagne.id, dto).subscribe({
     next: () => {
-      // Mettre à jour localement
       const idx = this.campagnes.findIndex(c => c.id === this.editingCampagne!.id);
       if (idx !== -1) {
         this.campagnes[idx] = { ...this.editingCampagne! };
@@ -1100,7 +1266,7 @@ sauvegarderModificationCampagne(): void {
       this.fermerEditModal();
       this.loadCampagnes();
     },
-    error: err => {
+    error: (err) => {
       console.error(err);
       alert('Erreur lors de la modification');
     }
@@ -1191,6 +1357,45 @@ campagnesOpen = false;
 
 toggleCampagnes(): void {
   this.campagnesOpen = !this.campagnesOpen;
+}
+
+
+// ── Lien de candidature ──────────────────────────────────────────
+
+getCandidatureUrl(campagne: Campagne): string {
+  const base = window.location.origin; // ex: http://localhost:4200
+  return `${base}/espace-saisonnier`;
+}
+
+copierLien(campagne: Campagne): void {
+  const url = this.getCandidatureUrl(campagne);
+  navigator.clipboard.writeText(url).then(() => {
+    this.showToast('✅ Lien copié dans le presse-papier !');
+  }).catch(() => {
+    // Fallback pour anciens navigateurs
+    const el = document.createElement('textarea');
+    el.value = url;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    this.showToast('✅ Lien copié !');
+  });
+}
+
+ouvrirLien(campagne: Campagne): void {
+  const url = this.getCandidatureUrl(campagne);
+  window.open(url, '_blank');
+}
+
+// ── Toast notification ──────────────────────────────────────────
+toastMessage = '';
+showToastFlag = false;
+
+showToast(msg: string): void {
+  this.toastMessage = msg;
+  this.showToastFlag = true;
+  setTimeout(() => this.showToastFlag = false, 3000);
 }
 
 logout(): void {
