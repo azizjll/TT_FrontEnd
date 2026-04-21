@@ -14,7 +14,7 @@ export interface StructureDTO {
 
 @Injectable({ providedIn: 'root' })
 export class StructureImportService {
-  private base = 'http://localhost:8080/structures';
+  private base = 'https://tt-backend-b7j3.onrender.com/structures';
 
   constructor(private http: HttpClient) {}
 

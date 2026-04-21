@@ -13,7 +13,7 @@ export interface SaisonnierDTO {
 
 @Injectable({ providedIn: 'root' })
 export class SaisonnierService {
-  private readonly API = 'http://localhost:8080/api/saisonniers';
+  private readonly API = 'https://tt-backend-b7j3.onrender.com/api/saisonniers';
 
   constructor(private http: HttpClient) {}
 

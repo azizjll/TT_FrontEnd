@@ -15,7 +15,7 @@ export interface Structure {
 })
 export class AffectationService {
 
-  private baseUrl = 'http://localhost:8080/api/affectations';
+  private baseUrl = 'https://tt-backend-b7j3.onrender.com/api/affectations';
 
   constructor(private http: HttpClient) {}
 

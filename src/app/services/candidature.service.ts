@@ -17,7 +17,7 @@ export interface Candidature {
 })
 export class CandidatureService {
 
-  private baseUrl = 'http://localhost:8080/api/candidatures';
+  private baseUrl = 'https://tt-backend-b7j3.onrender.com/api/candidatures';
 
   constructor(private http: HttpClient) {}
 
