@@ -3,6 +3,9 @@ import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
 import { SaisonnierDTO, SaisonnierService } from 'src/app/services/saisonnier.service';
+import { AuthService } from 'src/app/services/auth.service';
+import { CampagneService } from 'src/app/services/campagne.service';
+import { StructureDTO, StructureService } from 'src/app/structure.service';
 
 export interface SaisonnierPaie {
   id: number;
@@ -37,6 +40,11 @@ export class PresencePaiementComponent implements OnInit {
   campagnes: any[] = [];    // à charger depuis CampagneService si disponible
 
   currentYear = new Date().getFullYear();
+  regionId: number | null = null;
+
+  structures: StructureDTO[] = [];
+selectedStructureId: number | null = null;
+
 
   // ── UI state ──────────────────────────────────────
   searchQ      = '';
@@ -47,50 +55,123 @@ export class PresencePaiementComponent implements OnInit {
   // ── Données ───────────────────────────────────────
   saisonniers: SaisonnierPaie[] = [];
 
-    constructor(private saisonnierService: SaisonnierService) {}
+constructor(
+    private saisonnierService: SaisonnierService,
+    private authService: AuthService,
+    private campagneService: CampagneService,
+        private structureService: StructureService
 
+) {}
 
   ngOnInit(): void {
     this.loadFromStorage();
-    this.loadSaisonniers();
-  }
+
+    this.authService.getMyRegion().subscribe({
+        next: (region) => {
+            this.regionId = region.id;
+
+            this.campagneService.getCampagnesActives().subscribe({
+                next: (campagnes) => {
+                    if (campagnes.length > 0) {
+                        this.campagneId = campagnes[0].id;
+                        this.loadSaisonniers();
+
+                        // ✅ Charger structures avec campagneId connu
+                        this.structureService.getStructuresByRegion(region.id, this.campagneId).subscribe({
+                            next: (data) => { this.structures = data; },
+                            error: (err) => console.error('Erreur structures:', err)
+                        });
+                    }
+                },
+                error: (err) => console.error('Erreur campagne:', err)
+            });
+        },
+        error: (err) => console.error('Erreur région RH:', err)
+    });
+}
+
+
+
+onStructureChange(): void {
+    if (!this.campagneId) return;
+
+    if (!this.selectedStructureId) {
+        // Pas de structure sélectionnée → charger tous les saisonniers de la région
+        this.loadSaisonniers();
+        return;
+    }
+
+    this.saisonnierService.getByCampagneAndStructure(
+        this.campagneId,
+        this.selectedStructureId
+    ).subscribe({
+        next: (dtos) => {
+            const localMap = this.buildLocalMap();
+            this.saisonniers = dtos.map(dto => {
+                const saved = localMap[dto.id] ?? {};
+                return {
+                    id:                 dto.id,
+                    nom:                dto.nom,
+                    prenom:             dto.prenom,
+                    cin:                dto.cin,
+                    rib:                saved.rib ?? dto.rib ?? '',
+                    dateMbacharah:      saved.dateMbacharah ?? this.dateMbacharah,
+                    duree:              saved.duree ?? this.dureeContrat,
+                    absences:           saved.absences ?? 0,
+                    montantNet:         0,
+                    nomTitulaireCompte: saved.nomTitulaireCompte ?? '',
+                    cinTitulaire:       saved.cinTitulaire ?? '',
+                    paye:               saved.paye ?? false,
+                };
+            });
+            this.recalcAll();
+        },
+        error: (err) => console.error('Erreur filtre structure:', err)
+    });
+}
+
 
   // ── Chargement depuis le backend (ou mock) ────────
   loadSaisonniers(): void {
-    this.saisonnierService.getAll().subscribe({
-      next: (dtos: SaisonnierDTO[]) => {
-        // Récupère l'état local sauvé (absences, paye, rib perso, etc.)
-        const localMap = this.buildLocalMap();
+    if (!this.campagneId || !this.regionId) return;
 
-        this.saisonniers = dtos.map(dto => {
-          const saved = localMap[dto.id] ?? {};   // état sauvé, ou vide
-          return {
-            id:                  dto.id,
-            nom:                 dto.nom,
-            prenom:              dto.prenom,
-            cin:                 dto.cin,
-            rib:                 saved.rib ?? dto.rib ?? '',
-            dateMbacharah:       saved.dateMbacharah ?? this.dateMbacharah,
-            duree:               saved.duree ?? this.dureeContrat,
-            absences:            saved.absences ?? 0,
-            montantNet:          0,               // recalculé juste après
-            nomTitulaireCompte:  saved.nomTitulaireCompte ?? '',
-            cinTitulaire:        saved.cinTitulaire ?? '',
-            paye:                saved.paye ?? false,
-          };
-        });
-
-        this.recalcAll();
-      },
-      error: (err) => {
-        console.error('Erreur chargement saisonniers :', err);
-        // fallback : données sauvées en localStorage
-        if (this.saisonniers.length === 0) {
-          this.loadFromStorage();
+    this.saisonnierService.getByCampagneAndRegion(this.campagneId, this.regionId).subscribe({
+        next: (dtos: SaisonnierDTO[]) => {
+            const localMap = this.buildLocalMap();
+            this.saisonniers = dtos.map(dto => {
+                const saved = localMap[dto.id] ?? {};
+                return {
+                    id:                 dto.id,
+                    nom:                dto.nom,
+                    prenom:             dto.prenom,
+                    cin:                dto.cin,
+                    rib:                saved.rib ?? dto.rib ?? '',
+                    dateMbacharah:      saved.dateMbacharah ?? this.dateMbacharah,
+                    duree:              saved.duree ?? this.dureeContrat,
+                    absences:           saved.absences ?? 0,
+                    montantNet:         0,
+                    nomTitulaireCompte: saved.nomTitulaireCompte ?? '',
+                    cinTitulaire:       saved.cinTitulaire ?? '',
+                    paye:               saved.paye ?? false,
+                };
+            });
+            this.recalcAll();
+        },
+        error: (err) => {
+            console.error('Erreur chargement saisonniers:', err);
+            if (this.saisonniers.length === 0) this.loadFromStorage();
         }
-      }
     });
-  }
+}
+
+
+get structuresEC(): StructureDTO[] {
+    return this.structures.filter(s => s.type === 'ESPACE_COMMERCIAL');
+}
+
+get structuresCT(): StructureDTO[] {
+    return this.structures.filter(s => s.type === 'CENTRE_TECHNOLOGIQUE');
+}
 
   private buildLocalMap(): Record<number, Partial<SaisonnierPaie>> {
     const raw = localStorage.getItem('tt_paie_data');

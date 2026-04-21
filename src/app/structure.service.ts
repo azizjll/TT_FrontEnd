@@ -28,9 +28,10 @@ export class StructureService {
     });
   }
 
-  getStructuresByRegion(regionId: number): Observable<StructureDTO[]> {
-    return this.http.get<StructureDTO[]>(`${this.baseUrl}/region/${regionId}`);
-  }
+  getStructuresByRegion(regionId: number, campagneId?: number): Observable<StructureDTO[]> {
+    const params = campagneId ? `?campagneId=${campagneId}` : '';
+    return this.http.get<StructureDTO[]>(`${this.baseUrl}/region/${regionId}${params}`);
+}
 
   updateStructure(id: number, dto: Partial<StructureDTO>): Observable<any> {
   return this.http.put(`${this.baseUrl}/${id}`, dto, { responseType: 'text' });

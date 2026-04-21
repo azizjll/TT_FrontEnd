@@ -2,6 +2,8 @@
 
   <!-- SIDEBAR -->
   <aside class="sidebar" @slideIn>
+
+    
     <div class="sidebar-header">
       <div class="logo-mark">
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
@@ -23,6 +25,8 @@
       </div>
     </div>
 
+    
+
     <div class="sidebar-profile">
       <div class="avatar-circle">{{ getInitials() }}</div>
       <div class="profile-info">
@@ -30,6 +34,27 @@
         <span class="profile-role">Saisonnier</span>
       </div>
     </div>
+
+    <div class="sidebar-iltizam-card" *ngIf="iltizamDoc">
+  <div class="iltizam-header">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" 
+         stroke="currentColor" stroke-width="2">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+    </svg>
+    <span class="iltizam-label">Document requis</span>
+  </div>
+  <p class="iltizam-nom">{{ iltizamDoc.nom }}</p>
+  <button class="iltizam-btn" (click)="telechargerIltizam()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" 
+         stroke="currentColor" stroke-width="2.2">
+      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+      <polyline points="7 10 12 15 17 10"/>
+      <line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+    Télécharger et signer
+  </button>
+</div>
 
     <nav class="sidebar-nav">
       <button class="nav-item" [class.active]="activeTab === 'candidatures'" (click)="setTab('candidatures')">
@@ -62,6 +87,9 @@
         <span>Mon Profil</span>
       </button>
     </nav>
+
+    <!-- ===== CARD إلتزام SIDEBAR ===== -->
+
 
     <div class="sidebar-footer">
       <button class="logout-btn">
@@ -199,122 +227,81 @@
 
     <!-- ===== DOCUMENTS ===== -->
     <section *ngIf="activeTab === 'documents'" @fadeInUp>
-      <div class="page-header">
-        <div>
-          <h1 class="page-title">Mes Documents</h1>
-          <p class="page-subtitle">Gérez vos pièces justificatives et documents administratifs</p>
-        </div>
-        <button class="btn-primary">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          Ajouter un document
-        </button>
-      </div>
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Mes Documents</h1>
+      <p class="page-subtitle">Pièces justificatives déposées lors de votre candidature</p>
+    </div>
+  </div>
 
-      <div class="docs-progress-card">
-        <div class="progress-header">
-          <span class="progress-title">Complétude du dossier</span>
-          <span class="progress-pct">60%</span>
-        </div>
-        <div class="progress-bar-wrap">
-          <div class="progress-bar-fill" style="width: 60%"></div>
-        </div>
-        <p class="progress-hint">Il vous manque encore : Certificat médical valide, Attestation d'hébergement</p>
-      </div>
-
-      <!-- ===== DOCUMENTS DE CAMPAGNE ===== -->
-  <div class="section-block" *ngIf="activeCampagne">
-    <div class="section-block-header">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-        <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+  <!-- Loading state -->
+  <div *ngIf="isLoadingDocuments" 
+       style="display:flex; justify-content:center; padding:48px;">
+    <div style="text-align:center; color:var(--text-muted)">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" 
+           stroke="currentColor" stroke-width="1.5"
+           style="animation: spin 1s linear infinite; margin-bottom:12px">
+        <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" opacity=".2"/>
+        <path d="M21 12a9 9 0 00-9-9"/>
       </svg>
-      <h2>Documents de la campagne</h2>
-      <span class="badge-campagne">{{ activeCampagne.libelle }}</span>
+      <p>Chargement des documents...</p>
     </div>
+  </div>
 
-    <div class="loading-state" *ngIf="loadingDocsCampagne">
-      <div class="spinner"></div>
-      <p>Chargement des documents…</p>
-    </div>
+  <!-- Empty state -->
+  <div *ngIf="!isLoadingDocuments && documents.length === 0" class="empty-state">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" 
+         stroke="currentColor" stroke-width="1.5">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+    </svg>
+    <p>Aucun document trouvé.<br>
+       <small>Ils apparaîtront ici après dépôt de votre candidature.</small>
+    </p>
+  </div>
 
-    <div class="campagne-docs-grid" *ngIf="!loadingDocsCampagne">
+  <!-- Documents list -->
+  <div class="documents-grid" 
+       *ngIf="!isLoadingDocuments && documents.length > 0"
+       [@listStagger]="documents.length">
 
-      <div class="campagne-doc-card"
-           *ngFor="let doc of documentsCampagne"
-           (click)="telechargerDocument(doc)">
-        <div class="cdoc-icon">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="1.6">
-            <path [attr.d]="getDocTypIcon(doc.type)"/>
-          </svg>
-        </div>
-        <div class="cdoc-info">
-          <span class="cdoc-nom">{{ doc.nom }}</span>
-          <span class="cdoc-type">{{ doc.type }}</span>
-        </div>
-        <button class="cdoc-download-btn" (click)="telechargerDocument(doc); $event.stopPropagation()" title="Télécharger">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          Télécharger
-        </button>
-      </div>
+    <div class="doc-card" *ngFor="let doc of documents">
 
-      <div class="empty-state" *ngIf="documentsCampagne.length === 0">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
+      <!-- Icône type -->
+      <div class="doc-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" 
+             stroke="currentColor" stroke-width="1.8">
+          <path [attr.d]="getDocIcon(doc.type)"/>
         </svg>
-        <p>Aucun document disponible pour cette campagne</p>
       </div>
-    </div>
-  </div>
 
-  <div class="section-block">
-    <div class="section-block-header">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-        <polyline points="14 2 14 8 20 8"/>
-      </svg>
-      <h2>Mes pièces justificatives</h2>
-    </div>
-    <div class="documents-grid" [@listStagger]="documents.length">
-      <!-- vos doc-card existants -->
-    </div>
-  </div>
-
-      <div class="documents-grid" [@listStagger]="documents.length">
-        <div class="doc-card" *ngFor="let doc of documents">
-          <div class="doc-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
-            </svg>
-          </div>
-          <div class="doc-info">
-            <span class="doc-nom">{{ doc.nom }}</span>
-            <span class="doc-type">{{ doc.type }}</span>
-            <div class="doc-meta">
-              <span>{{ doc.taille }}</span>
-              <span>Ajouté le {{ doc.dateAjout }}</span>
-            </div>
-          </div>
-          <div class="doc-actions">
-            <span class="doc-statut" [ngClass]="getDocStatutClass(doc.statut)">{{ doc.statut }}</span>
-            <div class="doc-btns">
-              <button class="icon-btn" title="Télécharger">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              </button>
-              <button class="icon-btn danger" title="Supprimer">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
-              </button>
-            </div>
-          </div>
+      <!-- Infos -->
+      <div class="doc-info">
+        <span class="doc-nom">{{ doc.nom }}</span>
+        <span class="doc-type">{{ doc.type }}</span>
+        <div class="doc-meta">
+          <span class="doc-statut doc-valide">✓ Valide</span>
         </div>
       </div>
-    </section>
+
+      <!-- Actions -->
+      <div class="doc-actions">
+        <button class="icon-btn" 
+                title="Ouvrir"
+                (click)="telechargerDoc(doc.url, doc.nom)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" 
+               stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</section>
 
     <!-- ===== NOTIFICATIONS ===== -->
     <section *ngIf="activeTab === 'notifications'" @fadeInUp>
@@ -344,83 +331,163 @@
 
     <!-- ===== PROFIL ===== -->
     <section *ngIf="activeTab === 'profil'" @fadeInUp>
-      <div class="page-header">
-        <div>
-          <h1 class="page-title">Mon Profil</h1>
-          <p class="page-subtitle">Complétez votre profil pour maximiser vos chances d'être accepté</p>
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Mon Profil</h1>
+      <p class="page-subtitle">Informations saisies lors de votre candidature</p>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoadingProfil" 
+       style="display:flex; justify-content:center; padding:48px;">
+    <p style="color:var(--text-muted)">Chargement du profil...</p>
+  </div>
+
+  <div *ngIf="!isLoadingProfil" class="profil-layout">
+
+    <!-- Carte principale -->
+    <div class="profil-card-main">
+      <div class="profil-avatar-large">{{ getInitials() }}</div>
+      <h2 class="profil-fullname">{{ saisonnier.prenom }} {{ saisonnier.nom }}</h2>
+      <p class="profil-role">Saisonnier</p>
+
+      <!-- Stats rapides -->
+      <div class="profil-stats-card" style="margin-top:24px">
+        <h3 class="info-card-title">Statistiques</h3>
+        <div class="profil-stat-row">
+          <span>Candidatures envoyées</span>
+          <strong>{{ statsData.total }}</strong>
         </div>
-        <button class="btn-primary">Modifier le profil</button>
-      </div>
-
-      <div class="profil-layout">
-        <div class="profil-card-main">
-          <div class="profil-avatar-large">{{ getInitials() }}</div>
-          <h2 class="profil-fullname">{{ saisonnier.prenom }} {{ saisonnier.nom }}</h2>
-          <p class="profil-disponibilite">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Disponible : {{ saisonnier.disponibilite }}
-          </p>
-          <p class="profil-bio">{{ saisonnier.bio }}</p>
-
-          <div class="competences-section">
-            <h4>Compétences</h4>
-            <div class="competences-list">
-              <span class="competence-tag" *ngFor="let comp of saisonnier.competences">{{ comp }}</span>
-            </div>
-          </div>
-
-          <div class="langues-section">
-            <h4>Langues</h4>
-            <div class="competences-list">
-              <span class="langue-tag" *ngFor="let lang of saisonnier.langues">{{ lang }}</span>
-            </div>
-          </div>
+        <div class="profil-stat-row">
+          <span>Acceptées</span>
+          <strong class="green">{{ statsData.acceptees }}</strong>
         </div>
-
-        <div class="profil-details-col">
-          <div class="profil-info-card">
-            <h3 class="info-card-title">Informations personnelles</h3>
-            <div class="info-row">
-              <span class="info-label">Email</span>
-              <span class="info-value">{{ saisonnier.email }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Téléphone</span>
-              <span class="info-value">{{ saisonnier.telephone }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">RIB</span>
-              <span class="info-value">{{ saisonnier.rib }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Region</span>
-              <span class="info-value">{{ saisonnier.region?.nom }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">CIN</span>
-              <span class="info-value">{{ saisonnier.cin }}</span>
-            </div>
-            
-          </div>
-
-          <div class="profil-stats-card">
-            <h3 class="info-card-title">Statistiques</h3>
-            <div class="profil-stat-row">
-              <span>Candidatures envoyées</span>
-              <strong>{{ statsData.total }}</strong>
-            </div>
-            <div class="profil-stat-row">
-              <span>Taux d'acceptation</span>
-              <strong class="green">{{ statsData.total > 0 ? ((statsData.acceptees / statsData.total) * 100).toFixed(0) : 0 }}%</strong>
-            </div>
-            <div class="profil-stat-row">
-              <span>Missions effectuées</span>
-              <strong>{{ statsData.enCours }}</strong>
-            </div>
-          </div>
+        <div class="profil-stat-row">
+          <span>En attente</span>
+          <strong>{{ statsData.enAttente }}</strong>
         </div>
       </div>
-    </section>
+    </div>
+
+    <!-- Colonne détails -->
+    <div class="profil-details-col">
+
+      <!-- Infos personnelles -->
+      <div class="profil-info-card">
+        <h3 class="info-card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" 
+               stroke="currentColor" stroke-width="2" style="margin-right:8px">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          Informations personnelles
+        </h3>
+
+        <div class="info-row">
+          <span class="info-label">Nom complet</span>
+          <span class="info-value">{{ saisonnier.prenom }} {{ saisonnier.nom }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">CIN</span>
+          <span class="info-value">{{ saisonnier.cin }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Email</span>
+          <span class="info-value">{{ saisonnier.email }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Téléphone</span>
+          <span class="info-value">{{ saisonnier.telephone }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">RIB</span>
+          <span class="info-value" 
+                style="font-family:monospace; font-size:13px; letter-spacing:0.5px">
+            {{ saisonnier.rib }}
+          </span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Direction</span>
+          <span class="info-value">{{ saisonnier.regionNom }}</span>
+        </div>
+        <div class="info-row" *ngIf="saisonnier.structure">
+  <span class="info-label">Structure</span>
+  <span class="info-value" style="display:flex; align-items:center; gap:8px;">
+
+    <!-- Badge type EC / CT -->
+    <span style="font-size:11px; padding:2px 8px; border-radius:20px; font-weight:600;"
+          [style.background]="saisonnier.structure.type === 'ESPACE_COMMERCIAL' 
+                              ? 'rgba(74,158,255,0.12)' : 'rgba(168,85,247,0.12)'"
+          [style.color]="saisonnier.structure.type === 'ESPACE_COMMERCIAL' 
+                         ? '#4A9EFF' : '#a855f7'">
+      {{ saisonnier.structure.type === 'ESPACE_COMMERCIAL' ? 'EC' : 'CT' }}
+    </span>
+
+    {{ saisonnier.structure.nom }}
+  </span>
+</div>
+      </div>
+
+      <!-- Infos parent -->
+      <div class="profil-info-card">
+        <h3 class="info-card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" 
+               stroke="currentColor" stroke-width="2" style="margin-right:8px">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+            <path d="M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+          Informations du parent
+        </h3>
+
+        <div class="info-row">
+          <span class="info-label">Nom & Prénom</span>
+          <span class="info-value">{{ saisonnier.nomPrenomParent || '—' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Matricule</span>
+          <span class="info-value" style="font-family:monospace">
+            {{ saisonnier.matriculeParent || '—' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Formation -->
+      <div class="profil-info-card">
+        <h3 class="info-card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" 
+               stroke="currentColor" stroke-width="2" style="margin-right:8px">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+          </svg>
+          Formation
+        </h3>
+
+        <div class="info-row">
+          <span class="info-label">Niveau d'étude</span>
+          <span class="info-value">
+            <span class="competence-tag">{{ saisonnier.niveauEtude || '—' }}</span>
+          </span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Diplôme</span>
+          <span class="info-value">
+            <span class="competence-tag">{{ saisonnier.diplome || '—' }}</span>
+          </span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Spécialité</span>
+          <span class="info-value">{{ saisonnier.specialiteDiplome || '—' }}</span>
+        </div>
+      </div>
+
+      
+
+    </div>
+  </div>
+</section>
   </main>
 </div>
 
@@ -627,6 +694,7 @@
             <option value="BTS">BTS</option>
             <option value="LICENCE">Licence</option>
             <option value="MASTER">Master</option>
+            <option value="Ingenierie">Ingénierie</option>
             <option value="DOCTORAT">Doctorat</option>
           </select>
         </div>
@@ -636,6 +704,20 @@
           <input type="text" [(ngModel)]="form.specialiteDiplome" name="specialiteDiplome"
                  placeholder="Votre spécialité">
         </div>
+
+        <div class="field">
+  <label>Mois de travail *</label>
+  <select [(ngModel)]="form.moisTravail" name="moisTravail"
+          #moisTravail="ngModel" required
+          [class.input-error]="moisTravail.invalid && moisTravail.touched">
+    <option value="" disabled selected>Choisir le mois</option>
+    <option value="JUILLET">Juillet</option>
+    <option value="AOUT">Août</option>
+  </select>
+  <small class="error-msg" *ngIf="moisTravail.touched && moisTravail.errors?.['required']">
+    ⚠️ Le mois de travail est obligatoire.
+  </small>
+</div>
 
       </div>
 
@@ -730,10 +812,21 @@
               <path d="M9 11l3 3L22 4"/>
               <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
             </svg>
-            <span>Contrat (PDF)</span>
+            <span>Engagement (PDF)</span>
             <small *ngIf="contratFileName" class="file-name">{{ contratFileName }}</small>
             <small class="error-msg" *ngIf="formSubmitted && !contrat">⚠️ Fichier Contrat obligatoire.</small>
             <input type="file" accept=".pdf" (change)="onFileChange($event,'contrat')">
+          </label>
+
+          <label class="file-drop" [class.file-error]="formSubmitted && !ribFile">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="2" y="5" width="20" height="14" rx="2"/>
+              <line x1="2" y1="10" x2="22" y2="10"/>
+            </svg>
+            <span>RIB Bancaire (PDF)</span>
+            <small *ngIf="ribFileName" class="file-name">{{ ribFileName }}</small>
+            <small class="error-msg" *ngIf="formSubmitted && !ribFile">⚠️ Fichier RIB obligatoire.</small>
+            <input type="file" accept=".pdf" (change)="onFileChange($event,'rib')">
           </label>
 
         </div>

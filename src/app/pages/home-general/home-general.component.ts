@@ -12,13 +12,12 @@ export class HomeGeneralComponent {
   constructor(private router: Router) {}
 
 
-   goSaisonnier() {
-    this.router.navigate(['/admin/login']);
-  }
+  goSaisonnier() {
+  this.router.navigate(['/admin/login']);  // pas de queryParam → ADMIN par défaut
+}
 
-
-  goRH() {
-    this.router.navigate(['/login'], { queryParams: { role: 'RH_REGIONAL' }});
-  }
+goRH() {
+  this.router.navigate(['/admin/login'], { queryParams: { context: 'rh' } });
+}
 
 }

@@ -24,4 +24,17 @@ export class SaisonnierService {
   getById(id: number): Observable<SaisonnierDTO> {
     return this.http.get<SaisonnierDTO>(`${this.API}/${id}`);
   }
+
+  getByCampagneAndRegion(campagneId: number, regionId: number): Observable<SaisonnierDTO[]> {
+    return this.http.get<SaisonnierDTO[]>(
+        `${this.API}/by-campagne-region?campagneId=${campagneId}&regionId=${regionId}`
+    );
+}
+
+getByCampagneAndStructure(campagneId: number, structureId: number): Observable<SaisonnierDTO[]> {
+    return this.http.get<SaisonnierDTO[]>(
+        `${this.API}/by-campagne-structure?campagneId=${campagneId}&structureId=${structureId}`
+    );
+}
+
 }

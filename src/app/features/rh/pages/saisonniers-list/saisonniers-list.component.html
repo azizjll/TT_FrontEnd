@@ -76,7 +76,7 @@
                 'pill-pending':  cand.statut === 'EN_ATTENTE',
                 'pill-accepted': cand.statut === 'ACCEPTEE',
                 'pill-refused':  cand.statut === 'REFUSEE',
-                'pill-correct':  cand.statut === 'A_CORRIGER'
+
               }">
           <span class="pill-dot"></span>
           {{ statusLabel(cand.statut) }}
@@ -219,6 +219,39 @@
               <option *ngFor="let r of regions" [value]="r.id">{{ r.nom }}</option>
             </select>
           </div>
+
+          <div class="field-group">
+  <label>Structure</label>
+  <select [(ngModel)]="selectedStructureId"
+          (ngModelChange)="onStructureChange()"
+          >
+
+    <option [ngValue]="null">— Toutes les structures —</option>
+
+    <optgroup label="🏪 Espaces Commerciaux" *ngIf="structuresEC.length > 0">
+      <option *ngFor="let s of structuresEC"
+              [ngValue]="s.id"
+              [disabled]="!s.disponible">
+        {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+        {{ s.disponible ? '' : '⛔ COMPLET' }}
+      </option>
+    </optgroup>
+
+    <optgroup label="💻 Centres Technologiques" *ngIf="structuresCT.length > 0">
+      <option *ngFor="let s of structuresCT"
+              [ngValue]="s.id"
+              [disabled]="!s.disponible">
+        {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+        {{ s.disponible ? '' : '⛔ COMPLET' }}
+      </option>
+    </optgroup>
+
+  </select>
+</div>
+
+          
+
+
         </div>
 
         <!-- Colonne candidature -->
@@ -240,7 +273,6 @@
               <option value="EN_ATTENTE">En attente</option>
               <option value="ACCEPTEE">Acceptée</option>
               <option value="REFUSEE">Refusée</option>
-              <option value="A_CORRIGER">À corriger</option>
             </select>
           </div>
           <div class="field-group">
@@ -535,6 +567,17 @@
               <small *ngIf="contratFileName" class="file-name">{{ contratFileName }}</small>
               <small class="error-msg" *ngIf="formSubmitted && !contrat">⚠️ Fichier Contrat obligatoire.</small>
               <input type="file" accept=".pdf" (change)="onFileChange($event,'contrat')">
+            </label>
+
+            <label class="file-zone" [class.file-error]="formSubmitted && !ribFile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                <line x1="2" y1="10" x2="22" y2="10"/>
+              </svg>
+              <span>RIB Bancaire (PDF)</span>
+              <small *ngIf="ribFileName" class="file-name">{{ ribFileName }}</small>
+              <small class="error-msg" *ngIf="formSubmitted && !ribFile">⚠️ Fichier RIB obligatoire.</small>
+              <input type="file" accept=".pdf" (change)="onFileChange($event,'rib')">
             </label>
 
           </div>

@@ -2045,6 +2045,358 @@
   animation: slideIn 0.3s ease;
 }
 
+// ── Campagne selector block ───────────────────────────────────────
+.memo-campagne-block {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.memo-field-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.memo-select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--surface-1);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  &:focus { border-color: var(--blue-500); }
+}
+
+// ── Section documents liste ───────────────────────────────────────
+.memo-docs-section {
+  width: 100%;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.memo-docs-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.memo-docs-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.docs-count-badge {
+  background: var(--blue-500);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.btn-add-doc {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  border: 1px dashed var(--blue-300);
+  color: var(--blue-500);
+  cursor: pointer;
+  transition: all 0.2s;
+  background: none;
+  flex-shrink: 0;
+
+  svg { width: 14px; height: 14px; }
+  &:hover { background: var(--surface-2); border-color: var(--blue-500); }
+  &.disabled { opacity: 0.4; pointer-events: none; }
+}
+
+.memo-docs-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  direction: rtl;
+  padding: 6px 0;
+}
+
+.memo-docs-vide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 8px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  direction: rtl;
+  text-align: center;
+}
+
+// ── Liste documents cliquables ────────────────────────────────────
+.memo-doc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.memo-doc-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: var(--surface-1);
+
+  &:hover {
+    background: var(--surface-2);
+    border-color: var(--blue-200);
+  }
+
+  &.selected {
+    background: rgba(30, 139, 212, 0.1);
+    border-color: var(--blue-400);
+
+    .memo-doc-list-nom { color: var(--blue-700); }
+
+    .memo-doc-list-icon svg rect:first-child { fill: rgba(30,139,212,0.2); }
+  }
+}
+
+.memo-doc-list-icon {
+  width: 28px; height: 28px; flex-shrink: 0;
+  svg { width: 100%; height: 100%; }
+}
+
+.memo-doc-list-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.memo-doc-list-nom {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  direction: rtl;
+}
+
+.memo-doc-list-type {
+  font-size: 10px;
+  color: var(--text-muted);
+  direction: rtl;
+}
+
+.memo-doc-list-actions {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s;
+
+  .memo-doc-list-item:hover & { opacity: 1; }
+}
+
+.memo-quick-btn {
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  border: none; border-radius: 5px;
+  background: var(--surface-3);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  padding: 0;
+
+  svg { width: 12px; height: 12px; }
+
+  &:hover { background: var(--blue-200); color: var(--blue-700); }
+
+  &.danger:hover {
+    background: rgba(239,68,68,0.1);
+    color: #DC2626;
+  }
+}
+
+// ── Viewer topbar ─────────────────────────────────────────────────
+.memo-viewer-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #1a2740;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  gap: 12px;
+}
+
+.memo-viewer-doc-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.memo-viewer-doc-nom {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  direction: rtl;
+}
+
+.memo-viewer-doc-type {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.1);
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+.memo-viewer-topbar-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.viewer-topbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.7);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  svg { width: 13px; height: 13px; }
+
+  &:hover { background: rgba(255,255,255,0.15); color: white; }
+
+  &.close:hover {
+    background: rgba(239,68,68,0.2);
+    color: #FF8080;
+    border-color: rgba(239,68,68,0.3);
+  }
+}
+
+// ── Viewer empty state ────────────────────────────────────────────
+.memo-viewer-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+
+.memo-viewer-empty-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 40px 32px;
+  border: 2px dashed rgba(75, 190, 245, 0.25);
+  border-radius: 16px;
+  text-align: center;
+  max-width: 360px;
+  width: 100%;
+  transition: border-color 0.2s, background 0.2s;
+
+  &.dragover {
+    border-color: var(--blue-400);
+    background: rgba(75,190,245,0.05);
+  }
+}
+
+.memo-viewer-empty-icon {
+  width: 80px; height: 80px;
+  svg { width: 100%; height: 100%; }
+}
+
+.memo-viewer-empty-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+  direction: rtl;
+  line-height: 1.5;
+}
+
+.memo-viewer-empty-sub {
+  font-size: 12px;
+  color: rgba(255,255,255,0.35);
+  line-height: 1.5;
+}
+
+.memo-drop-btn {
+  color: rgba(255,255,255,0.6) !important;
+  border-color: rgba(75,190,245,0.4) !important;
+  &:hover { background: rgba(75,190,245,0.1) !important; color: white !important; }
+}
+
+
+.lien-url {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #eef6ff;
+  color: #007bff;
+  border-radius: 6px;
+  font-size: 13px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.lien-url:hover {
+  background: #007bff;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.lien-url:active {
+  transform: scale(0.95);
+}
+
 @keyframes slideIn {
   from { transform: translateY(20px); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }

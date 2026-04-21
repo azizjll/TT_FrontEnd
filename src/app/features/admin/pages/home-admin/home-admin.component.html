@@ -48,7 +48,7 @@
       <span>Toutes les campagnes</span>
     </a>
 
-    <!-- مذكرة الإنتداب -->
+   <!-- مذكرة الإنتداب --> 
     <a class="nav-item nav-sub-item"
        [class.active]="activeSection === 'memo'"
        (click)="setActive('memo')">
@@ -79,7 +79,7 @@
         <span>Candidatures</span>
         <span class="nav-badge secondary">{{ stats.totalCandidatures }}</span>
       </a>
-
+<!-- مذكرة الإنتداب 
       <a class="nav-item" [class.active]="activeSection === 'utilisateurs'" (click)="setActive('utilisateurs')">
         <span class="nav-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -89,7 +89,7 @@
         </span>
         <span>Utilisateurs</span>
       </a>
-
+-->
       <!-- NOUVEAU: Présence & Paiement -->
       <a class="nav-item" [class.active]="activeSection === 'presence'" (click)="setActive('presence')">
         <span class="nav-icon">
@@ -239,7 +239,7 @@
         <div class="table-filters">
           <button class="filter-tab active">Toutes</button>
           <button class="filter-tab">Actives</button>
-          <button class="filter-tab">Terminées</button>
+          <button class="filter-tab">Cloturées</button>
           <button class="filter-tab">Brouillons</button>
         </div>
         <table class="data-table">
@@ -288,7 +288,9 @@
 
               <td>
                 <div class="lien-cell" *ngIf="campagne.statut === 'active'">
-                  <span class="lien-url">{{ getCandidatureUrl(campagne) }}</span>
+                <a [href]="getCandidatureUrl(campagne)" target="_blank" class="lien-url">
+                  Espace saisonnier
+                </a>
                   <button class="action-icon" 
                           title="Copier le lien" 
                           (click)="copierLien(campagne)">
@@ -340,96 +342,7 @@
       </div>
 
       <!-- ===== DOCUMENTS DE LA CAMPAGNE ACTIVE ===== -->
-<div class="table-card" style="margin-top: 24px;">
-  <div class="section-header" style="padding: 16px 20px 0;">
-    <h3 style="font-size:15px; font-weight:500;">
-      Documents de la campagne — سياق الانتداب
-    </h3>
-  </div>
 
-  <!-- Zone upload -->
-  <div style="padding: 16px 20px; display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
-    
-    <div class="form-group" style="flex:1; min-width:160px;">
-      <label>Nom du document</label>
-      <input type="text"
-             [(ngModel)]="documentNom"
-             placeholder="Ex: مذكرة الإنتداب 2025" />
-    </div>
-
-    <div class="form-group" style="min-width:180px;">
-      <label>Type</label>
-      <select [(ngModel)]="documentType">
-        <option value="مذكرة الإنتداب">مذكرة الإنتداب</option>
-        <option value="إلتزام">إلتزام — عمل موسمي</option>
-        <option value="autre">Autre</option>
-      </select>
-    </div>
-
-    <div class="form-group" style="min-width:160px;">
-      <label>Fichier</label>
-      <label class="btn btn-outline btn-sm" style="cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
-        </svg>
-        {{ documentFile ? documentFile.name : 'Choisir…' }}
-        <input type="file" accept=".pdf,.jpg,.png"
-               (change)="onDocumentFileSelected($event)"
-               style="display:none" />
-      </label>
-    </div>
-
-    <button class="btn btn-primary"
-            (click)="uploadDocumentCampagne()"
-            [disabled]="isUploadingDoc || !documentFile">
-      <span *ngIf="isUploadingDoc">⏳</span>
-      <span *ngIf="!isUploadingDoc">Ajouter</span>
-    </button>
-  </div>
-
-  <!-- Liste des documents -->
-  <table class="data-table" *ngIf="documentsCampagne.length > 0">
-    <thead>
-      <tr>
-        <th>Nom</th>
-        <th>Type</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let doc of documentsCampagne" class="table-row">
-        <td>
-          <a [href]="doc.url" target="_blank" class="name-primary">{{ doc.nom }}</a>
-        </td>
-        <td>
-          <span class="status-badge">{{ doc.type }}</span>
-        </td>
-        <td>
-          <div class="row-actions">
-            <button class="action-icon" title="Ouvrir" (click)="ouvrirLienDoc(doc.url)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                <polyline points="15 3 21 3 21 9"/>
-                <line x1="10" y1="14" x2="21" y2="3"/>
-              </svg>
-            </button>
-            <button class="action-icon danger" title="Supprimer" (click)="supprimerDocument(doc)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="3 6 5 6 21 6"/>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-              </svg>
-            </button>
-          </div>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
-  <div *ngIf="documentsCampagne.length === 0"
-       style="padding:24px; text-align:center; color:var(--text-muted); font-size:13px;">
-    Aucun document ajouté à cette campagne
-  </div>
-</div>
     </section>
 
     <!-- ===== SECTION: CANDIDATURES ===== -->
@@ -796,141 +709,387 @@
 
     <!-- ===== SECTION: MEMO INTIDAB ===== -->
     <section class="content-section" *ngIf="activeSection === 'memo'">
-      <div class="section-header">
-        <h2 class="section-title">مذكرة الإنتداب 2025</h2>
-        <div class="action-buttons">
-          <button class="btn btn-primary" (click)="openMemoUploadModal()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+  <div class="section-header">
+    <h2 class="section-title">مذكرة الإنتداب 2025</h2>
+    <div class="action-buttons">
+      <button class="btn btn-primary" (click)="openMemoUploadModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        Modifier la circulaire
+      </button>
+    </div>
+  </div>
+
+  <div class="memo-layout">
+
+    <!-- ══ SIDEBAR GAUCHE ══ -->
+    <div class="memo-sidebar-panel">
+
+      <!-- Sélecteur de campagne -->
+      <div class="memo-campagne-block">
+        <label class="memo-field-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               style="width:13px;height:13px">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          الحملة
+        </label>
+        <select [(ngModel)]="memoSelectedCampagneId"
+                (ngModelChange)="onMemoCampagneChange($event)"
+                class="memo-select">
+          <option [ngValue]="null">— اختر الحملة —</option>
+          <option *ngFor="let c of campagnes" [ngValue]="c.id">
+            {{ c.nom }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Icône + titre -->
+      <div class="memo-doc-icon">
+        <svg viewBox="0 0 48 48" fill="none">
+          <rect x="6" y="4" width="28" height="36" rx="3" fill="#E0F2FF" stroke="#1E8BD4" stroke-width="1.5"/>
+          <path d="M28 4v10h10" stroke="#1E8BD4" stroke-width="1.5" fill="none"/>
+          <rect x="28" y="14" width="10" height="26" rx="2" fill="#1E8BD4" opacity="0.15"/>
+          <path d="M34 4l4 4v6h-6V4l2 0z" fill="#1E8BD4" opacity="0.3"/>
+          <line x1="12" y1="22" x2="30" y2="22" stroke="#1E8BD4" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="12" y1="27" x2="30" y2="27" stroke="#1E8BD4" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="12" y1="32" x2="22" y2="32" stroke="#1E8BD4" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="memo-doc-title">مذكرة حول انتداب أعوان متعاقدين لعمل موسمي</div>
+      <div class="memo-doc-year">سنة 2025</div>
+
+      <!-- Meta infos -->
+      <div class="memo-meta-list">
+        <div class="memo-meta-item">
+          <span class="memo-meta-key">النوع</span>
+          <span class="memo-meta-val">مذكرة إدارية</span>
+        </div>
+        <div class="memo-meta-item">
+          <span class="memo-meta-key">السنة</span>
+          <span class="memo-meta-val">2025</span>
+        </div>
+        <div class="memo-meta-item">
+          <span class="memo-meta-key">الصيغة</span>
+          <span class="memo-meta-val">PDF</span>
+        </div>
+        <div class="memo-meta-item">
+          <span class="memo-meta-key">الحالة</span>
+          <span class="memo-meta-val status-active-badge">سارية المفعول</span>
+        </div>
+      </div>
+
+      <!-- Boutons download/print -->
+      <div class="memo-actions-panel">
+        <button class="btn btn-primary w-full" (click)="downloadMemo()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+          </svg>
+          تحميل المذكرة
+        </button>
+        <button class="btn btn-outline w-full" (click)="printMemo()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 6 2 18 2 18 9"/>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+            <rect x="6" y="14" width="12" height="8"/>
+          </svg>
+          طباعة
+        </button>
+      </div>
+
+      <!-- ══ LISTE DOCUMENTS DE LA CAMPAGNE ══ -->
+      <div class="memo-docs-section" *ngIf="memoSelectedCampagneId">
+
+        <!-- En-tête liste -->
+        <div class="memo-docs-section-header">
+          <span class="memo-docs-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 style="width:14px;height:14px">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
             </svg>
-            Modifier le document
+            وثائق الحملة
+            <span class="docs-count-badge" *ngIf="memoDocumentsCampagne.length > 0">
+              {{ memoDocumentsCampagne.length }}
+            </span>
+          </span>
+          <label class="btn-add-doc" title="إضافة وثيقة"
+                 [class.disabled]="!memoSelectedCampagneId">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <input type="file" accept=".pdf,.jpg,.png"
+                   [disabled]="!memoSelectedCampagneId"
+                   (change)="onMemoDocumentUpload($event)"
+                   style="display:none" />
+          </label>
+        </div>
+
+        <!-- Spinner -->
+        <div class="memo-docs-loading" *ngIf="isLoadingDocsCampagne">
+          <div class="memo-spinner" style="width:22px;height:22px;border-width:2px;"></div>
+          <span>جاري التحميل...</span>
+        </div>
+
+        <!-- Aucun document -->
+        <div class="memo-docs-vide" *ngIf="!isLoadingDocsCampagne && memoDocumentsCampagne.length === 0">
+          <svg viewBox="0 0 32 32" fill="none" style="width:32px;height:32px;opacity:0.3">
+            <rect x="4" y="2" width="18" height="26" rx="3" fill="#A8E1FF" stroke="#4BBEF5" stroke-width="1.5"/>
+            <path d="M16 2v8h8" stroke="#4BBEF5" stroke-width="1.5" fill="none"/>
+          </svg>
+          <span>لا توجد وثائق لهذه الحملة</span>
+        </div>
+
+        <!-- Liste des documents cliquables -->
+        <div class="memo-doc-list" *ngIf="!isLoadingDocsCampagne && memoDocumentsCampagne.length > 0">
+          <div class="memo-doc-list-item"
+               *ngFor="let doc of memoDocumentsCampagne"
+               [class.selected]="memoDocumentSelectionne?.id === doc.id"
+               (click)="selectionnerDocumentMemo(doc)">
+
+            <!-- Icône PDF -->
+            <div class="memo-doc-list-icon">
+              <svg viewBox="0 0 32 32" fill="none">
+                <rect x="2" y="1" width="20" height="28" rx="3"
+                      fill="#E0F2FF" stroke="#1E8BD4" stroke-width="1.2"/>
+                <path d="M16 1v8h8" stroke="#1E8BD4" stroke-width="1.2" fill="none"/>
+                <rect x="16" y="9" width="8" height="20" rx="1.5"
+                      fill="#1E8BD4" opacity="0.12"/>
+                <line x1="6" y1="14" x2="18" y2="14" stroke="#1E8BD4"
+                      stroke-width="0.9" stroke-linecap="round"/>
+                <line x1="6" y1="17" x2="18" y2="17" stroke="#1E8BD4"
+                      stroke-width="0.9" stroke-linecap="round"/>
+                <line x1="6" y1="20" x2="13" y2="20" stroke="#1E8BD4"
+                      stroke-width="0.9" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <!-- Nom + type -->
+            <div class="memo-doc-list-info">
+              <span class="memo-doc-list-nom">{{ doc.nom }}</span>
+              <span class="memo-doc-list-type">{{ doc.type }}</span>
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="memo-doc-list-actions">
+              <button class="memo-quick-btn"
+                      title="فتح في نافذة جديدة"
+                      (click)="ouvrirLienDoc(doc.url); $event.stopPropagation()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/>
+                  <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+              </button>
+              <button class="memo-quick-btn danger"
+                      title="حذف"
+                      (click)="supprimerDocumentMemo(doc); $event.stopPropagation()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                </svg>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <!-- ══ Fin documents ══ -->
+
+      <!-- Résumé -->
+      <div class="memo-summary-box">
+        <div class="memo-summary-title">ملخص المذكرة</div>
+        <ul class="memo-summary-list">
+          <li>تحديد عدد الأعوان المسموح بانتدابهم</li>
+          <li>شروط الانتداب وآجاله</li>
+          <li>الوثائق المطلوبة لكل ملف</li>
+          <li>إجراءات التوقيع والمصادقة</li>
+          <li>مراحل المعالجة الإدارية</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ══ VIEWER DROITE ══ -->
+    <div class="memo-viewer-panel">
+
+      <!-- Toolbar du viewer -->
+      <div class="memo-viewer-topbar" *ngIf="memoDocumentSelectionne">
+        <div class="memo-viewer-doc-info">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               style="width:16px;height:16px;color:var(--blue-400)">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          <span class="memo-viewer-doc-nom">{{ memoDocumentSelectionne.nom }}</span>
+          <span class="memo-viewer-doc-type">{{ memoDocumentSelectionne.type }}</span>
+        </div>
+        <div class="memo-viewer-topbar-actions">
+          <button class="viewer-topbar-btn"
+                  title="تحميل"
+                  (click)="ouvrirLienDoc(memoDocumentSelectionne.url)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            تحميل
+          </button>
+          <button class="viewer-topbar-btn"
+                  title="فتح في نافذة جديدة"
+                  (click)="ouvrirLienDoc(memoDocumentSelectionne.url)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+              <polyline points="15 3 21 3 21 9"/>
+              <line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+            فتح
+          </button>
+          <button class="viewer-topbar-btn close"
+                  title="إغلاق"
+                  (click)="fermerViewerDoc()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
           </button>
         </div>
       </div>
 
-      <div class="memo-layout">
-        <div class="memo-sidebar-panel">
-          <div class="memo-doc-icon">
-            <svg viewBox="0 0 48 48" fill="none">
-              <rect x="6" y="4" width="28" height="36" rx="3" fill="#E0F2FF" stroke="#1E8BD4" stroke-width="1.5"/>
-              <path d="M28 4v10h10" stroke="#1E8BD4" stroke-width="1.5" fill="none"/>
-              <rect x="28" y="14" width="10" height="26" rx="2" fill="#1E8BD4" opacity="0.15"/>
-              <path d="M34 4l4 4v6h-6V4l2 0z" fill="#1E8BD4" opacity="0.3"/>
-              <line x1="12" y1="22" x2="30" y2="22" stroke="#1E8BD4" stroke-width="1.2" stroke-linecap="round"/>
-              <line x1="12" y1="27" x2="30" y2="27" stroke="#1E8BD4" stroke-width="1.2" stroke-linecap="round"/>
-              <line x1="12" y1="32" x2="22" y2="32" stroke="#1E8BD4" stroke-width="1.2" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <div class="memo-doc-title">مذكرة حول انتداب أعوان متعاقدين لعمل موسمي</div>
-          <div class="memo-doc-year">سنة 2025</div>
+      <div class="memo-viewer-content">
 
-          <div class="memo-meta-list">
-            <div class="memo-meta-item">
-              <span class="memo-meta-key">النوع</span>
-              <span class="memo-meta-val">مذكرة إدارية</span>
-            </div>
-            <div class="memo-meta-item">
-              <span class="memo-meta-key">السنة</span>
-              <span class="memo-meta-val">2025</span>
-            </div>
-            <div class="memo-meta-item">
-              <span class="memo-meta-key">الصيغة</span>
-              <span class="memo-meta-val">PDF</span>
-            </div>
-            <div class="memo-meta-item">
-              <span class="memo-meta-key">الحالة</span>
-              <span class="memo-meta-val status-active-badge">سارية المفعول</span>
-            </div>
-          </div>
-
-          <div class="memo-actions-panel">
-            <button class="btn btn-primary w-full" (click)="downloadMemo()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-              </svg>
-              تحميل المذكرة
-            </button>
-            <button class="btn btn-outline w-full" (click)="printMemo()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-                <rect x="6" y="14" width="12" height="8"/>
-              </svg>
-              طباعة
-            </button>
-          </div>
-
-          <div class="memo-summary-box">
-            <div class="memo-summary-title">ملخص المذكرة</div>
-            <ul class="memo-summary-list">
-              <li>تحديد عدد الأعوان المسموح بانتدابهم</li>
-              <li>شروط الانتداب وآجاله</li>
-              <li>الوثائق المطلوبة لكل ملف</li>
-              <li>إجراءات التوقيع والمصادقة</li>
-              <li>مراحل المعالجة الإدارية</li>
-            </ul>
-          </div>
+        <!-- Spinner chargement document -->
+        <div class="memo-loading" *ngIf="isLoadingViewerDoc">
+          <div class="memo-spinner"></div>
+          <span>جاري تحميل الوثيقة...</span>
         </div>
 
-        <div class="memo-viewer-panel">
-          <div class="memo-viewer-content">
-            <div class="memo-loading" *ngIf="isLoadingPdf">
-              <div class="memo-spinner"></div>
-              <span>Chargement du document...</span>
-            </div>
+        <!-- Document sélectionné affiché -->
+        <ng-container *ngIf="!isLoadingViewerDoc && memoDocumentSelectionne && memoViewerUrl">
+          <div class="memo-pdf-frame-wrap">
+            <object
+              [attr.data]="memoViewerUrl"
+              type="application/pdf"
+              class="memo-pdf-object">
+              <!-- Fallback si PDF non supporté -->
+              <div class="pdf-fallback-msg">
+                <svg viewBox="0 0 48 48" fill="none" style="width:48px;height:48px">
+                  <rect x="4" y="2" width="30" height="40" rx="4"
+                        fill="#E0F2FF" stroke="#1E8BD4" stroke-width="1.5"/>
+                  <path d="M26 2v12h12" stroke="#1E8BD4" stroke-width="1.5" fill="none"/>
+                </svg>
+                <p style="color:rgba(255,255,255,0.7); font-size:14px;">
+                  Votre navigateur ne supporte pas l'affichage PDF.
+                </p>
+                <a [href]="memoDocumentSelectionne.url"
+                   download
+                   class="btn btn-primary">
+                  Télécharger le document
+                </a>
+              </div>
+            </object>
+          </div>
+        </ng-container>
 
-            <ng-container *ngIf="!isLoadingPdf">
-              <div class="memo-pdf-frame-wrap" *ngIf="memoDocument.hasFile; else noPdf">
-                <object
-                  [attr.data]="memoDocument.fileUrl"
-                  type="application/pdf"
-                  class="memo-pdf-object">
-                  <div class="pdf-fallback-msg">
-                    <p>Votre navigateur ne supporte pas l'affichage PDF.</p>
-                    <a [href]="memoDocument.rawUrl" download class="btn btn-primary">Télécharger</a>
-                  </div>
-                </object>
+        <!-- État : aucun document sélectionné -->
+        <ng-container *ngIf="!isLoadingViewerDoc && !memoDocumentSelectionne">
 
-                <div class="memo-upload-status" *ngIf="isUploading || uploadSuccess || uploadError">
-                  <span class="status-uploading" *ngIf="isUploading">⏳ Sauvegarde en cours...</span>
-                  <span class="status-success"  *ngIf="uploadSuccess">✅ Document sauvegardé</span>
-                  <span class="status-error"    *ngIf="uploadError">❌ {{ uploadError }}</span>
+          <!-- Circulaire générale si pas de sélection -->
+          <ng-container *ngIf="memoDocument.hasFile && !memoSelectedCampagneId">
+            <div class="memo-pdf-frame-wrap">
+              <object
+                [attr.data]="memoDocument.fileUrl"
+                type="application/pdf"
+                class="memo-pdf-object">
+                <div class="pdf-fallback-msg">
+                  <p style="color:rgba(255,255,255,0.7);">
+                    Votre navigateur ne supporte pas l'affichage PDF.
+                  </p>
+                  <a [href]="memoDocument.rawUrl" download class="btn btn-primary">
+                    Télécharger
+                  </a>
                 </div>
+              </object>
+            </div>
+          </ng-container>
+
+          <!-- État vide -->
+          <div class="memo-viewer-empty" *ngIf="!memoDocument.hasFile || memoSelectedCampagneId">
+            <div class="memo-viewer-empty-inner"
+                 (dragover)="$event.preventDefault(); memoDragOver = true"
+                 (dragleave)="memoDragOver = false"
+                 (drop)="onMemoDrop($event)"
+                 [class.dragover]="memoDragOver">
+
+              <div class="memo-viewer-empty-icon">
+                <svg viewBox="0 0 80 80" fill="none">
+                  <circle cx="40" cy="40" r="36" fill="rgba(75,190,245,0.08)"
+                          stroke="rgba(75,190,245,0.2)" stroke-width="1.5"/>
+                  <rect x="22" y="16" width="28" height="38" rx="4"
+                        fill="rgba(75,190,245,0.15)" stroke="#4BBEF5" stroke-width="1.5"/>
+                  <path d="M40 16v12h12" stroke="#4BBEF5" stroke-width="1.5" fill="none"/>
+                  <line x1="28" y1="34" x2="44" y2="34" stroke="#4BBEF5"
+                        stroke-width="1.2" stroke-linecap="round"/>
+                  <line x1="28" y1="39" x2="44" y2="39" stroke="#4BBEF5"
+                        stroke-width="1.2" stroke-linecap="round"/>
+                  <line x1="28" y1="44" x2="37" y2="44" stroke="#4BBEF5"
+                        stroke-width="1.2" stroke-linecap="round"/>
+                  <!-- Flèche curseur -->
+                  <path d="M52 52 L62 62 M62 56 L62 62 L56 62"
+                        stroke="#4BBEF5" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
               </div>
 
-              <ng-template #noPdf>
-                <div class="memo-empty-state"
-                     (dragover)="$event.preventDefault(); memoDragOver = true"
-                     (dragleave)="memoDragOver = false"
-                     (drop)="onMemoDrop($event)"
-                     [class.dragover]="memoDragOver">
-                  <div class="memo-empty-icon">
-                    <svg viewBox="0 0 64 64" fill="none">
-                      <rect x="8" y="4" width="36" height="48" rx="4" fill="#D6F0FF" stroke="#4BBEF5" stroke-width="1.5"/>
-                      <path d="M36 4v12h12" stroke="#4BBEF5" stroke-width="1.5" fill="none"/>
-                      <rect x="36" y="16" width="12" height="36" rx="2" fill="#4BBEF5" opacity="0.15"/>
-                      <line x1="16" y1="28" x2="36" y2="28" stroke="#4BBEF5" stroke-width="1.2" stroke-linecap="round"/>
-                      <line x1="16" y1="34" x2="36" y2="34" stroke="#4BBEF5" stroke-width="1.2" stroke-linecap="round"/>
-                      <line x1="16" y1="40" x2="28" y2="40" stroke="#4BBEF5" stroke-width="1.2" stroke-linecap="round"/>
-                    </svg>
-                  </div>
-                  <p class="memo-empty-title">Aucun document chargé</p>
-                  <p class="memo-empty-sub">Glissez-déposez ou importez le PDF de la مذكرة الإنتداب</p>
-                  <label class="btn btn-primary" style="cursor:pointer">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
-                    </svg>
-                    Charger le PDF
-                    <input type="file" accept=".pdf" (change)="onMemoFileSelected($event)" style="display:none"/>
-                  </label>
-                  <span style="font-size:11px; color:var(--text-muted)">PDF uniquement — max 20 Mo</span>
-                </div>
-              </ng-template>
-            </ng-container>
+              <p class="memo-viewer-empty-title">
+                <ng-container *ngIf="!memoSelectedCampagneId">
+                  اختر حملة من القائمة لعرض وثائقها
+                </ng-container>
+                <ng-container *ngIf="memoSelectedCampagneId && memoDocumentsCampagne.length === 0">
+                  لا توجد وثائق لهذه الحملة — أضف وثيقة من القائمة
+                </ng-container>
+                <ng-container *ngIf="memoSelectedCampagneId && memoDocumentsCampagne.length > 0">
+                  انقر على وثيقة من القائمة لعرضها هنا
+                </ng-container>
+              </p>
+
+              <p class="memo-viewer-empty-sub"
+                 *ngIf="!memoSelectedCampagneId">
+                Glissez-déposez un PDF ou sélectionnez une campagne
+              </p>
+
+              <!-- Zone drop pour circulaire globale -->
+              <label class="btn btn-outline memo-drop-btn"
+                     *ngIf="!memoSelectedCampagneId"
+                     style="cursor:pointer; margin-top:8px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     style="width:16px;height:16px">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                </svg>
+                Charger la circulaire
+                <input type="file" accept=".pdf"
+                       (change)="onMemoFileSelected($event)"
+                       style="display:none"/>
+              </label>
+            </div>
           </div>
+
+        </ng-container>
+
+        <!-- Statut upload -->
+        <div class="memo-upload-status" *ngIf="isUploading || uploadSuccess || uploadError">
+          <span class="status-uploading" *ngIf="isUploading">⏳ Sauvegarde en cours...</span>
+          <span class="status-success"   *ngIf="uploadSuccess">✅ Document sauvegardé</span>
+          <span class="status-error"     *ngIf="uploadError">❌ {{ uploadError }}</span>
         </div>
+
       </div>
-    </section>
+    </div>
+
+  </div>
+</section>
 
     <!-- ===== SECTION: STRUCTURES PAR RÉGION ===== -->
     <section class="content-section" *ngIf="activeSection === 'structures'">
@@ -1217,6 +1376,154 @@
         </div>
       </div>
       <!-- ===== FIN Upload Excel ===== -->
+
+      <!-- ===== Upload Excel Parents ===== -->
+<div class="form-group">
+  <label>
+    Liste des parents autorisés
+    <span style="font-size:11px; color: var(--text-muted); font-weight:400;">
+      (optionnel — Nom & Prénom + Matricule)
+    </span>
+  </label>
+
+  <div class="excel-upload-zone"
+       [class.has-file]="parentsExcelFile"
+       [class.dragover]="parentsExcelDragOver"
+       (dragover)="$event.preventDefault(); parentsExcelDragOver = true"
+       (dragleave)="parentsExcelDragOver = false"
+       (drop)="onParentsExcelDrop($event)">
+
+    <ng-container *ngIf="!parentsExcelFile">
+      <svg viewBox="0 0 48 48" fill="none" style="width:36px;height:36px">
+        <rect x="4" y="6" width="40" height="36" rx="3" fill="#E8F5E9" 
+              stroke="#4CAF50" stroke-width="1.5"/>
+        <line x1="4"  y1="16" x2="44" y2="16" stroke="#4CAF50" stroke-width="1"/>
+        <line x1="18" y1="6"  x2="18" y2="42" stroke="#4CAF50" stroke-width="1"/>
+        <path d="M28 28l4-4 4 4M32 24v8" stroke="#4CAF50" 
+              stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <div style="text-align:center">
+        <span style="font-size:13px; color: var(--text-secondary); display:block">
+          Glissez le fichier Excel des parents ici
+        </span>
+        <span style="font-size:11px; color: var(--text-muted)">
+          Colonnes : Nom & Prénom | Matricule
+        </span>
+      </div>
+      <label class="btn btn-outline btn-sm" style="cursor:pointer; margin-top:4px">
+        Parcourir
+        <input type="file"
+               accept=".xlsx,.xls"
+               (change)="onParentsExcelSelected($event)"
+               style="display:none" />
+      </label>
+    </ng-container>
+
+    <ng-container *ngIf="parentsExcelFile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2" 
+           style="width:28px;height:28px">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <line x1="3" y1="9"  x2="21" y2="9"/>
+        <line x1="9" y1="3"  x2="9"  y2="21"/>
+      </svg>
+      <div style="flex:1; min-width:0">
+        <span style="font-size:13px; font-weight:500; color: var(--text-primary); 
+                     display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">
+          {{ parentsExcelFile.name }}
+        </span>
+        <span style="font-size:11px; color: var(--text-muted)">
+          {{ (parentsExcelFile.size / 1024).toFixed(1) }} KB
+        </span>
+      </div>
+      <button class="remove-file" 
+              (click)="parentsExcelFile = null; $event.stopPropagation()">✕</button>
+    </ng-container>
+  </div>
+
+  <div style="font-size:11px; color: var(--text-muted); margin-top:6px; 
+              padding: 6px 10px; background: rgba(74,158,255,0.06); 
+              border-radius:4px; border-left:2px solid #4A9EFF;">
+    📋 Format attendu : colonne A = Nom & Prénom, colonne B = Matricule
+  </div>
+</div>
+<!-- ===== FIN Upload Excel Parents ===== -->
+
+      <!-- ===== DOCUMENTS LORS DE CRÉATION ===== -->
+<div class="form-group">
+  <label>
+    Documents de la campagne
+    <span style="font-size:11px; color: var(--text-muted); font-weight:400;">
+      (optionnel — مذكرة الإنتداب, التزامات…)
+    </span>
+  </label>
+
+  <!-- Zone d'ajout -->
+  <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+    <label class="btn btn-outline btn-sm" style="cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           style="width:14px;height:14px">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+      </svg>
+      Ajouter un document
+      <input type="file"
+             accept=".pdf,.jpg,.png"
+             (change)="onDocumentPendantSelected($event)"
+             style="display:none" />
+    </label>
+    <span style="font-size:11px; color: var(--text-muted)">
+      {{ documentsPendants.length }} document(s) ajouté(s)
+    </span>
+  </div>
+
+  <!-- Liste des documents pendants -->
+  <div *ngFor="let doc of documentsPendants; let i = index"
+       style="display:flex; gap:8px; align-items:center; padding:8px; 
+              background:var(--surface-2); border-radius:6px; margin-bottom:6px;">
+
+    <!-- Icône fichier -->
+    <svg viewBox="0 0 24 24" fill="none" stroke="#4A9EFF" stroke-width="2"
+         style="width:20px;height:20px;flex-shrink:0">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+    </svg>
+
+    <!-- Nom éditable -->
+    <input type="text"
+           [value]="doc.nom"
+           (input)="updateDocumentPendantNom(i, $any($event.target).value)"
+           placeholder="Nom du document"
+           style="flex:1; font-size:12px;" />
+
+    <!-- Type -->
+    <select [value]="doc.type"
+            (change)="updateDocumentPendantType(i, $any($event.target).value)"
+            style="font-size:12px; min-width:150px;">
+      <option value="مذكرة الإنتداب">مذكرة الإنتداب</option>
+      <option value="إلتزام">إلتزام — عمل موسمي</option>
+      <option value="autre">Autre</option>
+    </select>
+
+    <!-- Taille fichier -->
+    <span style="font-size:11px; color:var(--text-muted); white-space:nowrap;">
+      {{ (doc.file.size / 1024).toFixed(0) }} KB
+    </span>
+
+    <!-- Supprimer -->
+    <button class="action-icon danger"
+            title="Retirer"
+            (click)="supprimerDocumentPendant(i)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <div *ngIf="documentsPendants.length === 0"
+       style="font-size:12px; color:var(--text-muted); padding:8px 0;">
+    Aucun document ajouté — vous pourrez en ajouter après la création.
+  </div>
+</div>
 
     </div>
     <div class="modal-footer">

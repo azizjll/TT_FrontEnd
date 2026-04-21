@@ -108,6 +108,7 @@ loadingDocsCampagne = false;
   form: any = {
     nom: '', prenom: '', cin: '', rib: '',
     telephone: '', email: '', regionId: '',
+     moisTravail: '',
   };
 
   cinFile!: File;
@@ -116,6 +117,19 @@ loadingDocsCampagne = false;
   cinFileName = '';
   diplomeFileName = '';
   contratFileName = '';
+  ribFile!: File;
+ribFileName = '';
+
+documents: any[] = [];
+isLoadingDocuments = false;
+
+
+
+isLoadingProfil = false;
+
+
+  iltizamDoc: DocumentCampagneDTO | null = null;
+
 
   // ── ✅ NOUVEAU : modal "connexion requise" ────────────────
   showLoginRequired = false;
@@ -181,13 +195,7 @@ loadingDocsCampagne = false;
     },
   ];
 
-  documents: Document[] = [
-    { id: 1, nom: 'Passeport', type: 'Identité', dateAjout: '01/02/2025', statut: 'VALIDE', taille: '2.4 MB' },
-    { id: 2, nom: 'CV 2025', type: 'Professionnel', dateAjout: '10/01/2025', statut: 'VALIDE', taille: '540 KB' },
-    { id: 3, nom: 'Permis de conduire', type: 'Identité', dateAjout: '01/02/2025', statut: 'VALIDE', taille: '1.1 MB' },
-    { id: 4, nom: 'Attestation hébergement', type: 'Logement', dateAjout: '15/02/2025', statut: 'EN_ATTENTE', taille: '320 KB' },
-    { id: 5, nom: 'Certificat médical', type: 'Santé', dateAjout: '10/11/2024', statut: 'EXPIRE', taille: '890 KB' },
-  ];
+ 
 
   notifications = [
     { id: 1, message: 'Votre candidature "Récolte Fraises 2025" a été acceptée !', date: 'Il y a 2h', lu: false, type: 'success' },
@@ -212,6 +220,8 @@ loadingDocsCampagne = false;
     this.activeTab = 'candidatures'; // ← ICI
     this.loadSaisonnierProfile();
     this.loadMesCandidatures(); 
+    this.loadMesDocuments();
+    this.loadMonProfil();
   }
 
   this.campagneService.getCampagnesActives().subscribe(data => {
@@ -226,18 +236,55 @@ loadingDocsCampagne = false;
   this.loadRegions();
 }
 
+// ── Nouvelle méthode ────────────────────────────────────────
+loadMesDocuments(): void {
+  this.isLoadingDocuments = true;
+  this.candidatureService.getDocumentsByToken().subscribe({
+    next: (data) => {
+      this.documents = data.map(doc => ({
+        id:       doc.id,
+        nom:      doc.nomFichier,
+        type:     doc.type,         // CIN, DIPLOME, CONTRAT, RIB
+        url:      doc.url,
+        dateAjout: doc.dateDepot ?? '—',
+        statut:   'VALIDE',
+        taille:   '—'
+      }));
+      this.isLoadingDocuments = false;
+    },
+    error: (err) => {
+      console.error('Erreur chargement documents:', err);
+      this.isLoadingDocuments = false;
+    }
+  });
+}
+
+
+
 loadDocumentsCampagne(campagneId: number): void {
   this.loadingDocsCampagne = true;
   this.documentCampagneService.getDocumentsByCampagne(campagneId).subscribe({
     next: (data) => {
       this.documentsCampagne = data;
       this.loadingDocsCampagne = false;
+
+      // ✅ Extraire le doc إلتزام pour la sidebar
+      this.iltizamDoc = data.find(d => 
+        d.type === 'إلتزام' || d.nom.includes('إلتزام')
+      ) ?? null;
     },
     error: (err) => {
       console.error('Erreur docs campagne:', err);
       this.loadingDocsCampagne = false;
     }
   });
+}
+
+// Méthode à ajouter
+telechargerIltizam(): void {
+  if (this.iltizamDoc) {
+    window.open(this.iltizamDoc.url, '_blank');
+  }
 }
 
 telechargerDocument(doc: DocumentCampagneDTO): void {
@@ -256,13 +303,33 @@ getDocTypIcon(type: string): string {
   // ─────────────────────────────────────────────────────────
   // ✅ NOUVEAU : Charger le profil depuis le token JWT
   // ─────────────────────────────────────────────────────────
-  loadSaisonnierProfile(): void {
-    const nom    = this.authService.getNomComplet().split(' ');
-    this.saisonnier = {
-      prenom: nom[0] || '',
-      nom: nom.slice(1).join(' ') || '',
-    };
-  }
+ loadSaisonnierProfile(): void {
+  // Garde juste les initiales depuis le token en attendant l'API
+  const nomComplet = this.authService.getNomComplet().split(' ');
+  this.saisonnier = {
+    prenom: nomComplet[0] || '',
+    nom: nomComplet.slice(1).join(' ') || '',
+  };
+}
+// ── Nouvelle méthode ─────────────────────────────────────────
+loadMonProfil(): void {
+  this.isLoadingProfil = true;
+  this.candidatureService.getMonProfil().subscribe({
+    next: (data) => {
+      this.saisonnier = {
+        ...data,
+        // helpers d'affichage
+        nomComplet:  `${data.prenom} ${data.nom}`,
+        regionNom:   data.region?.nom ?? '—',
+      };
+      this.isLoadingProfil = false;
+    },
+    error: (err) => {
+      console.error('Erreur chargement profil:', err);
+      this.isLoadingProfil = false;
+    }
+  });
+}
 
   // ─────────────────────────────────────────────────────────
   // ✅ NOUVEAU : setTab avec guard d'authentification
@@ -416,9 +483,11 @@ getDocTypIcon(type: string): string {
   }
 
   getInitials(): string {
-    if (!this.saisonnier?.prenom || !this.saisonnier?.nom) return '';
-    return `${this.saisonnier.prenom[0]}${this.saisonnier.nom[0]}`;
-  }
+  const p = this.saisonnier?.prenom ?? '';
+  const n = this.saisonnier?.nom ?? '';
+  if (!p && !n) return '?';
+  return `${p[0] ?? ''}${n[0] ?? ''}`.toUpperCase();
+}
 
   closeModal(): void {
     this.showCandidatureModal = false;
@@ -430,6 +499,8 @@ getDocTypIcon(type: string): string {
     if (type === 'cin')     { this.cinFile = file;    this.cinFileName = file.name; }
     if (type === 'diplome') { this.diplome = file;    this.diplomeFileName = file.name; }
     if (type === 'contrat') { this.contrat = file;    this.contratFileName = file.name; }
+    if (type === 'rib') { this.ribFile = file; this.ribFileName = file.name; }
+
   }
 
   submitCandidature(candidatureForm: NgForm): void {
@@ -445,11 +516,11 @@ getDocTypIcon(type: string): string {
     return;
   }
 
-  if (!this.cinFile || !this.diplome || !this.contrat) {
+  if (!this.cinFile || !this.diplome || !this.contrat || !this.ribFile) {
     Swal.fire({
       icon: 'warning',
       title: 'Documents manquants',
-      text: 'Joignez tous les fichiers PDF (CIN, Diplôme, Contrat).'
+      text: 'Joignez tous les fichiers PDF (CIN, Diplôme, Contrat, RIB).'
     });
     return;
   }
@@ -460,6 +531,8 @@ getDocTypIcon(type: string): string {
   formData.append('cinFile', this.cinFile);
   formData.append('diplome', this.diplome);
   formData.append('contrat', this.contrat);
+  formData.append('ribFile', this.ribFile);
+
 
   Swal.fire({
     title: 'Envoi en cours...',
@@ -473,7 +546,7 @@ getDocTypIcon(type: string): string {
       Swal.fire({
         icon: 'success',
         title: '✅ Candidature envoyée !',
-        html: `<p>${res.message}</p>`,
+        html: res.message,
         confirmButtonText: 'Compris !',
         confirmButtonColor: '#3b82f6',
       });
@@ -522,5 +595,25 @@ getDocTypIcon(type: string): string {
     },
     error: (err) => console.error('Erreur historique:', err)
   });
+}
+
+// ── Helper pour icône selon type de document ────────────────
+getDocIcon(type: string): string {
+  const icons: Record<string, string> = {
+    'CIN':     'M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1',
+    'DIPLOME': 'M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z',
+    'CONTRAT': 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4',
+    'RIB':     'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z',
+  };
+  return icons[type] ?? 'M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z M14 2v6h6';
+}
+
+// ── Téléchargement direct ────────────────────────────────────
+telechargerDoc(url: string, nom: string): void {
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.download = nom;
+  a.click();
 }
 }

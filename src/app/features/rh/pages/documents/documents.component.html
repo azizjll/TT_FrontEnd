@@ -10,13 +10,7 @@
 
   <!-- ── TABS ── -->
   <div class="doc-tabs">
-    <button class="doc-tab" [class.active]="activeTab==='circulaire'" (click)="activeTab='circulaire'">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-        <polyline points="14 2 14 8 20 8"/>
-      </svg>
-      مذكرة الإنتداب 2025
-    </button>
+   
     <button class="doc-tab" [class.active]="activeTab==='excel'" (click)="activeTab='excel'">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="3" width="18" height="18" rx="2"/>
@@ -25,132 +19,16 @@
       </svg>
       Structures par Région
     </button>
+    <button class="doc-tab" [class.active]="activeTab==='campagne'" (click)="activeTab='campagne'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+      </svg>
+      Documents Campagne
+    </button>
   </div>
 
   <!-- ══════════════ TAB 1 — PDF ══════════════ -->
-  <div class="tab-panel" *ngIf="activeTab==='circulaire'">
-    <div class="content-layout">
-      <aside class="doc-sidebar">
-        <div class="doc-meta-card">
-          <div class="doc-icon-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
-            </svg>
-          </div>
-          <h3 class="doc-meta-title" dir="rtl">مذكرة حول إنتداب أعوان متعاقدين لعمل موسمي</h3>
-          <p class="doc-meta-sub">سنة 2025</p>
-          <div class="meta-rows">
-            <div class="meta-row"><span class="meta-key">النوع</span><span class="meta-val">مذكرة إدارية</span></div>
-            <div class="meta-row"><span class="meta-key">السنة</span><span class="meta-val">2025</span></div>
-            <div class="meta-row"><span class="meta-key">الصيغة</span><span class="meta-val badge-pdf">PDF</span></div>
-            <div class="meta-row"><span class="meta-key">الحالة</span><span class="meta-val badge-active">سارية المفعول</span></div>
-          </div>
-          <div class="doc-actions">
-            <a [href]="circulairePdfUrl" download="مذكرة_إنتداب_موسمي_2025.pdf" class="btn-download">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-              تحميل المذكرة
-            </a>
-            <button class="btn-print" (click)="printPdf()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 6 2 18 2 18 9"/>
-                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-                <rect x="6" y="14" width="12" height="8"/>
-              </svg>
-              طباعة
-            </button>
-          </div>
-        </div>
-        <div class="summary-card" dir="rtl">
-          <h4>ملخص المذكرة</h4>
-          <ul>
-            <li>تحديد عدد الأعوان المسموح بإنتدابهم</li>
-            <li>شروط الإنتداب وآجاله</li>
-            <li>الوثائق المطلوبة لكل ملف</li>
-            <li>إجراءات التوقيع والمصادقة</li>
-            <li>مراحل المعالجة الإدارية</li>
-          </ul>
-        </div>
-      </aside>
-
-<div class="pdf-viewer-wrap">
-  <div class="pdf-toolbar">
-    <span class="pdf-filename">مذكرة_إنتداب_موسمي_2025.pdf</span>
-    <div class="pdf-controls">
-      <button (click)="zoomOut()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          <line x1="8" y1="11" x2="14" y2="11"/>
-        </svg>
-      </button>
-      <span class="zoom-val">{{ zoomLevel }}%</span>
-      <button (click)="zoomIn()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
-        </svg>
-      </button>
-    </div>
-  </div>
-
-  <!-- Chargement -->
-  <div class="pdf-loading" *ngIf="isLoadingPdf">
-    <div class="loading-spinner"></div>
-    <span>Chargement du document...</span>
-  </div>
-
-  <!-- PDF affiché -->
-  <ng-container *ngIf="!isLoadingPdf">
-    <div class="pdf-frame-wrap" *ngIf="safePdfUrl; else noPdf">
-      <object [attr.data]="safePdfUrl" type="application/pdf" class="pdf-object">
-        <div class="pdf-fallback">
-          <p>Votre navigateur ne supporte pas l'affichage PDF.</p>
-          <a [href]="circulairePdfUrl" download class="btn-download">Télécharger</a>
-        </div>
-      </object>
-    </div>
-
-    <ng-template #noPdf>
-      <div class="pdf-upload-zone"
-           (dragover)="onDragOver($event)"
-           (drop)="onDropPdf($event)">
-        <div class="upload-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="12" y1="18" x2="12" y2="12"/>
-            <polyline points="9 15 12 12 15 15"/>
-          </svg>
-        </div>
-        <h3>Importer la circulaire PDF</h3>
-        <p>Glissez-déposez ou cliquez pour parcourir</p>
-        <label class="btn-upload-file">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
-          Choisir un fichier PDF
-          <input type="file" accept=".pdf" (change)="onPdfSelected($event)">
-        </label>
-
-        <!-- Messages upload -->
-        <div class="upload-status" *ngIf="isUploading || uploadSuccess || uploadError">
-          <span class="status-uploading" *ngIf="isUploading">⏳ Upload en cours...</span>
-          <span class="status-success"  *ngIf="uploadSuccess">✅ Circulaire uploadée avec succès</span>
-          <span class="status-error"    *ngIf="uploadError">❌ {{ uploadError }}</span>
-        </div>
-
-        <span class="upload-hint">PDF uniquement — max 20 Mo</span>
-      </div>
-    </ng-template>
-  </ng-container>
-</div>
-    </div>
-  </div>
+  
 
   <!-- ══════════════ TAB 2 — EXCEL ══════════════ -->
   <div class="tab-panel" *ngIf="activeTab==='excel'">
@@ -388,6 +266,131 @@
       </div>
     </div>
   </div>
+
+  <!-- ══════════════ TAB 3 — DOCUMENTS CAMPAGNE ══════════════ -->
+<!-- ══════════════ TAB 3 — DOCUMENTS CAMPAGNE ══════════════ -->
+<div class="tab-panel" *ngIf="activeTab==='campagne'">
+
+  <div class="pdf-loading" *ngIf="loadingDocs">
+    <div class="loading-spinner"></div>
+    <span>Chargement des documents...</span>
+  </div>
+
+  <div class="campagne-layout" *ngIf="!loadingDocs">
+
+    <!-- ── Liste des docs (sidebar) ── -->
+    <aside class="campagne-sidebar">
+      <div class="campagne-sidebar-head">
+        <h3>Documents disponibles</h3>
+        <span class="doc-count-badge">{{ documentsCampagne.length }}</span>
+      </div>
+
+      <div class="no-docs-msg flat" *ngIf="documentsCampagne.length === 0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        <p>Aucun document disponible.</p>
+      </div>
+
+      <div class="doc-list">
+        <div class="doc-list-item"
+             *ngFor="let doc of documentsCampagne"
+             [class.active]="selectedDoc?.id === doc.id"
+             (click)="selectDoc(doc)">
+
+          <div class="dli-icon" [ngClass]="'dli-' + doc.type.toLowerCase()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+
+          <div class="dli-body">
+            <span class="dli-name">{{ doc.nom }}</span>
+            <span class="dli-type">{{ doc.type }}</span>
+          </div>
+
+          <svg class="dli-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── Viewer ── -->
+    <div class="campagne-viewer">
+
+      <!-- État initial : aucun doc sélectionné -->
+      <div class="viewer-empty" *ngIf="!selectedDoc">
+        <div class="viewer-empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </div>
+        <h3>Sélectionnez un document</h3>
+        <p>Cliquez sur un document dans la liste pour l'afficher ici</p>
+      </div>
+
+      <!-- Doc sélectionné -->
+      <ng-container *ngIf="selectedDoc">
+
+        <!-- Toolbar viewer -->
+        <div class="viewer-toolbar">
+          <div class="viewer-toolbar-left">
+            <div class="vt-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+            </div>
+            <div>
+              <span class="vt-name">{{ selectedDoc.nom }}</span>
+              <span class="vt-type">{{ selectedDoc.type }}</span>
+            </div>
+          </div>
+          <div class="viewer-toolbar-actions">
+            <a [href]="selectedDoc.url" target="_blank" class="vt-btn vt-btn-open">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+              Ouvrir
+            </a>
+            <a [href]="selectedDoc.url" download class="vt-btn vt-btn-dl">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Télécharger
+            </a>
+          </div>
+        </div>
+
+        <!-- PDF embed -->
+        <div class="viewer-frame">
+          <object [attr.data]="safeDocUrl"
+                  type="application/pdf"
+                  class="viewer-object">
+            <div class="viewer-fallback">
+              <p>Votre navigateur ne supporte pas l'affichage PDF.</p>
+              <a [href]="selectedDoc.url" target="_blank" class="btn-download">
+                Ouvrir le document
+              </a>
+            </div>
+          </object>
+        </div>
+
+      </ng-container>
+    </div>
+
+  </div>
+</div>
 </div>
 
 <button class="fab-btn">

@@ -5,6 +5,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import * as XLSX from 'xlsx';
 import { DocumentService } from 'src/app/services/document.service';
+import { DocumentCampagneDTO, DocumentCampagneService } from 'src/app/services/document-campagne.service';
 
 export interface Structure {
   name: string;
@@ -26,7 +27,7 @@ export interface Region {
 })
 export class DocumentsComponent implements OnInit {
 
-  activeTab: 'circulaire' | 'excel' = 'circulaire';
+  activeTab: 'campagne' | 'excel' | 'campagne' = 'campagne';
   circulairePdfUrl: string = '';
   zoomLevel = 100;
   selectedRegion = '';
@@ -36,11 +37,16 @@ export class DocumentsComponent implements OnInit {
   safePdfUrl: SafeResourceUrl | null = null;
   isLoadingPdf = true;  // indicateur de chargement du PDF
 
+  selectedDoc: DocumentCampagneDTO | null = null;
+safeDocUrl: SafeResourceUrl | null = null;
 
   // ── Upload state ──────────────────────────────────────
   isUploading = false;
   uploadSuccess = false;
   uploadError = '';
+
+  documentsCampagne: DocumentCampagneDTO[] = [];
+loadingDocs = false;
 
   regions: Region[] = [
     { name: 'Gouvernorat de Tunis', structures: [
@@ -169,14 +175,51 @@ export class DocumentsComponent implements OnInit {
   // ── Constructor : injection DocumentService ───────────
   constructor(
     private sanitizer: DomSanitizer,
-    private documentService: DocumentService
+    private documentService: DocumentService,
+      private documentCampagneService: DocumentCampagneService 
+
   ) {}
 
   ngOnInit(): void {
     this.initStructureData();
     this.loadFromStorage();
-    this.loadCirculaireFromServer(); // ← charge le PDF depuis le serveur au démarrage
+    this.loadCirculaireFromServer();
+     this.loadDocumentsCampagne(); 
   }
+
+
+
+  loadDocumentsCampagne(): void {
+  this.loadingDocs = true;
+  // Adapter l'id campagne active selon votre logique
+  const campagneId = 1;
+  this.documentCampagneService.getDocumentsByCampagne(campagneId).subscribe({
+    next: (data) => {
+      this.documentsCampagne = data;
+      this.loadingDocs = false;
+    },
+    error: () => { this.loadingDocs = false; }
+  });
+}
+
+getDocIcon(type: string): string {
+  const icons: Record<string, string> = {
+    'CONTRAT':    'M9 11l3 3L22 4 M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11',
+    'NOTICE':     'M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z M14 2v6h6',
+    'FORMULAIRE': 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2',
+  };
+  return icons[type] ?? 'M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z M14 2v6h6';
+}
+
+selectDoc(doc: DocumentCampagneDTO): void {
+  this.selectedDoc = doc;
+  this.safeDocUrl = this.sanitizer.bypassSecurityTrustResourceUrl(doc.url);
+}
+
+closeDocViewer(): void {
+  this.selectedDoc = null;
+  this.safeDocUrl = null;
+}
 
   // ══════════════════════════════════════════════════════
   //  PDF — Upload + chargement depuis serveur

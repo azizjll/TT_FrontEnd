@@ -37,6 +37,13 @@ export class SaisonniersListComponent implements OnInit {
   cinFileName: string = '';
 diplomeFileName: string = '';
 contratFileName: string = '';
+ribFile!: File;
+ribFileName = '';
+
+
+
+
+
 
 
   form: any = {
@@ -56,6 +63,8 @@ contratFileName: string = '';
   regions: Region[] = []; // toutes les régions
   myRegion!: Region;      // région du RH connecté
 
+  selectedCandidatureStructure: any = null;  // structure actuelle du candidat
+isLoadingStructure = false;
 
   structuresCommerciaux: StructureDTO[] = [];
 structuresTech: StructureDTO[] = [];
@@ -88,6 +97,7 @@ get toutesCompletes(): boolean {
 
   ngOnInit(): void {
     this.campagneId = Number(this.route.snapshot.queryParamMap.get('campagneId'));
+    console.log('campagneId reçu :', this.campagneId);
 
     // Récupérer la région du RH connecté
     this.authService.getMyRegion().subscribe({
@@ -139,16 +149,53 @@ get toutesCompletes(): boolean {
   });
 }
 
-  openDossier(cand: any) {
-    this.selectedCandidature = cand;
-    this.showDossierModal = true;
-  }
+  openDossier(cand: any): void {
+  this.selectedCandidature = { ...cand, saisonnier: { ...cand.saisonnier } };
+  this.selectedCandidatureStructure = null;
+  this.selectedStructureId = null;
+  this.showDossierModal = true;
+  this.isLoadingStructure = true;
 
-  closeDossier() {
-    this.showDossierModal = false;
-    this.selectedCandidature = null;
-  }
+  // ── Étape 1 : charger les structures de la région du candidat
+  const regionId = cand.saisonnier?.region?.id || this.myRegion?.id;
+  this.structureService.getStructuresByRegion(regionId).subscribe({
+    next: (data: StructureDTO[]) => {
+      this.structures = data;
 
+      // ── Étape 2 : récupérer la structure actuelle du candidat
+      this.candidatureService.getStructureByCandidature(cand.id).subscribe({
+        next: (st: any) => {
+          if (st?.id) {
+            this.selectedCandidatureStructure = st;
+            this.selectedStructureId = st.id;  // ← pré-sélectionner dans le select
+          }
+          this.isLoadingStructure = false;
+        },
+        error: () => {
+          this.selectedStructureId = null;
+          this.isLoadingStructure = false;
+        }
+      });
+    },
+    error: (err: any) => {
+      console.error('Erreur chargement structures:', err);
+      this.isLoadingStructure = false;
+    }
+  });
+}
+
+ closeDossier(): void {
+  this.showDossierModal = false;
+  this.selectedCandidature = null;
+  this.selectedCandidatureStructure = null;
+  this.selectedStructureId = null;
+}
+
+// ── Handler changement de structure dans le select ───────────
+onStructureChange(): void {
+  const found = this.structures.find(s => s.id === this.selectedStructureId);
+  this.selectedCandidatureStructure = found ?? null;
+}
 openModal(): void {
   this.showModal = true;
   this.activeTab = 'collaborateur';
@@ -188,6 +235,10 @@ onFileChange(event: any, type: string) {
     this.contrat = file;
     this.contratFileName = file.name;
   }
+  if (type === 'rib') {
+  this.ribFile = file;
+  this.ribFileName = file.name;
+}
 }
 
 submit(saisonnierForm: NgForm): void {
@@ -204,7 +255,7 @@ submit(saisonnierForm: NgForm): void {
     return;
   }
 
-  if (!this.cinFile || !this.diplome || !this.contrat) {
+  if (!this.cinFile || !this.diplome || !this.contrat || !this.ribFile) {
     Swal.fire({
       icon: 'warning',
       title: 'Documents manquants',
@@ -231,6 +282,8 @@ submit(saisonnierForm: NgForm): void {
   formData.append('cinFile', this.cinFile);
   formData.append('diplome', this.diplome);
   formData.append('contrat', this.contrat);
+  formData.append('ribFile', this.ribFile);
+
 
   Swal.fire({
     title: 'Envoi en cours...',
@@ -261,19 +314,19 @@ submit(saisonnierForm: NgForm): void {
   });
 }
 
-  updateCandidature() {
-    const formData = new FormData();
-    formData.append("nom", this.selectedCandidature.saisonnier.nom);
-    formData.append("prenom", this.selectedCandidature.saisonnier.prenom);
-    formData.append("cin", this.selectedCandidature.saisonnier.cin);
-    formData.append("rib", this.selectedCandidature.saisonnier.rib);
-    formData.append("telephone", this.selectedCandidature.saisonnier.telephone);
-    formData.append("email", this.selectedCandidature.saisonnier.email);
-    formData.append("regionId", this.selectedCandidature.saisonnier.region.id);
-    formData.append("statut", this.selectedCandidature.statut);
-    formData.append("commentaire", this.selectedCandidature.commentaire);
+  updateCandidature(): void {
+  const formData = new FormData();
+  formData.append('nom',        this.selectedCandidature.saisonnier.nom);
+  formData.append('prenom',     this.selectedCandidature.saisonnier.prenom);
+  formData.append('cin',        this.selectedCandidature.saisonnier.cin);
+  formData.append('rib',        this.selectedCandidature.saisonnier.rib);
+  formData.append('telephone',  this.selectedCandidature.saisonnier.telephone);
+  formData.append('email',      this.selectedCandidature.saisonnier.email);
+  formData.append('regionId',   this.selectedCandidature.saisonnier.region.id);
+  formData.append('statut',     this.selectedCandidature.statut);
+  formData.append('commentaire', this.selectedCandidature.commentaire || '');
 
-     Swal.fire({
+  Swal.fire({
     title: 'Mise à jour...',
     allowOutsideClick: false,
     didOpen: () => Swal.showLoading()
@@ -283,26 +336,58 @@ submit(saisonnierForm: NgForm): void {
     .subscribe({
       next: () => {
 
-        Swal.fire({
-          icon: 'success',
-          title: 'Modification réussie',
-          timer: 1500,
-          showConfirmButton: false
-        });
+        // ── Si la structure a changé, faire la réaffectation ──
+        if (this.selectedStructureId &&
+            this.selectedStructureId !== this.selectedCandidatureStructure?.id) {
 
-        this.closeDossier();
-        this.loadCandidatures(this.myRegion.id);
+          this.affectationService.affecterSaisonnier(
+            this.selectedCandidature.saisonnier.id,
+            this.selectedStructureId,
+            this.campagneId
+          ).subscribe({
+            next: () => {
+              Swal.fire({
+                icon: 'success',
+                title: 'Modification réussie',
+                text: 'Candidature et structure mises à jour',
+                timer: 1800,
+                showConfirmButton: false
+              });
+              this.closeDossier();
+              this.loadCandidatures(this.myRegion.id);
+            },
+            error: () => {
+              Swal.fire({
+                icon: 'warning',
+                title: 'Partiellement mis à jour',
+                text: 'Candidature sauvegardée mais erreur sur la structure',
+                timer: 2500,
+                showConfirmButton: false
+              });
+              this.closeDossier();
+              this.loadCandidatures(this.myRegion.id);
+            }
+          });
+
+        } else {
+          // Pas de changement de structure
+          Swal.fire({
+            icon: 'success',
+            title: 'Modification réussie',
+            timer: 1500,
+            showConfirmButton: false
+          });
+          this.closeDossier();
+          this.loadCandidatures(this.myRegion.id);
+        }
       },
-      error: err => {
-
+      error: (err: any) => {
         console.error(err);
-
         Swal.fire({
           icon: 'error',
           title: 'Erreur',
           text: 'Erreur lors de la modification'
         });
-
       }
     });
 }
@@ -379,5 +464,7 @@ statusLabel(statut: string): string {
   };
   return map[statut] || statut;
 }
+
+
 
 }

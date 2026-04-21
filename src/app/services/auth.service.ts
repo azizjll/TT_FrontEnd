@@ -143,4 +143,18 @@ logoutAndRedirect(router: Router): void {
   localStorage.removeItem('token');
   router.navigate(['/admin/login']);
 }
+
+// auth.service.ts
+
+getUserRole(): string | null {
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+  
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.role || payload.roles?.[0] || null;
+  } catch {
+    return null;
+  }
+}
 }

@@ -1588,6 +1588,63 @@ $shadow:  0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
     animation: spin 0.7s linear infinite;
   }
 }
+
+/* ---------- SIDEBAR إلتزام CARD ---------- */
+.sidebar-iltizam-card {
+  margin: 0 12px 12px;
+  background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+  border: 1.5px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 14px;
+
+  .iltizam-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    color: #2563eb;
+  }
+
+  .iltizam-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #2563eb;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+
+  .iltizam-nom {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 10px;
+    line-height: 1.4;
+    direction: rtl;
+  }
+
+  .iltizam-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 0;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s, transform 0.15s;
+
+    &:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+  }
+}
 @keyframes spin { to { transform: rotate(360deg); } }
 
 

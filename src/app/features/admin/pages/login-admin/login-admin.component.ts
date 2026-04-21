@@ -9,6 +9,7 @@ import {
   NewPasswordRequest,
   Region
 } from 'src/app/services/auth.service';
+import { CampagneService } from 'src/app/services/campagne.service';
 
 export type AuthView = 'login' | 'signup' | 'forgot' | 'reset' | 'verify';
 export type VerifyResult = 'idle' | 'success' | 'error';
@@ -28,6 +29,8 @@ export class LoginAdminComponent implements OnInit {
   loginData: SigninRequest = { email: '', password: '' };
   showLoginPassword = false;
   rememberMe = false;
+
+
 
   // ── Signup ───────────────────────────────────────────────────────
   signupData: SignupRequest = {
@@ -65,27 +68,47 @@ export class LoginAdminComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private campagneService: CampagneService
   ) {}
 
-  ngOnInit(): void {
-    // Token depuis URL (lien email)
-    this.route.queryParams.subscribe(params => {
-      if (params['token']) {
-        this.resetData.token = params['token'];
-        this.switchView('reset');
-      }
-      
-    });
+  // ── Ajouter la propriété ─────────────────────────────────────
+isRHContext = false;
 
-    // Charger régions & rôles pour le signup
-    this.authService.getRegions().subscribe({ next: d => this.regions = d, error: () => {} });
-    this.authService.getRoles().subscribe({ next: d => this.roles = d, error: () => {} });
+// ── Dans ngOnInit, lire le paramètre context ─────────────────
+ngOnInit(): void {
+  this.route.queryParams.subscribe(params => {
 
-    // Restaurer email si rememberMe
-    const saved = localStorage.getItem('adminEmail');
-    if (saved) { this.loginData.email = saved; this.rememberMe = true; }
-  }
+     if (params['error'] === 'entreprise-inactive') {
+      this.globalError = 'Votre entreprise n\'est pas encore activée. Contactez l\'administrateur.';
+    }
+
+
+
+    // ── Contexte RH ou Admin ──────────────────────────────────
+    if (params['context'] === 'rh') {
+      this.isRHContext = true;
+      this.signupData.role = 'RH_REGIONAL';   // ← pré-remplir le rôle
+    } else {
+      this.isRHContext = false;
+      this.signupData.role = 'ADMIN';          // ← rôle admin par défaut
+    }
+
+    // ── Token reset depuis URL ────────────────────────────────
+    if (params['token']) {
+      this.resetData.token = params['token'];
+      this.switchView('reset');
+    }
+  });
+
+  // Charger régions & rôles
+  this.authService.getRegions().subscribe({ next: d => this.regions = d, error: () => {} });
+  this.authService.getRoles().subscribe({ next: d => this.roles = d, error: () => {} });
+
+  // Restaurer email si rememberMe
+  const saved = localStorage.getItem('adminEmail');
+  if (saved) { this.loginData.email = saved; this.rememberMe = true; }
+}
 
   // ── Navigation entre vues avec animation ─────────────────────────
   switchView(view: AuthView): void {
@@ -99,29 +122,60 @@ export class LoginAdminComponent implements OnInit {
   // SIGNIN
   // ════════════════════════════════════════════════════════════════
   onLogin(): void {
-    this.clearAll();
-    if (!this.validateLogin()) return;
-    this.isLoading = true;
+  this.clearAll();
+  if (!this.validateLogin()) return;
+  this.isLoading = true;
 
-    this.authService.signin(this.loginData).subscribe({
-      next: (res) => {
-          console.log('Réponse backend :', res); // ← vérifier la structure
+  this.authService.signin(this.loginData).subscribe({
+    next: (res) => {
       this.authService.setToken(res.token);
-      console.log('Token sauvegardé :', localStorage.getItem('token')); // ← vérifier
-     
-        console.log('res.token :', res.token);
-        this.authService.setToken(res.token);
-        if (this.rememberMe) {
-          localStorage.setItem('adminEmail', this.loginData.email);
-        } else {
-          localStorage.removeItem('adminEmail');
+
+      if (this.rememberMe) {
+        localStorage.setItem('adminEmail', this.loginData.email);
+      } else {
+        localStorage.removeItem('adminEmail');
+      }
+
+      this.isLoading = false;
+      this.redirectByRole(res.token);   // ← déléguer la redirection
+    },
+    error: (err) => { this.isLoading = false; this.handleError(err); }
+  });
+}
+
+private redirectByRole(token: string): void {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const role: string = payload.role || payload.roles?.[0] || '';
+
+    if (role === 'ADMIN') {
+      this.router.navigate(['/admin']);
+
+    } else if (role === 'RH_REGIONAL') {
+      this.campagneService.getCampagnesActives().subscribe({
+        next: (campagnes) => {
+          if (campagnes && campagnes.length > 0) {
+            // ── Naviguer avec campagneId en queryParam ──────────
+            this.router.navigate(['/entreprise/saisonniers'], {
+              queryParams: { campagneId: campagnes[0].id }
+            });
+          } else {
+            this.globalError = 'Aucune campagne active. Contactez l\'administrateur.';
+          }
+        },
+        error: () => {
+          this.globalError = 'Impossible de vérifier les campagnes.';
         }
-        this.isLoading = false;
-        this.router.navigate(['/admin']);
-      },
-      error: (err) => { this.isLoading = false; this.handleError(err); }
-    });
+      });
+
+    } else {
+      this.router.navigate(['/home-ge']);
+    }
+
+  } catch {
+    this.globalError = 'Erreur lors de la lecture du token.';
   }
+}
 
   private validateLogin(): boolean {
     let ok = true;
@@ -158,20 +212,26 @@ export class LoginAdminComponent implements OnInit {
 }
 
   private validateSignup(): boolean {
-    let ok = true;
-    if (!this.signupData.nom?.trim())    { this.errors['nom']   = 'Nom requis.'; ok = false; }
-    if (!this.signupData.prenom?.trim()) { this.errors['prenom'] = 'Prénom requis.'; ok = false; }
-    if (!this.signupData.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.signupData.email)) {
-      this.errors['signupEmail'] = 'E-mail invalide.'; ok = false;
-    }
-    if (!this.signupData.password || this.signupData.password.length < 6) {
-      this.errors['signupPassword'] = 'Minimum 6 caractères.'; ok = false;
-    }
-    if (this.signupData.password !== this.signupConfirmPassword) {
-      this.errors['confirmPassword'] = 'Les mots de passe ne correspondent pas.'; ok = false;
-    }
-    return ok;
+  let ok = true;
+  if (!this.signupData.nom?.trim())    { this.errors['nom']    = 'Nom requis.'; ok = false; }
+  if (!this.signupData.prenom?.trim()) { this.errors['prenom'] = 'Prénom requis.'; ok = false; }
+  if (!this.signupData.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.signupData.email)) {
+    this.errors['signupEmail'] = 'E-mail invalide.'; ok = false;
   }
+  if (!this.signupData.password || this.signupData.password.length < 6) {
+    this.errors['signupPassword'] = 'Minimum 6 caractères.'; ok = false;
+  }
+  if (this.signupData.password !== this.signupConfirmPassword) {
+    this.errors['confirmPassword'] = 'Les mots de passe ne correspondent pas.'; ok = false;
+  }
+
+  // ── Validation direction obligatoire pour RH ────────────────
+  if (this.isRHContext && !this.signupData.regionId) {
+    this.errors['regionId'] = 'Veuillez choisir votre direction régionale.'; ok = false;
+  }
+
+  return ok;
+}
 
   // ════════════════════════════════════════════════════════════════
   // FORGOT PASSWORD

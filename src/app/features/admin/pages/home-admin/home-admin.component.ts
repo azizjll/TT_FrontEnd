@@ -1,6 +1,7 @@
 import { Component, OnInit, SecurityContext } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { AuthService, Region } from 'src/app/services/auth.service';
 import { CampagneService, CampagneRequestDTO } from 'src/app/services/campagne.service';
 import { CandidatureService } from 'src/app/services/candidature.service';
@@ -197,12 +198,21 @@ export class HomeAdminComponent implements OnInit {
   showActiveCampagneWarning = false;
   activeCampagneNom = '';
 
+  // ── Upload parents Excel ─────────────────────────────────────────
+parentsExcelFile: File | null = null;
+parentsExcelDragOver = false;
+isUploadingParents = false;
+parentsUploadSuccess = false;
+
   // ── Nouvelles propriétés pour l'upload Excel campagne ─────────────
 campagneExcelFile: File | null = null;
 campagneExcelDragOver = false;
 regionsDetectees: string[] = [];
 isSavingCampagne = false;
 isLoading = false;
+
+// ── Documents à uploader lors de la création ──────────────────
+documentsPendants: Array<{ file: File; nom: string; type: string }> = [];
 
   // ── Candidatures ──────────────────────────────────────────────────
   candidatures: Candidature[] = [];
@@ -248,6 +258,11 @@ isLoading = false;
   structureDragOver = false;
   editingStructure: Structure | null = null;
 
+  // ── Memo : document sélectionné pour visualisation ──────────────
+memoDocumentSelectionne: DocumentCampagneDTO | null = null;
+memoViewerUrl: SafeResourceUrl | null = null;
+isLoadingViewerDoc = false;
+
   // ── Présence & Paiement ───────────────────────────────────────────
   presenceRows: PresenceRow[] = [];
   filteredPresenceRows: PresenceRow[] = [];
@@ -274,6 +289,11 @@ isLoading = false;
     totalAbsences: 0,
     totalMontant: 0
   };
+
+  // ── Memo : campagne sélectionnée et ses documents ──────────────
+memoDocumentsCampagne: DocumentCampagneDTO[] = [];
+memoSelectedCampagneId: number | null = null;
+isLoadingDocsCampagne = false;
 
 
   // ── Dans la classe, nouvelles propriétés ──────────────────────────
@@ -376,6 +396,19 @@ onDocumentFileSelected(event: Event): void {
   }
 }
 
+selectionnerDocumentMemo(doc: DocumentCampagneDTO): void {
+  this.memoDocumentSelectionne = doc;
+  this.isLoadingViewerDoc = true;
+  this.memoViewerUrl = this.sanitizer.bypassSecurityTrustResourceUrl(doc.url);
+  // Simuler un court délai de chargement
+  setTimeout(() => this.isLoadingViewerDoc = false, 600);
+}
+
+fermerViewerDoc(): void {
+  this.memoDocumentSelectionne = null;
+  this.memoViewerUrl = null;
+}
+
 
 ouvrirLienDoc(url: string): void {
   window.open(url, '_blank');
@@ -408,7 +441,11 @@ ouvrirLienDoc(url: string): void {
 
     case 'memo':
       this.loadCirculaireFromServer();
-      break;
+      const campagneActive = this.campagnes.find(c => c.statut === 'active') ?? this.campagnes[0];
+  if (campagneActive) {
+    this.onMemoCampagneChange(campagneActive.id);
+  }
+  break;
 
     case 'structures':
       this.loadStructures();
@@ -521,6 +558,8 @@ voirCandidaturesCampagne(campagne: Campagne): void {
     this.campagneExcelFile = null;
   this.regionsDetectees = [];
   this.isSavingCampagne = false;
+   this.documentsPendants = [];
+   this.parentsExcelFile = null;
   }
 
   closeModal(): void {
@@ -528,6 +567,8 @@ voirCandidaturesCampagne(campagne: Campagne): void {
      this.campagneExcelFile = null;
   this.regionsDetectees = [];
   this.isSavingCampagne = false;
+   this.documentsPendants = [];
+   this.parentsExcelFile = null; 
   }
 
 saveCampagne(activer: boolean): void {
@@ -541,7 +582,6 @@ saveCampagne(activer: boolean): void {
     return;
   }
 
-  // Vérification : une seule campagne ACTIVE à la fois
   if (activer) {
     const campagneActiveExistante = this.campagnes.find(c => c.statut === 'active');
     if (campagneActiveExistante) {
@@ -553,42 +593,168 @@ saveCampagne(activer: boolean): void {
 
   this.isSavingCampagne = true;
 
-  const dto: CampagneRequestDTO = {
-    libelle: this.newCampagne.nom,
-    code: this.newCampagne.code,
-    dateDebut: this.newCampagne.dateDebut,
-    dateFin: this.newCampagne.dateFin,
-    description: this.newCampagne.description,
-    budget: this.newCampagne.budget ? Number(this.newCampagne.budget) : undefined,
-    regionIds: [] // sera rempli automatiquement depuis l'Excel par le backend
+  // ── Étape 0 : upload parents si fichier fourni ─────────────────
+  const creerCampagne$ = () => {
+    const dto: CampagneRequestDTO = {
+      libelle: this.newCampagne.nom,
+      code: this.newCampagne.code,
+      dateDebut: this.newCampagne.dateDebut,
+      dateFin: this.newCampagne.dateFin,
+      description: this.newCampagne.description,
+      budget: this.newCampagne.budget ? Number(this.newCampagne.budget) : undefined,
+      regionIds: []
+    };
+
+    this.campagneService.creerCampagneAvecExcel(dto, this.campagneExcelFile!).subscribe({
+      next: (campagneCreee) => {
+        this.uploaderDocumentsPendants(campagneCreee.id, activer);
+      },
+      error: (err) => {
+        console.error(err);
+        alert('Erreur lors de la création de la campagne');
+        this.isSavingCampagne = false;
+      }
+    });
   };
 
-  this.campagneService.creerCampagneAvecExcel(dto, this.campagneExcelFile).subscribe({
-    next: (res) => {
-      if (activer) {
-        this.campagneService.activerCampagne(res.id).subscribe({
-          next: () => {
-            this.loadCampagnes();
-            this.closeModal();
-            this.isSavingCampagne = false;
-          },
-          error: () => {
-            this.loadCampagnes();
-            this.closeModal();
-            this.isSavingCampagne = false;
-          }
-        });
-      } else {
+  if (this.parentsExcelFile) {
+    this.candidatureService.uploadParentsExcel(this.parentsExcelFile).subscribe({
+      next: () => {
+        this.showToast('✅ Parents importés avec succès');
+        creerCampagne$();
+      },
+      error: (err) => {
+        console.error(err);
+        alert('❌ Erreur lors de l\'import des parents');
+        this.isSavingCampagne = false;
+      }
+    });
+  } else {
+    creerCampagne$();
+  }
+}
+
+onParentsExcelSelected(event: Event): void {
+  const file = (event.target as HTMLInputElement).files?.[0];
+  if (file) this.parentsExcelFile = file;
+}
+
+onParentsExcelDrop(event: DragEvent): void {
+  event.preventDefault();
+  this.parentsExcelDragOver = false;
+  const file = event.dataTransfer?.files[0];
+  if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
+    this.parentsExcelFile = file;
+  } else {
+    alert('Veuillez déposer un fichier Excel (.xlsx ou .xls)');
+  }
+}
+
+/**
+ * Upload séquentiel des documents pendants après création campagne.
+ * Utilise forkJoin si plusieurs documents, sinon passe directement.
+ */
+private uploaderDocumentsPendants(campagneId: number, activer: boolean): void {
+  if (this.documentsPendants.length === 0) {
+    // Pas de documents → activer si demandé et terminer
+    this.finaliserCreation(campagneId, activer);
+    return;
+  }
+
+  const uploads$ = this.documentsPendants.map(doc =>
+    this.docCampagneService.uploadDocument(
+      campagneId,
+      doc.nom,
+      doc.type,
+      doc.file
+    )
+  );
+
+  // Import forkJoin en haut du fichier : import { forkJoin } from 'rxjs';
+  forkJoin(uploads$).subscribe({
+    next: () => {
+      this.finaliserCreation(campagneId, activer);
+    },
+    error: (err) => {
+      console.error('Erreur upload documents:', err);
+      // La campagne est créée, on continue malgré l'erreur documents
+      this.showToast('⚠️ Campagne créée mais erreur sur certains documents');
+      this.finaliserCreation(campagneId, activer);
+    }
+  });
+}
+
+private finaliserCreation(campagneId: number, activer: boolean): void {
+  if (activer) {
+    this.campagneService.activerCampagne(campagneId).subscribe({
+      next: () => {
+        this.loadCampagnes();
+        this.closeModal();
+        this.isSavingCampagne = false;
+        this.showToast('✅ Campagne créée et activée avec succès');
+      },
+      error: () => {
         this.loadCampagnes();
         this.closeModal();
         this.isSavingCampagne = false;
       }
+    });
+  } else {
+    this.loadCampagnes();
+    this.closeModal();
+    this.isSavingCampagne = false;
+    this.showToast('✅ Campagne créée avec succès');
+  }
+}
+
+onMemoCampagneChange(campagneId: number): void {
+  this.memoSelectedCampagneId = campagneId;
+  this.memoDocumentSelectionne = null; // ← reset viewer
+  this.memoViewerUrl = null;
+  if (!campagneId) { this.memoDocumentsCampagne = []; return; }
+  this.isLoadingDocsCampagne = true;
+  this.docCampagneService.getDocumentsByCampagne(campagneId).subscribe({
+    next: docs => {
+      this.memoDocumentsCampagne = docs;
+      this.isLoadingDocsCampagne = false;
+      // Auto-sélectionner le premier document si disponible
+      if (docs.length > 0) {
+        this.selectionnerDocumentMemo(docs[0]);
+      }
     },
-    error: (err) => {
-      console.error(err);
-      alert('Erreur lors de la création de la campagne');
-      this.isSavingCampagne = false;
-    }
+    error: () => { this.memoDocumentsCampagne = []; this.isLoadingDocsCampagne = false; }
+  });
+}
+
+supprimerDocumentMemo(doc: DocumentCampagneDTO): void {
+  if (!confirm(`Supprimer "${doc.nom}" ?`)) return;
+  this.docCampagneService.deleteDocument(doc.id).subscribe({
+    next: () => {
+      this.memoDocumentsCampagne = this.memoDocumentsCampagne.filter(d => d.id !== doc.id);
+      this.showToast('✅ Document supprimé');
+    },
+    error: () => this.showToast('❌ Erreur suppression')
+  });
+}
+
+// Upload depuis la section memo
+onMemoDocumentUpload(event: Event): void {
+  const file = (event.target as HTMLInputElement).files?.[0];
+  if (!file || !this.memoSelectedCampagneId) return;
+
+  const nom = file.name.replace(/\.[^.]+$/, '');
+  this.docCampagneService.uploadDocument(
+    this.memoSelectedCampagneId,
+    nom,
+    'مذكرة الإنتداب',
+    file
+  ).subscribe({
+    next: doc => {
+      this.memoDocumentsCampagne.push(doc);
+      this.showToast('✅ Document ajouté');
+      (event.target as HTMLInputElement).value = '';
+    },
+    error: () => this.showToast('❌ Erreur upload')
   });
 }
 
@@ -652,6 +818,32 @@ fermerWarning(): void {
   this.newCampagne.nom = `Campagne de recrutement des saisonniers pour ${this.newCampagneAnnee}`;
   // Générer le code automatiquement
   this.newCampagne.code = `CAM-${this.newCampagneAnnee}-${String(Date.now()).slice(-4)}`;
+}
+
+// ── Gestion des documents pendants (lors création campagne) ──────
+
+onDocumentPendantSelected(event: Event): void {
+  const file = (event.target as HTMLInputElement).files?.[0];
+  if (!file) return;
+  this.documentsPendants.push({
+    file,
+    nom: file.name.replace(/\.[^.]+$/, ''),
+    type: 'مذكرة الإنتداب'
+  });
+  // Reset input pour permettre re-sélection du même fichier
+  (event.target as HTMLInputElement).value = '';
+}
+
+supprimerDocumentPendant(index: number): void {
+  this.documentsPendants.splice(index, 1);
+}
+
+updateDocumentPendantNom(index: number, nom: string): void {
+  this.documentsPendants[index].nom = nom;
+}
+
+updateDocumentPendantType(index: number, type: string): void {
+  this.documentsPendants[index].type = type;
 }
   // ─── Candidatures ─────────────────────────────────────────────────
 

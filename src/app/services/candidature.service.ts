@@ -62,4 +62,28 @@ getMonHistorique(): Observable<any[]> {
   });
 }
 
+uploadParentsExcel(file: File): Observable<string> {
+  const formData = new FormData();
+  formData.append('file', file);
+  return this.http.post(`${this.baseUrl}/upload-parents`, formData, { responseType: 'text' });
+}
+
+getDocumentsByToken(): Observable<any[]> {
+  const token = localStorage.getItem('token');
+  return this.http.get<any[]>(`${this.baseUrl}/mes-documents`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+getMonProfil(): Observable<any> {
+  const token = localStorage.getItem('token');
+  return this.http.get<any>(`${this.baseUrl}/mon-profil`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+getStructureByCandidature(candidatureId: number): Observable<any> {
+  return this.http.get<any>(`${this.baseUrl}/${candidatureId}/structure`);
+}
+
 }

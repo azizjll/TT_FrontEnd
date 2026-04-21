@@ -98,6 +98,35 @@
         <option *ngFor="let c of campagnes" [value]="c.id">{{ c.libelle }}</option>
       </select>
     </div>
+
+    <div class="param-group">
+  <label>Structure</label>
+  <select [(ngModel)]="selectedStructureId"
+          (ngModelChange)="onStructureChange()"
+          style="width: 220px">
+
+    <option [ngValue]="null">— Toutes les structures —</option>
+
+    <optgroup label="🏪 Espaces Commerciaux" *ngIf="structuresEC.length > 0">
+      <option *ngFor="let s of structuresEC"
+              [ngValue]="s.id"
+              [disabled]="!s.disponible">
+        {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+        {{ s.disponible ? '' : '⛔ COMPLET' }}
+      </option>
+    </optgroup>
+
+    <optgroup label="💻 Centres Technologiques" *ngIf="structuresCT.length > 0">
+      <option *ngFor="let s of structuresCT"
+              [ngValue]="s.id"
+              [disabled]="!s.disponible">
+        {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+        {{ s.disponible ? '' : '⛔ COMPLET' }}
+      </option>
+    </optgroup>
+
+  </select>
+</div>
     <div class="param-info">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="10"/>
@@ -290,7 +319,7 @@
       <div class="fiche-officielle" dir="rtl">
         <div class="fiche-header">
           <div class="fiche-logo">
-            <strong>تونس تيليكوم</strong>
+            <strong>إتصالات تونس </strong>
             <span>Tunisie Telecom</span>
           </div>
           <div class="fiche-title">
@@ -326,16 +355,10 @@
           </div>
           <div class="fiche-row highlight">
             <span class="fiche-label">المبلغ الصافي :</span>
-            <span class="fiche-val montant-big">{{ selectedSaisonnier.montantNet | number:'1.3-3' }} Dت</span>
+            <span class="fiche-val montant-big">{{ selectedSaisonnier.montantNet | number:'1.3-3' }} Dt</span>
           </div>
-          <div class="fiche-row">
-            <span class="fiche-label">الاسم و اللقب صاحب الحساب :</span>
-            <span class="fiche-val">{{ selectedSaisonnier.nomTitulaireCompte || '—' }}</span>
-          </div>
-          <div class="fiche-row">
-            <span class="fiche-label">رقم بطاقة تعريف صاحب الحساب :</span>
-            <span class="fiche-val td-mono">{{ selectedSaisonnier.cinTitulaire || '—' }}</span>
-          </div>
+          
+         
           <div class="fiche-row">
             <span class="fiche-label">رقم الحساب :</span>
             <span class="fiche-val td-mono">{{ selectedSaisonnier.rib || '—' }}</span>
