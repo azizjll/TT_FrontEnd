@@ -1593,5 +1593,17 @@ showToast(msg: string): void {
 logout(): void {
   this.authService.logout();
   this.router.navigate(['/admin/login']);
+
+
+}
+
+sidebarOpen = false;
+
+toggleSidebar(): void {
+  this.sidebarOpen = !this.sidebarOpen;
+}
+
+closeSidebar(): void {
+  this.sidebarOpen = false;
 }
 }
