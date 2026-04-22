@@ -198,6 +198,12 @@ export class HomeAdminComponent implements OnInit {
   showActiveCampagneWarning = false;
   activeCampagneNom = '';
 
+  // ── Filtres candidatures ─────────────────────────────────────────
+candidatureFilterRegion = '';
+candidatureFilterStructure = '';
+candidatureFilterStatut = '';
+filteredCandidatures: Candidature[] = [];
+
   // ── Upload parents Excel ─────────────────────────────────────────
 parentsExcelFile: File | null = null;
 parentsExcelDragOver = false;
@@ -820,6 +826,72 @@ fermerWarning(): void {
   this.newCampagne.code = `CAM-${this.newCampagneAnnee}-${String(Date.now()).slice(-4)}`;
 }
 
+// Listes dérivées pour les selects
+get regionsDisponibles(): string[] {
+  const set = new Set(this.candidatures.map(c => c.saisonnier.region.nom));
+  return Array.from(set).sort();
+}
+
+get structuresDisponibles(): string[] {
+  // Les structures sont liées à la région sélectionnée si filtrée
+  let list = this.candidatures;
+  if (this.candidatureFilterRegion) {
+    list = list.filter(c => c.saisonnier.region.nom === this.candidatureFilterRegion);
+  }
+  // Si vos candidatures ont une structure liée, adaptez ce champ
+  // Ici on suppose que la structure est dans saisonnier.structure (à adapter)
+  const set = new Set(
+    list
+      .map(c => (c.saisonnier as any).structure?.nom)
+      .filter(Boolean)
+  );
+  return Array.from(set).sort();
+}
+
+filterCandidatures(): void {
+  let list = [...this.candidatures];
+
+  if (this.candidatureFilterRegion) {
+    list = list.filter(c => c.saisonnier.region.nom === this.candidatureFilterRegion);
+  }
+
+  if (this.candidatureFilterStructure) {
+    list = list.filter(c =>
+      (c.saisonnier as any).structure?.nom === this.candidatureFilterStructure
+    );
+  }
+
+  if (this.candidatureFilterStatut) {
+    list = list.filter(c =>
+      c.statut.toLowerCase() === this.candidatureFilterStatut.toLowerCase()
+    );
+  }
+
+  if (this.searchQuery.trim()) {
+    const q = this.searchQuery.toLowerCase();
+    list = list.filter(c =>
+      c.saisonnier.nom.toLowerCase().includes(q) ||
+      c.saisonnier.prenom.toLowerCase().includes(q) ||
+      String(c.saisonnier.cin).includes(q)
+    );
+  }
+
+  this.filteredCandidatures = list;
+}
+
+resetFiltresCandidatures(): void {
+  this.candidatureFilterRegion = '';
+  this.candidatureFilterStructure = '';
+  this.candidatureFilterStatut = '';
+  this.filterCandidatures();
+}
+
+onRegionFilterChange(): void {
+  // Réinitialiser la structure quand la région change
+  this.candidatureFilterStructure = '';
+  this.filterCandidatures();
+}
+
 // ── Gestion des documents pendants (lors création campagne) ──────
 
 onDocumentPendantSelected(event: Event): void {
@@ -852,6 +924,7 @@ loadCandidatures(): void {
     next: data => {
       this.candidatures = data;
       this.updateCandidaturesParCampagne(); // ← ajoute ceci
+      this.filterCandidatures(); 
     },
     error: err => console.error('Erreur chargement candidatures', err)
   });
