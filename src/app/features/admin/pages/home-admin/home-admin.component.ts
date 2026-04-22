@@ -925,6 +925,7 @@ loadCandidatures(): void {
       this.candidatures = data;
       this.updateCandidaturesParCampagne(); // ← ajoute ceci
       this.filterCandidatures(); 
+      this.loadPresenceRows();
     },
     error: err => console.error('Erreur chargement candidatures', err)
   });
@@ -1221,27 +1222,32 @@ loadStructures(): void {
    * Adaptez l'appel à votre service réel.
    */
   loadPresenceRows(): void {
-    // TODO: Remplacer par un vrai appel service, ex:
-    // this.presenceService.getAll().subscribe(data => { this.presenceRows = data; ... });
-
-    // Données de démonstration basées sur la capture d'écran
-    this.presenceRows = [
-      { id: 1,  nom: 'jellali aziz',      cin: '11642584',         dateMbacharaa: '2025-07-01', dureeContrat: 30, absences: 3, montantNet: 0, rib: '',                    statut: 'paye'    },
-      { id: 2,  nom: 'aziz king',         cin: '11642852',         dateMbacharaa: '2025-07-01', dureeContrat: 30, absences: 0, montantNet: 0, rib: '',                    statut: 'paye'    },
-      { id: 3,  nom: 'ssssssss ssssss',   cin: '55998854',         dateMbacharaa: '2025-07-01', dureeContrat: 30, absences: 0, montantNet: 0, rib: '',                    statut: 'paye'    },
-      { id: 4,  nom: 'Hadil lfaoui',      cin: '66145255',         dateMbacharaa: '2025-07-01', dureeContrat: 30, absences: 1, montantNet: 0, rib: '11642584555555566',   statut: 'impaye'  },
-      { id: 5,  nom: 'safwen jellali',    cin: '55889966',         dateMbacharaa: '2025-07-01', dureeContrat: 30, absences: 0, montantNet: 0, rib: '2145588745693332',    statut: 'paye'    },
-      { id: 6,  nom: 'zozou aziz',        cin: '88997744',         dateMbacharaa: '2025-07-01', dureeContrat: 30, absences: 2, montantNet: 0, rib: '4589654578555',       statut: 'paye'    },
-      { id: 7,  nom: 'zozou aziz',        cin: '11458752',         dateMbacharaa: '2025-07-01', dureeContrat: 30, absences: 0, montantNet: 0, rib: '4589654578555',       statut: 'impaye'  },
-      { id: 8,  nom: 'fih abdo',          cin: '1023034',          dateMbacharaa: '2025-07-01', dureeContrat: 30, absences: 0, montantNet: 0, rib: '4587411125654789',    statut: 'impaye'  },
-      { id: 9,  nom: 'skander skander',   cin: '55447712',         dateMbacharaa: '2025-07-01', dureeContrat: 30, absences: 0, montantNet: 0, rib: '1236547894123',       statut: 'impaye'  },
-      { id: 10, nom: 'foul foul',         cin: '11685245',         dateMbacharaa: '2025-07-01', dureeContrat: 30, absences: 0, montantNet: 0, rib: '125412541254125',     statut: 'impaye'  },
-      { id: 11, nom: 'ben arous jellali', cin: '45874141',         dateMbacharaa: '2025-07-01', dureeContrat: 30, absences: 0, montantNet: 0, rib: '1256352446635',       statut: 'impaye'  },
-    ];
-
-    this.recalculerPresence();
-    this.filterPresence();
+  // Filtrer les candidatures de la campagne sélectionnée
+  const campagneId = this.presenceConfig.campagneId;
+  
+  let candidaturesFiltrees = this.candidatures;
+  
+  if (campagneId) {
+    candidaturesFiltrees = this.candidatures.filter(c => c.campagne.id === campagneId);
   }
+
+  // Transformer les candidatures en lignes de présence
+  this.presenceRows = candidaturesFiltrees.map((c, index) => ({
+    id: c.id,
+    nom: `${c.saisonnier.nom} ${c.saisonnier.prenom}`,
+    cin: String(c.saisonnier.cin),
+    dateMbacharaa: this.presenceConfig.datePriseFonction,
+    dureeContrat: this.presenceConfig.dureeContrat,
+    absences: 0,
+    montantNet: 0,
+    rib: c.saisonnier.rib ?? '',
+    statut: 'impaye' as 'impaye',
+    campagneId: c.campagne.id
+  }));
+
+  this.recalculerPresence();
+  this.filterPresence();
+}
 
   /**
    * Recalcule tous les montants nets selon la config actuelle.
@@ -1304,8 +1310,8 @@ loadStructures(): void {
   }
 
   onPresenceCampagneChange(): void {
-    // Recharger les saisonniers liés à la campagne sélectionnée si nécessaire
-  }
+  this.loadPresenceRows(); // ← recharge selon la campagne choisie
+}
 
   onPresenceRowChange(row: PresenceRow): void {
     row.montantNet = (row.dureeContrat - row.absences) * this.presenceConfig.tauxJournalier;
