@@ -325,6 +325,7 @@ submit(saisonnierForm: NgForm): void {
   formData.append('regionId',   this.selectedCandidature.saisonnier.region.id);
   formData.append('statut',     this.selectedCandidature.statut);
   formData.append('commentaire', this.selectedCandidature.commentaire || '');
+  formData.append('moisTravail', this.selectedCandidature.saisonnier.moisTravail || '');
 
   Swal.fire({
     title: 'Mise à jour...',

@@ -276,6 +276,14 @@
             </select>
           </div>
           <div class="field-group">
+            <label>Mois de travail</label>
+            <select [(ngModel)]="selectedCandidature.saisonnier.moisTravail">
+              <option value="JUILLET">Juillet</option>
+              <option value="AOUT">Août</option>
+              <option value="JUILLET_AOUT">Juillet + Août</option>
+            </select>
+          </div>
+          <div class="field-group">
             <label>Commentaire RH</label>
             <textarea [(ngModel)]="selectedCandidature.commentaire" rows="4" placeholder="Ajouter un commentaire..."></textarea>
           </div>
