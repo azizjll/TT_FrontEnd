@@ -364,80 +364,181 @@
 
     <!-- ===== SECTION: CANDIDATURES ===== -->
     <section class="content-section" *ngIf="activeSection === 'candidatures'">
-      <div class="section-header">
-        <h2 class="section-title">Liste des Candidatures</h2>
-        <div class="action-buttons">
-          <button class="btn btn-outline">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+  <div class="section-header">
+    <h2 class="section-title">Liste des Candidatures</h2>
+    <div class="action-buttons">
+      <button class="btn btn-outline">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+        </svg>
+        Exporter
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats mini -->
+  <div class="stats-mini-grid">
+    <div class="mini-stat">
+      <span class="mini-value">{{ filteredCandidatures.length }}</span>
+      <span class="mini-label">Total</span>
+    </div>
+    <div class="mini-stat success">
+      <span class="mini-value">{{ stats.candidaturesAcceptees }}</span>
+      <span class="mini-label">Acceptées</span>
+    </div>
+    <div class="mini-stat warning">
+      <span class="mini-value">{{ stats.candidaturesEnAttente }}</span>
+      <span class="mini-label">En attente</span>
+    </div>
+    <div class="mini-stat danger">
+      <span class="mini-value">{{ stats.candidaturesRefusees }}</span>
+      <span class="mini-label">Refusées</span>
+    </div>
+  </div>
+
+  <!-- ===== BARRE DE FILTRES ===== -->
+  <div class="table-card" style="margin-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08));">
+    <div style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; padding: 4px 0;">
+
+      <!-- Filtre Région -->
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 180px;">
+        <label style="font-size: 11px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               style="width:11px;height:11px; margin-right:4px; vertical-align:middle">
+            <circle cx="12" cy="10" r="3"/>
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+          </svg>
+          Région
+        </label>
+        <select [(ngModel)]="candidatureFilterRegion"
+                (ngModelChange)="onRegionFilterChange()"
+                style="background: var(--surface-2); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 6px; padding: 6px 10px; font-size: 13px; color: var(--text-primary); cursor: pointer;">
+          <option value="">Toutes les régions</option>
+          <option *ngFor="let r of regionsDisponibles" [value]="r">{{ r }}</option>
+        </select>
+      </div>
+
+      <!-- Filtre Structure -->
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 200px;">
+        <label style="font-size: 11px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               style="width:11px;height:11px; margin-right:4px; vertical-align:middle">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+          Structure
+        </label>
+        <select [(ngModel)]="candidatureFilterStructure"
+                (ngModelChange)="filterCandidatures()"
+                [disabled]="structuresDisponibles.length === 0"
+                [style.opacity]="structuresDisponibles.length === 0 ? 0.5 : 1"
+                style="background: var(--surface-2); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 6px; padding: 6px 10px; font-size: 13px; color: var(--text-primary); cursor: pointer;">
+          <option value="">Toutes les structures</option>
+          <option *ngFor="let s of structuresDisponibles" [value]="s">{{ s }}</option>
+        </select>
+      </div>
+
+      <!-- Filtre Statut -->
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px;">
+        <label style="font-size: 11px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               style="width:11px;height:11px; margin-right:4px; vertical-align:middle">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Statut
+        </label>
+        <select [(ngModel)]="candidatureFilterStatut"
+                (ngModelChange)="filterCandidatures()"
+                style="background: var(--surface-2); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 6px; padding: 6px 10px; font-size: 13px; color: var(--text-primary); cursor: pointer;">
+          <option value="">Tous les statuts</option>
+          <option value="en_attente">En attente</option>
+          <option value="acceptee">Acceptée</option>
+          <option value="refusee">Refusée</option>
+        </select>
+      </div>
+
+      <!-- Bouton Reset -->
+      <button class="btn btn-ghost"
+              (click)="resetFiltresCandidatures()"
+              *ngIf="candidatureFilterRegion || candidatureFilterStructure || candidatureFilterStatut"
+              style="align-self: flex-end;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             style="width:14px;height:14px">
+          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
+        </svg>
+        Réinitialiser
+      </button>
+
+      <!-- Compteur résultats -->
+      <div style="align-self: flex-end; margin-left: auto; font-size: 12px; color: var(--text-muted); padding-bottom: 6px;">
+        <span style="color: var(--text-primary); font-weight: 600;">{{ filteredCandidatures.length }}</span>
+        résultat(s) sur {{ candidatures.length }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Tableau -->
+  <div class="table-card" style="border-top-left-radius: 0; border-top-right-radius: 0;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Candidat</th>
+          <th>Campagne</th>
+          <th>CIN</th>
+          <th>Région</th>
+          <th>Date Dépôt</th>
+          <th>Statut</th>
+          <th>Documents</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let cand of filteredCandidatures" class="table-row">
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar-sm">
+                {{ cand.saisonnier.nom[0] }}{{ cand.saisonnier.prenom[0] }}
+              </div>
+              <div>
+                <span class="name-primary">{{ cand.saisonnier.nom }} {{ cand.saisonnier.prenom }}</span>
+                <span class="name-secondary">{{ cand.saisonnier.email }}</span>
+              </div>
+            </div>
+          </td>
+          <td>{{ cand.campagne.libelle }}</td>
+          <td>{{ cand.saisonnier.cin }}</td>
+          <td>
+            <span style="display:inline-flex; align-items:center; gap:4px; font-size:12px;">
+              <span style="width:6px;height:6px;border-radius:50%;background:var(--blue-400);flex-shrink:0;"></span>
+              {{ cand.saisonnier.region.nom }}
+            </span>
+          </td>
+          <td>{{ cand.dateDepot }}</td>
+          <td>
+            <span class="status-badge">{{ cand.statut }}</span>
+          </td>
+          <td>
+            <div *ngFor="let doc of cand.documents">
+              <a [href]="doc.url" target="_blank">{{ doc.type }}</a>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Ligne vide -->
+        <tr *ngIf="filteredCandidatures.length === 0">
+          <td colspan="7" style="text-align:center; padding: 32px; color: var(--text-muted); font-size: 13px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                 style="width:32px;height:32px;margin:0 auto 8px;display:block;opacity:0.4">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
             </svg>
-            Exporter
-          </button>
-        </div>
-      </div>
-
-      <div class="stats-mini-grid">
-        <div class="mini-stat">
-          <span class="mini-value">{{ stats.totalCandidatures }}</span>
-          <span class="mini-label">Total</span>
-        </div>
-        <div class="mini-stat success">
-          <span class="mini-value">{{ stats.candidaturesAcceptees }}</span>
-          <span class="mini-label">Acceptées</span>
-        </div>
-        <div class="mini-stat warning">
-          <span class="mini-value">{{ stats.candidaturesEnAttente }}</span>
-          <span class="mini-label">En attente</span>
-        </div>
-        <div class="mini-stat danger">
-          <span class="mini-value">{{ stats.candidaturesRefusees }}</span>
-          <span class="mini-label">Refusées</span>
-        </div>
-      </div>
-
-      <div class="table-card">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Candidat</th>
-              <th>Campagne</th>
-              <th>CIN</th>
-              <th>Région</th>
-              <th>Date Dépôt</th>
-              <th>Statut</th>
-              <th>Documents</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let cand of candidatures" class="table-row">
-              <td>
-                <div class="user-cell">
-                  <div class="user-avatar-sm">
-                    {{ cand.saisonnier.nom[0] }}{{ cand.saisonnier.prenom[0] }}
-                  </div>
-                  <div>
-                    <span class="name-primary">{{ cand.saisonnier.nom }} {{ cand.saisonnier.prenom }}</span>
-                    <span class="name-secondary">{{ cand.saisonnier.email }}</span>
-                  </div>
-                </div>
-              </td>
-              <td>{{ cand.campagne.libelle }}</td>
-              <td>{{ cand.saisonnier.cin }}</td>
-              <td>{{ cand.saisonnier.region.nom }}</td>
-              <td>{{ cand.dateDepot }}</td>
-              <td>
-                <span class="status-badge">{{ cand.statut }}</span>
-              </td>
-              <td>
-                <div *ngFor="let doc of cand.documents">
-                  <a [href]="doc.url" target="_blank">{{ doc.type }}</a>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+            Aucune candidature ne correspond aux filtres sélectionnés
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
 
     <!-- ===== SECTION: UTILISATEURS ===== -->
     <section class="content-section" *ngIf="activeSection === 'utilisateurs'">
