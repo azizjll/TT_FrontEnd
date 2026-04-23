@@ -24,6 +24,13 @@ import { PresencePaiementComponent } from './features/rh/pages/presence-paiement
 import { SafePipe } from './shared/safe.pipe';
 import { LoginAdminComponent } from './features/admin/pages/login-admin/login-admin.component';
 import { LoginSaisonnierComponent } from './features/saisonnier/login-saisonnier/login-saisonnier.component';
+import { AdminLayoutComponent } from './features/admin/layout/admin-layout/admin-layout.component';
+import { SidebarComponent } from './features/admin/components/sidebar/sidebar.component';
+import { CampagnesComponent } from './features/admin/pages/campagnes/campagnes.component';
+import { CandidaturesComponent } from './features/admin/pages/candidatures/candidatures.component';
+import { PresenceComponent } from './features/admin/pages/presence/presence.component';
+import { MemoComponent } from './features/admin/pages/memo/memo.component';
+import { StructuresComponent } from './features/admin/pages/structures/structures.component';
 
 @NgModule({
   declarations: [
@@ -42,6 +49,13 @@ import { LoginSaisonnierComponent } from './features/saisonnier/login-saisonnier
     SafePipe,
     LoginAdminComponent,
     LoginSaisonnierComponent,
+    AdminLayoutComponent,
+    SidebarComponent,
+    CampagnesComponent,
+    CandidaturesComponent,
+    PresenceComponent,
+    MemoComponent,
+    StructuresComponent,
     
     
   ],

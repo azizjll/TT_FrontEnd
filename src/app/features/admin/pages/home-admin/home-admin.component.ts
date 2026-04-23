@@ -7,8 +7,9 @@ import { CampagneService, CampagneRequestDTO } from 'src/app/services/campagne.s
 import { CandidatureService } from 'src/app/services/candidature.service';
 import { DocumentCampagneDTO, DocumentCampagneService } from 'src/app/services/document-campagne.service';
 import { DocumentService } from 'src/app/services/document.service';
-import { StructureDTO, StructureImportService } from 'src/app/services/structure-import.service';
-import { StructureService } from 'src/app/structure.service';
+import { ParentAutoriseService } from 'src/app/services/parent-autorise.service';
+import {  StructureImportService } from 'src/app/services/structure-import.service';
+import { StructureDTO, StructureService } from 'src/app/structure.service';
 import * as XLSX from 'xlsx';
 
 // ─── Interfaces ───────────────────────────────────────────────────
@@ -86,7 +87,7 @@ interface Utilisateur {
 interface Structure {
   id: number;
   nom: string;
-  type: 'EC' | 'CT';
+  type: 'ESPACE_COMMERCIAL' | 'CENTRE_TECHNOLOGIQUE';
   region: string;
   adresse: string;
   autorises: number;
@@ -180,14 +181,14 @@ export class HomeAdminComponent implements OnInit {
 
   // ── Global Stats ─────────────────────────────────────────────────
   stats = {
-    campagnesActives: 4,
+    campagnesCloturee: 0,
     campagnesTotal: 12,
-    affectationsVerrouillees: 87,
+    totalParents : 0,
     joursRestants: 18,
-    totalCandidatures: 342,
-    candidaturesAcceptees: 128,
-    candidaturesEnAttente: 156,
-    candidaturesRefusees: 58
+   candidaturesAcceptees: 0,
+  candidaturesEnAttente: 0,
+  candidaturesRefusees: 0,
+  totalCandidatures: 0
   };
 
   // ── Campagnes ─────────────────────────────────────────────────────
@@ -220,12 +221,109 @@ isLoading = false;
 // ── Documents à uploader lors de la création ──────────────────
 documentsPendants: Array<{ file: File; nom: string; type: string }> = [];
 
+
+
+openAddParentModal() {
+  this.isEditParent = false;
+  this.parentForm = { id: null, nomPrenom: '', matricule: '' ,utilise: false};
+  this.showParentModal = true;
+}
+
+editParent(p: any) {
+  this.isEditParent = true;
+  this.parentForm = { ...p };
+  this.showParentModal = true;
+}
+
+closeParentModal() {
+  this.showParentModal = false;
+}
+
+saveParent() {
+
+  if (!this.parentForm.nomPrenom || !this.parentForm.matricule) {
+    alert("Champs obligatoires ❌");
+    return;
+  }
+
+  if (this.isEditParent) {
+    if (this.parentForm.id == null) {
+  return;
+}
+
+
+    this.parentService.updateParent(
+      this.parentForm.id,
+      this.parentForm.nomPrenom,
+      this.parentForm.matricule,
+      this.parentForm.utilise   // 🔥 AJOUT
+    ).subscribe({
+      next: () => {
+        this.loadParents();
+        this.closeParentModal();
+      },
+      error: (err) => alert(err.error)
+    });
+
+  } else {
+
+    this.parentService.addParent(
+      this.parentForm.nomPrenom,
+      this.parentForm.matricule
+    ).subscribe({
+      next: () => {
+        this.loadParents();
+        this.closeParentModal();
+      },
+      error: (err) => alert(err.error)
+    });
+  }
+}
+
+deleteParent(id: number) {
+  if (!confirm("Supprimer ce parent ?")) return;
+
+  this.parentService.deleteParent(id).subscribe(() => {
+    this.loadParents();
+  });
+}
+
   // ── Candidatures ──────────────────────────────────────────────────
   candidatures: Candidature[] = [];
 
   // ── Utilisateurs ──────────────────────────────────────────────────
   utilisateurs: Utilisateur[] = [];
 
+
+  showDossierModal = false;
+selectedCandidature: any = null;
+selectedStructureId: number | null = null;
+  selectedCandidatureStructure: any = null;  // structure actuelle du candidat
+
+
+  structuresCommerciaux: StructureDTO[] = [];
+structuresTech: StructureDTO[] = [];
+structures: StructureDTO[] = [];
+
+
+closeDossier() {
+  this.showDossierModal = false;
+  this.selectedCandidature = null;
+}
+
+
+get structuresEC(): StructureDTO[] {
+  return this.structures.filter(s => s.type === 'ESPACE_COMMERCIAL');
+}
+
+get structuresCT(): StructureDTO[] {
+  return this.structures.filter(s => s.type === 'CENTRE_TECHNOLOGIQUE');
+}
+
+onStructureChange(): void {
+  const found = this.structures.find(s => s.id === this.selectedStructureId);
+  this.selectedCandidatureStructure = found ?? null;
+}
   // ── Memo Intidab ──────────────────────────────────────────────────
   memoDocument: MemoDocument = {
     fileName: 'مذكرة_إنتداب_موسمي_2025.pdf',
@@ -254,7 +352,7 @@ documentsPendants: Array<{ file: File; nom: string; type: string }> = [];
     saisonnersRecrutes: 0
   };
 
-  structures: Structure[] = [];
+  
   filteredStructures: Structure[] = [];
   structureTypeFilter = 'tous';
   selectedGouvernorat = '';
@@ -310,6 +408,19 @@ documentType = 'مذكرة الإنتداب';  // valeur par défaut
 isUploadingDoc = false;
 
 
+parents: any[] = [];
+
+showParentModal = false;
+isEditParent = false;
+
+parentForm = {
+  id: null as number | null,
+  nomPrenom: '',
+  matricule: '',
+    utilise: false   
+
+};
+
   // ─── Constructor ──────────────────────────────────────────────────
 
   constructor(
@@ -322,6 +433,7 @@ isUploadingDoc = false;
     private structureService: StructureService,
     private router: Router,
     private docCampagneService: DocumentCampagneService,
+    private parentService: ParentAutoriseService
   ) {}
 
   nomUtilisateur = '';
@@ -339,10 +451,21 @@ roleUtilisateur = '';
     this.loadCirculaireFromServer();
     this.loadStructures();
     this.loadPresenceRows();
+      this.loadParents();
+
     this.nomUtilisateur = this.authService.getNomComplet();
   this.roleUtilisateur = this.authService.getRole();
   }
 
+ loadParents() {
+  this.parentService.getAllParents().subscribe({
+    next: (data) => {
+      this.parents = data;
+      this.updateStats(); // ⭐ important
+    },
+    error: (err) => console.error(err)
+  });
+}
 
   loadDocumentsCampagne(campagneId: number): void {
   this.docCampagneService.getDocumentsByCampagne(campagneId).subscribe({
@@ -539,13 +662,16 @@ loadCampagnes(): void {
           regionIds: c.regionIds || []
         };
       });
+      
 
       if (this.campagnes.length > 0 && !this.presenceConfig.campagneId) {
         this.presenceConfig.campagneId = this.campagnes[0].id;
       }
 
       this.updateCandidaturesParCampagne();
+      this.updateStats();
     },
+    
     error: err => console.error('Erreur chargement campagnes', err)
   });
 }
@@ -773,7 +899,7 @@ cloturerEtActiver(): void {
       next: () => {
         camp.statut = 'termine';
         camp.statutLabel = 'Clôturée';
-        this.stats.campagnesActives--;
+        this.stats.campagnesCloturee--;
       },
       error: err => console.error(err)
     });
@@ -793,18 +919,11 @@ fermerWarning(): void {
     if (brouillon) {
       brouillon.statut = 'active';
       brouillon.statutLabel = 'Active';
-      this.stats.campagnesActives++;
+      this.stats.campagnesCloturee++;
     }
   }
 
-  toggleVerrouillage(campagne: Campagne): void {
-    campagne.verrouille = !campagne.verrouille;
-    if (campagne.verrouille) {
-      this.stats.affectationsVerrouillees += campagne.affectations;
-    } else {
-      this.stats.affectationsVerrouillees -= campagne.affectations;
-    }
-  }
+ 
 
   private emptyNewCampagne(): Campagne {
   const annee = new Date().getFullYear();
@@ -892,6 +1011,40 @@ onRegionFilterChange(): void {
   this.filterCandidatures();
 }
 
+updateCandidature() {
+  const cand = this.selectedCandidature;
+
+  const formData = new FormData();
+
+  formData.append('nom', cand.saisonnier.nom);
+  formData.append('prenom', cand.saisonnier.prenom);
+  formData.append('cin', cand.saisonnier.cin);
+  formData.append('rib', cand.saisonnier.rib);
+  formData.append('telephone', cand.saisonnier.telephone);
+  formData.append('email', cand.saisonnier.email);
+  formData.append('regionId', cand.saisonnier.region.id);
+
+  formData.append('moisTravail', cand.saisonnier.moisTravail || '');
+  formData.append('statut', cand.statut);
+  formData.append('commentaire', cand.commentaire || '');
+
+  this.candidatureService.updateCandidature(cand.id, formData)
+    .subscribe({
+      next: () => {
+        alert("Candidature mise à jour ✅");
+        this.loadCandidatures();
+        this.closeDossier();
+      },
+      error: err => console.error(err)
+    });
+}
+
+openDossier(cand: any) {
+  this.selectedCandidature = JSON.parse(JSON.stringify(cand)); 
+  // clone pour éviter modification directe du tableau
+  this.showDossierModal = true;
+}
+
 // ── Gestion des documents pendants (lors création campagne) ──────
 
 onDocumentPendantSelected(event: Event): void {
@@ -926,9 +1079,30 @@ loadCandidatures(): void {
       this.updateCandidaturesParCampagne(); // ← ajoute ceci
       this.filterCandidatures(); 
       this.loadPresenceRows();
+       this.updateStats(); 
     },
     error: err => console.error('Erreur chargement candidatures', err)
   });
+}
+
+updateStats(): void {
+  const candidatures = this.candidatures || [];
+
+  // Candidatures
+  this.stats.totalCandidatures = candidatures.length;
+  this.stats.candidaturesAcceptees =
+    candidatures.filter(c => c.statut === 'ACCEPTEE').length;
+  this.stats.candidaturesEnAttente =
+    candidatures.filter(c => c.statut === 'EN_ATTENTE').length;
+  this.stats.candidaturesRefusees =
+    candidatures.filter(c => c.statut === 'REFUSEE').length;
+
+  // Parents
+  this.stats.totalParents = this.parents?.length || 0;
+
+  // Campagnes actives (si tu les as déjà chargées)
+  this.stats.campagnesCloturee =
+    this.campagnes?.filter(c => c.statut === 'cloturee').length || 0;
 }
 
 private updateCandidaturesParCampagne(): void {
@@ -1068,7 +1242,6 @@ loadStructures(): void {
     next: (data) => {
       this.structures = data.map(s => ({
         ...s,
-        type: s.type === 'ESPACE_COMMERCIAL' ? 'EC' : 'CT' as 'EC' | 'CT', // ← conversion
         isFirstInGov: false
       }));
       this.buildGouvernorats();
@@ -1192,7 +1365,10 @@ loadStructures(): void {
       next: () => {
         const idx = this.structures.findIndex(s => s.id === this.editingStructure!.id);
         if (idx !== -1) {
-          this.structures[idx] = { ...this.editingStructure! };
+          this.structures[idx] = {
+  ...this.editingStructure!,
+  disponible: this.structures[idx].disponible
+};
           this.buildGouvernorats();
           this.applyStructureFilter();
           this.updateStructuresStats();
@@ -1209,8 +1385,8 @@ loadStructures(): void {
 
   private updateStructuresStats(): void {
     this.structuresStats.total = this.structures.length;
-    this.structuresStats.espacesCommerciaux = this.structures.filter(s => s.type === 'EC').length;
-    this.structuresStats.centresTechnologiques = this.structures.filter(s => s.type === 'CT').length;
+    this.structuresStats.espacesCommerciaux = this.structures.filter(s => s.type === 'ESPACE_COMMERCIAL').length;
+    this.structuresStats.centresTechnologiques = this.structures.filter(s => s.type === 'CENTRE_TECHNOLOGIQUE').length;
     this.structuresStats.saisonnersAutorises = this.structures.reduce((sum, s) => sum + s.autorises, 0);
     this.structuresStats.saisonnersRecrutes = this.structures.reduce((sum, s) => sum + s.recrutes, 0);
   }

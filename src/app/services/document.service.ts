@@ -15,7 +15,7 @@ export interface Document {
 })
 export class DocumentService {
 
-  private baseUrl = 'https://tt-backend-b7j3.onrender.com/api/documents';
+  private baseUrl = 'http://localhost:8080/api/documents';
 
   constructor(private http: HttpClient) {}
 

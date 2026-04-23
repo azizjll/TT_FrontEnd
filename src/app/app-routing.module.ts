@@ -16,6 +16,12 @@ import { LoginAdminComponent } from './features/admin/pages/login-admin/login-ad
 import { AuthGuard } from './security/auth.guard';
 import { RhGuard } from './security/rh.guard';
 import { LoginSaisonnierComponent } from './features/saisonnier/login-saisonnier/login-saisonnier.component';
+import { AdminLayoutComponent } from './features/admin/layout/admin-layout/admin-layout.component';
+import { CampagnesComponent } from './features/admin/pages/campagnes/campagnes.component';
+import { CandidaturesComponent } from './features/admin/pages/candidatures/candidatures.component';
+import { PresenceComponent } from './features/admin/pages/presence/presence.component';
+import { MemoComponent } from './features/admin/pages/memo/memo.component';
+import { StructuresComponent } from './features/admin/pages/structures/structures.component';
 
 const routes: Routes = [
 
@@ -47,7 +53,22 @@ const routes: Routes = [
   {path: 'espace-saisonnier', component: EspacesaisonnierComponent},
   { path: 'admin/login', component: LoginAdminComponent },
 
-  { path: '', redirectTo: '/home-ge', pathMatch: 'full' }
+  { path: '', redirectTo: '/home-ge', pathMatch: 'full' },
+  {
+    path: 'dash',
+    component: AdminLayoutComponent,
+    children: [
+      { path: '',             redirectTo: 'campagnes', pathMatch: 'full' },
+      { path: 'campagnes',    component: CampagnesComponent },
+      { path: 'candidatures', component: CandidaturesComponent },
+      { path: 'presence',     component: PresenceComponent },
+      { path: 'memo',         component: MemoComponent },
+      { path: 'structures',   component: StructuresComponent },
+    ]
+  }
+
+
+  
 ];
 
 @NgModule({
