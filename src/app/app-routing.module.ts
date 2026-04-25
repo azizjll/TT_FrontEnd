@@ -22,6 +22,8 @@ import { CandidaturesComponent } from './features/admin/pages/candidatures/candi
 import { PresenceComponent } from './features/admin/pages/presence/presence.component';
 import { MemoComponent } from './features/admin/pages/memo/memo.component';
 import { StructuresComponent } from './features/admin/pages/structures/structures.component';
+import { CampagneGuard } from './guards/campagne.guard';
+import { CampagneExpireeComponent } from './pages/campagne-expiree/campagne-expiree.component';
 
 const routes: Routes = [
 
@@ -50,8 +52,13 @@ const routes: Routes = [
   
   { path: 'saisonniers/validation', component: SaisonniersValidationComponent },
   {path: 'admin', component: HomeAdminComponent,canActivate: [AuthGuard]},
-  {path: 'espace-saisonnier', component: EspacesaisonnierComponent},
-  { path: 'admin/login', component: LoginAdminComponent },
+{ 
+  path: 'espace-saisonnier', 
+  component: EspacesaisonnierComponent,
+  canActivate: [CampagneGuard]
+}, 
+ { path: 'admin/login', component: LoginAdminComponent },
+ { path: 'campagne-expiree', component: CampagneExpireeComponent },
 
   { path: '', redirectTo: '/home-ge', pathMatch: 'full' },
   {

@@ -259,10 +259,16 @@
 }
 
 .field-input, .field-select {
-  width: 100%; padding: 22px 44px 8px 44px;
+  
+   width: 100%;
+  padding: 16px 44px 16px 44px; /* équilibré */
+  display: flex;
+  align-items: center;
   border: none; background: none; outline: none;
   font-size: 14px; color: var(--text-primary); font-family: inherit;
   border-radius: 12px;
+  color: var(--blue-700);
+
   &::placeholder { color: transparent; }
 }
 
@@ -270,6 +276,8 @@
   appearance: none; cursor: pointer;
   option { color: var(--text-primary); }
 }
+
+
 
 .select-wrap::after {
   content: '';

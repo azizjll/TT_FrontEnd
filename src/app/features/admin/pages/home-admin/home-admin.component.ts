@@ -164,6 +164,9 @@ export class HomeAdminComponent implements OnInit {
   pageTitle = 'Pilotage des Campagnes';
   pageSubtitle = 'Gérez et suivez toutes vos campagnes de recrutement';
 
+  today: string = new Date().toISOString().split('T')[0];
+
+
       // ── Modal Voir Campagne ──────────────────────────────────────────
     showViewModal = false;
     viewingCampagne: Campagne | null = null;
@@ -222,6 +225,7 @@ isLoading = false;
 documentsPendants: Array<{ file: File; nom: string; type: string }> = [];
 
 
+candidatureStructureMap = new Map<number, any>();
 
 openAddParentModal() {
   this.isEditParent = false;
@@ -290,6 +294,9 @@ deleteParent(id: number) {
 
   // ── Candidatures ──────────────────────────────────────────────────
   candidatures: Candidature[] = [];
+
+  isLoadingStructure = false;
+  myRegion!: Region;  
 
   // ── Utilisateurs ──────────────────────────────────────────────────
   utilisateurs: Utilisateur[] = [];
@@ -952,52 +959,65 @@ get regionsDisponibles(): string[] {
 }
 
 get structuresDisponibles(): string[] {
-  // Les structures sont liées à la région sélectionnée si filtrée
-  let list = this.candidatures;
-  if (this.candidatureFilterRegion) {
-    list = list.filter(c => c.saisonnier.region.nom === this.candidatureFilterRegion);
+
+  console.log('📍 Région sélectionnée:', this.candidatureFilterRegion);
+  console.log('🏢 Toutes les structures:', this.structures);
+
+  if (!this.candidatureFilterRegion) {
+    return [];
   }
-  // Si vos candidatures ont une structure liée, adaptez ce champ
-  // Ici on suppose que la structure est dans saisonnier.structure (à adapter)
-  const set = new Set(
-    list
-      .map(c => (c.saisonnier as any).structure?.nom)
-      .filter(Boolean)
+
+  const result = this.structures
+    .filter(s => {
+      console.log('➡️ Structure:', s.nom, 'Region:', s.region);
+      return s.region === this.candidatureFilterRegion;
+    })
+    .map(s => s.nom);
+
+  console.log('🎯 Structures finales dropdown:', result);
+
+  return result;
+}
+
+
+get structuresECDisponibles(): StructureDTO[] {
+  if (!this.candidatureFilterRegion) return [];
+  return this.structures.filter(s =>
+    s.region === this.candidatureFilterRegion &&
+    s.type === 'ESPACE_COMMERCIAL'
   );
-  return Array.from(set).sort();
+}
+
+get structuresCTDisponibles(): StructureDTO[] {
+  if (!this.candidatureFilterRegion) return [];
+  return this.structures.filter(s =>
+    s.region === this.candidatureFilterRegion &&
+    s.type === 'CENTRE_TECHNOLOGIQUE'
+  );
 }
 
 filterCandidatures(): void {
   let list = [...this.candidatures];
 
   if (this.candidatureFilterRegion) {
-    list = list.filter(c => c.saisonnier.region.nom === this.candidatureFilterRegion);
+    list = list.filter(c => c.saisonnier?.region?.nom === this.candidatureFilterRegion);
   }
 
   if (this.candidatureFilterStructure) {
-    list = list.filter(c =>
-      (c.saisonnier as any).structure?.nom === this.candidatureFilterStructure
-    );
+    list = list.filter(c => {
+      const st = this.candidatureStructureMap.get(c.id);
+      if (!st?.nom) return false;
+      return st.nom.trim().toLowerCase() === 
+             this.candidatureFilterStructure.trim().toLowerCase();
+    });
   }
 
   if (this.candidatureFilterStatut) {
-    list = list.filter(c =>
-      c.statut.toLowerCase() === this.candidatureFilterStatut.toLowerCase()
-    );
-  }
-
-  if (this.searchQuery.trim()) {
-    const q = this.searchQuery.toLowerCase();
-    list = list.filter(c =>
-      c.saisonnier.nom.toLowerCase().includes(q) ||
-      c.saisonnier.prenom.toLowerCase().includes(q) ||
-      String(c.saisonnier.cin).includes(q)
-    );
+    list = list.filter(c => c.statut === this.candidatureFilterStatut);
   }
 
   this.filteredCandidatures = list;
 }
-
 resetFiltresCandidatures(): void {
   this.candidatureFilterRegion = '';
   this.candidatureFilterStructure = '';
@@ -1008,8 +1028,12 @@ resetFiltresCandidatures(): void {
 onRegionFilterChange(): void {
   // Réinitialiser la structure quand la région change
   this.candidatureFilterStructure = '';
+     // ✅ IMPORTANT
+
   this.filterCandidatures();
 }
+
+
 
 updateCandidature() {
   const cand = this.selectedCandidature;
@@ -1040,9 +1064,41 @@ updateCandidature() {
 }
 
 openDossier(cand: any) {
-  this.selectedCandidature = JSON.parse(JSON.stringify(cand)); 
-  // clone pour éviter modification directe du tableau
+  this.selectedCandidature = JSON.parse(JSON.stringify(cand));
+
+  console.log('📂 Candidature ouverte:', this.selectedCandidature);
+
+  // ⚠️ CAS ACTUEL (structure inexistante)
+  this.selectedStructureId = cand.saisonnier?.structure?.id || null;
+
+  console.log('🏢 Structure sélectionnée (init):', this.selectedStructureId);
+
   this.showDossierModal = true;
+  const regionId = cand.saisonnier?.region?.id || this.myRegion?.id;
+  this.structureService.getStructuresByRegion(regionId).subscribe({
+    next: (data: StructureDTO[]) => {
+      this.structures = data;
+
+      // ── Étape 2 : récupérer la structure actuelle du candidat
+      this.candidatureService.getStructureByCandidature(cand.id).subscribe({
+        next: (st: any) => {
+          if (st?.id) {
+            this.selectedCandidatureStructure = st;
+            this.selectedStructureId = st.id;  // ← pré-sélectionner dans le select
+          }
+          this.isLoadingStructure = false;
+        },
+        error: () => {
+          this.selectedStructureId = null;
+          this.isLoadingStructure = false;
+        }
+      });
+    },
+    error: (err: any) => {
+      console.error('Erreur chargement structures:', err);
+      this.isLoadingStructure = false;
+    }
+  });
 }
 
 // ── Gestion des documents pendants (lors création campagne) ──────
@@ -1076,10 +1132,23 @@ loadCandidatures(): void {
   this.candidatureService.getAllCandidatures().subscribe({
     next: data => {
       this.candidatures = data;
-      this.updateCandidaturesParCampagne(); // ← ajoute ceci
-      this.filterCandidatures(); 
+
+      // ✅ Enrichir la map structure pour chaque candidature
+      this.candidatures.forEach(c => {
+        this.candidatureService.getStructureByCandidature(c.id).subscribe({
+          next: (st: any) => {
+            if (st?.id) {
+              this.candidatureStructureMap.set(c.id, st);
+            }
+          },
+          error: () => {} // pas de structure = on ignore
+        });
+      });
+
+      this.updateCandidaturesParCampagne();
+      this.filterCandidatures();
       this.loadPresenceRows();
-       this.updateStats(); 
+      this.updateStats();
     },
     error: err => console.error('Erreur chargement candidatures', err)
   });
@@ -1240,10 +1309,14 @@ private updateCandidaturesParCampagne(): void {
 loadStructures(): void {
   this.structureService.getStructuresCampagneActive().subscribe({
     next: (data) => {
+        console.log('📥 Structures backend:', data);
+
       this.structures = data.map(s => ({
         ...s,
         isFirstInGov: false
       }));
+        console.log('🏢 Structures après mapping:', this.structures);
+
       this.buildGouvernorats();
       this.applyStructureFilter();
       this.updateStructuresStats();
@@ -1815,24 +1888,32 @@ getCandidatureUrl(campagne: Campagne): string {
 }
 
 copierLien(campagne: Campagne): void {
+  if (this.isCampagneExpiree(campagne)) {
+    this.showToast('⛔ Cette campagne est expirée !');
+    return;
+  }
+
   const url = this.getCandidatureUrl(campagne);
   navigator.clipboard.writeText(url).then(() => {
-    this.showToast('✅ Lien copié dans le presse-papier !');
-  }).catch(() => {
-    // Fallback pour anciens navigateurs
-    const el = document.createElement('textarea');
-    el.value = url;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
     this.showToast('✅ Lien copié !');
   });
 }
 
 ouvrirLien(campagne: Campagne): void {
-  const url = this.getCandidatureUrl(campagne);
-  window.open(url, '_blank');
+  if (this.isCampagneExpiree(campagne)) {
+    this.showToast('⛔ Cette campagne est expirée !');
+    return;
+  }
+
+  window.open(this.getCandidatureUrl(campagne), '_blank');
+}
+
+
+
+isCampagneExpiree(campagne: Campagne): boolean {
+  const now = new Date();
+  const dateFin = new Date(campagne.dateFin);
+  return now > dateFin;
 }
 
 // ── Toast notification ──────────────────────────────────────────

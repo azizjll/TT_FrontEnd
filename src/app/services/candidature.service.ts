@@ -45,6 +45,14 @@ export class CandidatureService {
   return this.http.put(`${this.baseUrl}/update/${id}`, formData);
 }
 
+envoyerDemandeJuilletAout(payload: {
+  candidatureId: number;
+  commentaire: string;
+  directionNom: string;
+}): Observable<any> {
+  return this.http.post(`${this.baseUrl}/demande-autorisation`, payload);
+}
+
 getDocumentsBySaisonnier(saisonnierId: number) {
   return this.http.get<any[]>(`${this.baseUrl}/documents?saisonnierId=${saisonnierId}`);
 }

@@ -35,6 +35,73 @@
       </div>
     </div>
 
+    <!-- ===== GUIDE SIDEBAR ===== -->
+<div class="sidebar-guide" *ngIf="!isLoggedIn">
+  <button class="sidebar-guide-btn" (click)="showGuide = true">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    Comment postuler ?
+  </button>
+
+  <div class="sidebar-guide-steps">
+
+    <div class="sg-step">
+      <div class="sg-circle sg-blue">1</div>
+      <div class="sg-line"></div>
+      <div class="sg-content">
+        <span class="sg-title">Télécharger le document</span>
+        <button class="sg-action-btn sg-btn-blue"
+                *ngIf="iltizamDoc"
+                (click)="telechargerIltizam()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Télécharger
+        </button>
+      </div>
+    </div>
+
+    <div class="sg-step">
+      <div class="sg-circle sg-green">2</div>
+      <div class="sg-line"></div>
+      <div class="sg-content">
+        <span class="sg-title">Déposer candidature</span>
+        <button class="sg-action-btn sg-btn-green"
+                (click)="openCandidatureFromGuide()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Postuler
+        </button>
+      </div>
+    </div>
+
+    <div class="sg-step last">
+      <div class="sg-circle sg-amber">3</div>
+      <div class="sg-content">
+        <span class="sg-title">Se connecter</span>
+        <button class="sg-action-btn sg-btn-amber" (click)="goToLogin()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+          </svg>
+          Connexion
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
     <div class="sidebar-iltizam-card" *ngIf="iltizamDoc">
   <div class="iltizam-header">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" 
@@ -494,51 +561,266 @@
 <!-- ===== MODAL DETAIL ===== -->
 <div class="modal-backdrop" *ngIf="showDetailModal" (click)="closeDetail()" @fadeInUp>
   <div class="modal-box" (click)="$event.stopPropagation()" *ngIf="selectedCandidature">
+
     <div class="modal-header">
       <div>
         <h2 class="modal-title">{{ selectedCandidature.campagne }}</h2>
-        <span class="statut-badge" [ngClass]="getStatutClass(selectedCandidature.statut)">{{ getStatutLabel(selectedCandidature.statut) }}</span>
+        <span class="statut-badge" [ngClass]="getStatutClass(selectedCandidature.statut)">
+          {{ getStatutLabel(selectedCandidature.statut) }}
+        </span>
       </div>
       <button class="modal-close" (click)="closeDetail()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
       </button>
     </div>
+
+    <!-- Bannière lecture seule -->
+    <div *ngIf="!canEditCandidature"
+         style="background:rgba(34,197,94,0.1); border-left:3px solid #22c55e;
+                padding:10px 16px; margin:0 24px 12px; border-radius:6px;
+                font-size:13px; color:#16a34a; display:flex; align-items:center; gap:8px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+      Candidature acceptée — modification désactivée
+    </div>
+
     <div class="modal-body">
+
+      <!-- ── Informations personnelles ── -->
+      <h4 class="section-title">Informations personnelles</h4>
       <div class="modal-grid">
+
         <div class="modal-field">
-          <label>Entreprise</label>
-          <span>{{ selectedCandidature.entreprise }}</span>
+          <label>Prénom *</label>
+          <input *ngIf="canEditCandidature"
+                 type="text" [(ngModel)]="selectedCandidature['prenom']"
+                 placeholder="Prénom">
+          <span *ngIf="!canEditCandidature">{{ selectedCandidature['prenom'] }}</span>
         </div>
+
         <div class="modal-field">
-          <label>Localisation</label>
-          <span>{{ selectedCandidature.localisation }}</span>
+          <label>Nom *</label>
+          <input *ngIf="canEditCandidature"
+                 type="text" [(ngModel)]="selectedCandidature['nom']"
+                 placeholder="Nom">
+          <span *ngIf="!canEditCandidature">{{ selectedCandidature['nom'] }}</span>
         </div>
+
         <div class="modal-field">
-          <label>Poste</label>
-          <span>{{ selectedCandidature.poste }}</span>
+          <label>Email *</label>
+          <input *ngIf="canEditCandidature"
+                 type="email" [(ngModel)]="selectedCandidature['email']"
+                 placeholder="email@exemple.com">
+          <span *ngIf="!canEditCandidature">{{ selectedCandidature['email'] }}</span>
         </div>
-        <div class="modal-field" *ngIf="selectedCandidature.salaire">
-          <label>Rémunération</label>
-          <span>{{ selectedCandidature.salaire }}</span>
-        </div>
+
         <div class="modal-field">
-          <label>Période</label>
-          <span>{{ selectedCandidature.dateDebut }} → {{ selectedCandidature.dateFin }}</span>
+          <label>Téléphone *</label>
+          <input *ngIf="canEditCandidature"
+                 type="text" [(ngModel)]="selectedCandidature['telephone']"
+                 placeholder="XX XXX XXX">
+          <span *ngIf="!canEditCandidature">{{ selectedCandidature['telephone'] }}</span>
         </div>
+
+        <div class="modal-field">
+          <label>CIN *</label>
+          <input *ngIf="canEditCandidature"
+                 type="text" [(ngModel)]="selectedCandidature['cin']"
+                 placeholder="Numéro CIN">
+          <span *ngIf="!canEditCandidature">{{ selectedCandidature['cin'] }}</span>
+        </div>
+
+        <div class="modal-field">
+          <label>RIB *</label>
+          <input *ngIf="canEditCandidature"
+                 type="text" [(ngModel)]="selectedCandidature['rib']"
+                 placeholder="RIB bancaire">
+          <span *ngIf="!canEditCandidature">{{ selectedCandidature['rib'] }}</span>
+        </div>
+
+      </div>
+
+      <!-- ── Informations du parent ── -->
+      <h4 class="section-title">Informations du parent</h4>
+      <div class="modal-grid">
+
+        <div class="modal-field">
+          <label>Nom & Prénom du parent</label>
+          <input *ngIf="canEditCandidature"
+                 type="text" [(ngModel)]="selectedCandidature['nomPrenomParent']"
+                 placeholder="Nom et prénom du parent">
+          <span *ngIf="!canEditCandidature">{{ selectedCandidature['nomPrenomParent'] || '—' }}</span>
+        </div>
+
+        <div class="modal-field">
+          <label>Matricule du parent</label>
+          <input *ngIf="canEditCandidature"
+                 type="text" [(ngModel)]="selectedCandidature['matriculeParent']"
+                 placeholder="Matricule du parent">
+          <span *ngIf="!canEditCandidature">{{ selectedCandidature['matriculeParent'] || '—' }}</span>
+        </div>
+
+      </div>
+
+      <!-- ── Formation ── -->
+      <h4 class="section-title">Formation</h4>
+      <div class="modal-grid">
+
+        <div class="modal-field">
+          <label>Niveau d'étude</label>
+          <select *ngIf="canEditCandidature" [(ngModel)]="selectedCandidature['niveauEtude']">
+            <option value="">— Choisir —</option>
+            <option value="BAC">Bac</option>
+            <option value="BAC+1">Bac+1</option>
+            <option value="BAC+2">Bac+2</option>
+            <option value="BAC+3">Bac+3</option>
+            <option value="BAC+4">Bac+4</option>
+            <option value="BAC+5">Bac+5</option>
+            <option value="BAC+6">Bac+6</option>
+          </select>
+          <span *ngIf="!canEditCandidature">{{ selectedCandidature['niveauEtude'] || '—' }}</span>
+        </div>
+
+        <div class="modal-field">
+          <label>Diplôme</label>
+          <select *ngIf="canEditCandidature" [(ngModel)]="selectedCandidature['diplomeNom']">
+            <option value="">— Choisir —</option>
+            <option value="BTP">BTP</option>
+            <option value="BTS">BTS</option>
+            <option value="LICENCE">Licence</option>
+            <option value="MASTER">Master</option>
+            <option value="Ingenierie">Ingénierie</option>
+            <option value="DOCTORAT">Doctorat</option>
+          </select>
+          <span *ngIf="!canEditCandidature">{{ selectedCandidature['diplomeNom'] || '—' }}</span>
+        </div>
+
+        <div class="modal-field">
+          <label>Spécialité</label>
+          <input *ngIf="canEditCandidature"
+                 type="text" [(ngModel)]="selectedCandidature['specialite']"
+                 placeholder="Votre spécialité">
+          <span *ngIf="!canEditCandidature">{{ selectedCandidature['specialite'] || '—' }}</span>
+        </div>
+
+        <div class="modal-field">
+          <label>Mois de travail</label>
+          <select *ngIf="canEditCandidature" [(ngModel)]="selectedCandidature['moisTravail']">
+            <option value="JUILLET">Juillet</option>
+            <option value="AOUT">Août</option>
+          </select>
+          <span *ngIf="!canEditCandidature">{{ selectedCandidature['moisTravail'] || '—' }}</span>
+        </div>
+
+      </div>
+
+      <!-- ── Infos lecture seule ── -->
+      <h4 class="section-title">Candidature</h4>
+      <div class="modal-grid">
+
         <div class="modal-field">
           <label>Date de postulation</label>
           <span>{{ selectedCandidature.datePostulation }}</span>
         </div>
+
+        <div class="modal-field">
+          <label>Direction de rattachement</label>
+          <span>{{ selectedCandidature.localisation || '—' }}</span>
+        </div>
+
+        <div class="modal-field">
+  <label>Structure</label>
+
+  
+
+  <select
+  [(ngModel)]="selectedCandidature['structureId']"
+  [compareWith]="compareStructures">
+    <option [ngValue]="null">— Choisir —</option>
+    <optgroup label="🏪 Espaces Commerciaux" *ngIf="structuresEC.length > 0">
+      <option *ngFor="let s of structuresEC"
+              [ngValue]="s.id"
+              [disabled]="!s.disponible">
+        {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+        {{ s.disponible ? '' : '⛔ COMPLET' }}
+      </option>
+    </optgroup>
+    <optgroup label="💻 Centres Technologiques" *ngIf="structuresCT.length > 0">
+      <option *ngFor="let s of structuresCT"
+              [ngValue]="s.id"
+              [disabled]="!s.disponible">
+        {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+        {{ s.disponible ? '' : '⛔ COMPLET' }}
+      </option>
+    </optgroup>
+  </select>
+
+  <div *ngIf="selectedCandidature?.structureNom && canEditCandidature"
+     style="margin-bottom:10px; font-size:13px; color:#666">
+
+  Structure actuelle :
+  <strong>{{ selectedCandidature.structureNom }}</strong>
+
+  <span style="font-size:11px; padding:2px 8px; border-radius:20px; font-weight:600;"
+          [style.background]="saisonnier.structure.type === 'ESPACE_COMMERCIAL' 
+                              ? 'rgba(74,158,255,0.12)' : 'rgba(168,85,247,0.12)'"
+          [style.color]="saisonnier.structure.type === 'ESPACE_COMMERCIAL' 
+                         ? '#4A9EFF' : '#a855f7'">
+      {{ saisonnier.structure.type === 'ESPACE_COMMERCIAL' ? 'EC' : 'CT' }}
+    </span>
+
+    {{ saisonnier.structure.nom }}
+
+</div>
+
+  <!-- Lecture seule : affiche le nom exact -->
+  <span *ngIf="!canEditCandidature">
+    {{ selectedCandidature['structureNom'] || '—' }}
+  </span>
+</div>
+
+
+
+        
+
       </div>
-      <div class="modal-message" *ngIf="selectedCandidature.message">
-        <label>Message de l'employeur</label>
+
+      <!-- Message employeur -->
+      <div class="modal-message" *ngIf="selectedCandidature.message" style="margin-top:12px">
+        <label>Message</label>
         <p>{{ selectedCandidature.message }}</p>
       </div>
+
     </div>
+
     <div class="modal-footer">
       <button class="btn-outline" (click)="closeDetail()">Fermer</button>
-      <button class="btn-primary" *ngIf="selectedCandidature.statut === 'ACCEPTEE'">Confirmer ma disponibilité</button>
+
+      <button class="btn-primary"
+              *ngIf="canEditCandidature"
+              (click)="saveCandidatureDetail()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+          <polyline points="7 3 7 8 15 8"/>
+        </svg>
+        Enregistrer les modifications
+      </button>
+
+      <button class="btn-primary"
+              *ngIf="selectedCandidature.statut === 'ACCEPTEE'">
+        ✓ Confirmer ma disponibilité
+      </button>
     </div>
+
   </div>
 </div>
 
@@ -790,10 +1072,10 @@
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
               <polyline points="14 2 14 8 20 8"/>
             </svg>
-            <span>CIN (PDF)</span>
+            <span>CIN </span>
             <small *ngIf="cinFileName" class="file-name">{{ cinFileName }}</small>
             <small class="error-msg" *ngIf="formSubmitted && !cinFile">⚠️ Fichier CIN obligatoire.</small>
-            <input type="file" accept=".pdf" (change)="onFileChange($event,'cin')">
+            <input type="file"  (change)="onFileChange($event,'cin')">
           </label>
 
           <label class="file-drop" [class.file-error]="formSubmitted && !diplome">
@@ -801,10 +1083,10 @@
               <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
               <path d="M6 12v5c3 3 9 3 12 0v-5"/>
             </svg>
-            <span>Diplôme (PDF)</span>
+            <span>Diplôme </span>
             <small *ngIf="diplomeFileName" class="file-name">{{ diplomeFileName }}</small>
             <small class="error-msg" *ngIf="formSubmitted && !diplome">⚠️ Fichier Diplôme obligatoire.</small>
-            <input type="file" accept=".pdf" (change)="onFileChange($event,'diplome')">
+            <input type="file"  (change)="onFileChange($event,'diplome')">
           </label>
 
           <label class="file-drop" [class.file-error]="formSubmitted && !contrat">
@@ -812,10 +1094,10 @@
               <path d="M9 11l3 3L22 4"/>
               <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
             </svg>
-            <span>Engagement (PDF)</span>
+            <span>Engagement </span>
             <small *ngIf="contratFileName" class="file-name">{{ contratFileName }}</small>
             <small class="error-msg" *ngIf="formSubmitted && !contrat">⚠️ Fichier Contrat obligatoire.</small>
-            <input type="file" accept=".pdf" (change)="onFileChange($event,'contrat')">
+            <input type="file"  (change)="onFileChange($event,'contrat')">
           </label>
 
           <label class="file-drop" [class.file-error]="formSubmitted && !ribFile">
@@ -823,10 +1105,10 @@
               <rect x="2" y="5" width="20" height="14" rx="2"/>
               <line x1="2" y1="10" x2="22" y2="10"/>
             </svg>
-            <span>RIB Bancaire (PDF)</span>
+            <span>RIB Bancaire</span>
             <small *ngIf="ribFileName" class="file-name">{{ ribFileName }}</small>
             <small class="error-msg" *ngIf="formSubmitted && !ribFile">⚠️ Fichier RIB obligatoire.</small>
-            <input type="file" accept=".pdf" (change)="onFileChange($event,'rib')">
+            <input type="file"  (change)="onFileChange($event,'rib')">
           </label>
 
         </div>
@@ -883,4 +1165,98 @@
  
 </div>
 
+</div>
+
+<!-- ===== GUIDE 3 ÉTAPES ===== -->
+<div class="modal-overlay" *ngIf="showGuide" (click)="closeGuide()" @fadeInUp>
+  <div class="guide-box" (click)="$event.stopPropagation()">
+
+    <div class="guide-head">
+      <div>
+        <h2 class="guide-title">Espace saisonnier</h2>
+        <p class="guide-sub">Suivez les étapes pour déposer votre candidature</p>
+      </div>
+      <button class="modal-close" (click)="closeGuide()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="guide-body">
+
+      <!-- Étape 1 -->
+      <div class="guide-step">
+        <div class="guide-step-left">
+          <div class="guide-circle step-blue">1</div>
+          <div class="guide-line"></div>
+        </div>
+        <div class="guide-step-content">
+          <h3 class="guide-step-title">Télécharger le document requis</h3>
+          <div class="guide-doc-badge" *ngIf="iltizamDoc">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            {{ iltizamDoc.nom }}
+          </div>
+          <p class="guide-step-desc">
+            Téléchargez ce document, signez-le, puis gardez-le prêt pour l'étape suivante.
+          </p>
+          <button class="guide-btn guide-btn-blue"
+                  *ngIf="iltizamDoc"
+                  (click)="telechargerIltizam()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Télécharger et signer
+          </button>
+        </div>
+      </div>
+
+      <!-- Étape 2 -->
+      <div class="guide-step">
+        <div class="guide-step-left">
+          <div class="guide-circle step-green">2</div>
+          <div class="guide-line"></div>
+        </div>
+        <div class="guide-step-content">
+          <h3 class="guide-step-title">Déposer votre candidature</h3>
+          <p class="guide-step-desc">
+            Remplissez le formulaire et joignez le document signé avec vos autres pièces justificatives.
+          </p>
+          <button class="guide-btn guide-btn-green"
+                  (click)="openCandidatureFromGuide()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Déposer candidature
+          </button>
+        </div>
+      </div>
+
+      <!-- Étape 3 -->
+      <div class="guide-step last">
+        <div class="guide-step-left">
+          <div class="guide-circle step-amber">3</div>
+        </div>
+        <div class="guide-step-content">
+          <h3 class="guide-step-title">Se connecter pour suivre votre dossier</h3>
+          <p class="guide-step-desc">
+            Déjà candidat ? Connectez-vous pour consulter l'état de vos candidatures et documents.
+          </p>
+          <button class="guide-btn guide-btn-amber" (click)="goToLogin()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+            </svg>
+            Se connecter
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </div>

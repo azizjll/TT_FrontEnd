@@ -31,6 +31,7 @@ import { CandidaturesComponent } from './features/admin/pages/candidatures/candi
 import { PresenceComponent } from './features/admin/pages/presence/presence.component';
 import { MemoComponent } from './features/admin/pages/memo/memo.component';
 import { StructuresComponent } from './features/admin/pages/structures/structures.component';
+import { CampagneExpireeComponent } from './pages/campagne-expiree/campagne-expiree.component';
 
 @NgModule({
   declarations: [
@@ -56,6 +57,7 @@ import { StructuresComponent } from './features/admin/pages/structures/structure
     PresenceComponent,
     MemoComponent,
     StructuresComponent,
+    CampagneExpireeComponent,
     
     
   ],

@@ -242,12 +242,7 @@
             </svg>
             Créer Campagne
           </button>
-          <button class="btn btn-primary" (click)="activerCampagne()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="5 3 19 12 5 21 5 3"/>
-            </svg>
-            Activer
-          </button>
+          
 
           <button class="btn btn-outline" (click)="openAddParentModal()">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -314,7 +309,7 @@
               </td>
 
               <td>
-                <div class="lien-cell" *ngIf="campagne.statut === 'active'">
+                <div class="lien-cell" *ngIf="campagne.statut === 'active' && !isCampagneExpiree(campagne)">
                 <a [href]="getCandidatureUrl(campagne)" target="_blank" class="lien-url">
                   Espace saisonnier
                 </a>
@@ -469,25 +464,39 @@
       </div>
 
       <!-- Filtre Structure -->
-      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 200px;">
-        <label style="font-size: 11px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-               style="width:11px;height:11px; margin-right:4px; vertical-align:middle">
-            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-          </svg>
-          Structure
-        </label>
-        <select [(ngModel)]="candidatureFilterStructure"
-                (ngModelChange)="filterCandidatures()"
-                [disabled]="structuresDisponibles.length === 0"
-                [style.opacity]="structuresDisponibles.length === 0 ? 0.5 : 1"
-                style="background: var(--surface-2); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 6px; padding: 6px 10px; font-size: 13px; color: var(--text-primary); cursor: pointer;">
-          <option value="">Toutes les structures</option>
-          <option *ngFor="let s of structuresDisponibles" [value]="s">{{ s }}</option>
-        </select>
-      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 220px;">
+  <label style="font-size: 11px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         style="width:11px;height:11px; margin-right:4px; vertical-align:middle">
+      <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+      <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+    </svg>
+    Structure
+  </label>
+  <select [(ngModel)]="candidatureFilterStructure"
+          (ngModelChange)="filterCandidatures()"
+          [disabled]="structuresDisponibles.length === 0"
+          [style.opacity]="structuresDisponibles.length === 0 ? 0.5 : 1"
+          style="background: var(--surface-2); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 6px; padding: 6px 10px; font-size: 13px; color: var(--text-primary); cursor: pointer;">
+    
+    <option value="">Toutes les structures</option>
 
+    <optgroup label="🏪 Espaces Commerciaux" *ngIf="structuresECDisponibles.length > 0">
+      <option *ngFor="let s of structuresECDisponibles" [value]="s.nom">
+        {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+        {{ s.disponible ? '' : '⛔' }}
+      </option>
+    </optgroup>
+
+    <optgroup label="💻 Centres Technologiques" *ngIf="structuresCTDisponibles.length > 0">
+      <option *ngFor="let s of structuresCTDisponibles" [value]="s.nom">
+        {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+        {{ s.disponible ? '' : '⛔' }}
+      </option>
+    </optgroup>
+
+  </select>
+</div>
       <!-- Filtre Statut -->
       <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px;">
         <label style="font-size: 11px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">
@@ -502,9 +511,9 @@
                 (ngModelChange)="filterCandidatures()"
                 style="background: var(--surface-2); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 6px; padding: 6px 10px; font-size: 13px; color: var(--text-primary); cursor: pointer;">
           <option value="">Tous les statuts</option>
-          <option value="en_attente">En attente</option>
-          <option value="acceptee">Acceptée</option>
-          <option value="refusee">Refusée</option>
+          <option value="EN_ATTENTE">En attente</option>
+          <option value="ACCEPTEE">Acceptée</option>
+          <option value="REJETEE">Refusée</option>
         </select>
       </div>
 
@@ -1478,12 +1487,15 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label>Date début Candidature *</label>
-          <input type="date" [(ngModel)]="newCampagne.dateDebut"/>
-        </div>
+        <label>Date début Candidature *</label>
+        <input type="date" 
+              [(ngModel)]="newCampagne.dateDebut"
+              [min]="today" />
+      </div>
         <div class="form-group">
           <label>Date fin Candidature *</label>
-          <input type="date" [(ngModel)]="newCampagne.dateFin"/>
+          <input type="date" [(ngModel)]="newCampagne.dateFin"
+                 [min]="newCampagne.dateDebut" />
         </div>
       </div>
 
@@ -2197,11 +2209,11 @@
       <div class="form-row">
         <div class="form-group">
           <label>Date de début *</label>
-          <input type="date" [(ngModel)]="editingCampagne.dateDebut" />
+          <input type="date" [min]="today" [(ngModel)]="editingCampagne.dateDebut" />
         </div>
         <div class="form-group">
           <label>Date de fin *</label>
-          <input type="date" [(ngModel)]="editingCampagne.dateFin" />
+          <input type="date" [min]="editingCampagne.dateDebut" [(ngModel)]="editingCampagne.dateFin" />
         </div>
       </div>
 

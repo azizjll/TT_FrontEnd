@@ -326,6 +326,9 @@ submit(saisonnierForm: NgForm): void {
   formData.append('statut',     this.selectedCandidature.statut);
   formData.append('commentaire', this.selectedCandidature.commentaire || '');
   formData.append('moisTravail', this.selectedCandidature.saisonnier.moisTravail || '');
+if (this.selectedStructureId) {
+  formData.append('structureId', this.selectedStructureId.toString());
+}
 
   Swal.fire({
     title: 'Mise à jour...',
@@ -391,6 +394,52 @@ submit(saisonnierForm: NgForm): void {
         });
       }
     });
+}
+
+
+envoyerDemandeAutorisation(): void {
+  // Commentaire obligatoire
+  if (!this.selectedCandidature.commentaire?.trim()) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Commentaire requis',
+      text: 'Veuillez ajouter un commentaire justificatif avant d\'envoyer.'
+    });
+    return;
+  }
+
+  Swal.fire({
+    title: 'Envoi en cours...',
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
+
+  const payload = {
+    candidatureId:  this.selectedCandidature.id,
+    commentaire:    this.selectedCandidature.commentaire,
+    directionNom:   this.selectedCandidature.saisonnier.region.nom
+  };
+
+  this.candidatureService.envoyerDemandeJuilletAout(payload).subscribe({
+    next: () => {
+      Swal.fire({
+        icon: 'success',
+        title: 'Demande envoyée',
+        text: 'Les administrateurs ont été notifiés par email.',
+        timer: 2500,
+        showConfirmButton: false
+      });
+      this.closeDossier();
+      this.loadCandidatures(this.myRegion.id);
+    },
+    error: () => {
+      Swal.fire({
+        icon: 'error',
+        title: 'Erreur',
+        text: 'Impossible d\'envoyer la demande.'
+      });
+    }
+  });
 }
 
   // ==========================
@@ -466,6 +515,37 @@ statusLabel(statut: string): string {
   return map[statut] || statut;
 }
 
+telechargerDoc(url: string, nom: string): void {
+  fetch(url)
+    .then(res => res.blob())
+    .then(blob => {
+      const extension = nom.includes('.') ? '' : this.getExtensionFromBlob(blob);
+      const nomFinal = nom.endsWith(extension) ? nom : nom + extension;
+      const blobUrl = URL.createObjectURL(blob);
 
+      if (blob.type === 'application/pdf') {
+        // PDF → ouvrir dans nouvel onglet
+        window.open(blobUrl, '_blank');
+      } else {
+        // Autres types → télécharger
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = nomFinal;
+        a.click();
+        URL.revokeObjectURL(blobUrl);
+      }
+    });
+}
+
+private getExtensionFromBlob(blob: Blob): string {
+  const mimeMap: Record<string, string> = {
+    'application/pdf':                                                          '.pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+    'application/msword':                                                       '.doc',
+    'image/jpeg':                                                               '.jpg',
+    'image/png':                                                                '.png',
+  };
+  return mimeMap[blob.type] ?? '';
+}
 
 }

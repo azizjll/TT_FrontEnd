@@ -30,6 +30,23 @@ export interface Candidature {
   salaire?: string;
   logo?: string;
   message?: string;
+  // ── champs éditables ──
+  prenom?: string;
+  nom?: string;
+  email?: string;
+  telephone?: string;
+  cin?: string;
+  rib?: string;
+  niveauEtude?: string;
+  diplomeNom?: string;
+  specialite?: string;
+  moisTravail?: string;
+  nomPrenomParent?: string;
+  matriculeParent?: string;
+  regionId?: number;
+
+  structureId?: number;
+structureNom?: string;
 }
 
 export interface Document {
@@ -96,11 +113,12 @@ activeTab: 'candidatures' | 'documents' | 'profil' | 'notifications' | '' = '';
   saisonnier: any = {};
   campagneIdSelectionnee!: number;
   activeCampagne: Campagne | null = null;
-  showCandidatureModal = false;
-  campagnes: Campagne[] = [];
+showGuide = false;
+showCandidatureModal = false;  campagnes: Campagne[] = [];
   regions: Region[] = [];
   structures: any[] = [];
   formSubmitted = false;
+  compareStructures = (a: any, b: any) => Number(a) === Number(b);
 
   documentsCampagne: DocumentCampagneDTO[] = [];
 loadingDocsCampagne = false;
@@ -214,9 +232,9 @@ isLoadingProfil = false;
   ) {}
 
   ngOnInit(): void {
-  if (!this.isLoggedIn) {
-    this.showCandidatureModal = true;
-  } else {
+ if (!this.isLoggedIn) {
+  this.showGuide = true;
+}  else {
     this.activeTab = 'candidatures'; // ← ICI
     this.loadSaisonnierProfile();
     this.loadMesCandidatures(); 
@@ -395,9 +413,21 @@ loadMonProfil(): void {
   // ─────────────────────────────────────────────────────────
   deposerCandidature(campagneId: number): void {
     this.campagneIdSelectionnee = campagneId;
-    this.showCandidatureModal = true;
+    this.showGuide = true; // ← fermer le guide si ouvert
   }
 
+
+  closeGuide(): void {
+  this.showGuide = false;
+}
+
+openCandidatureFromGuide(): void {
+  this.showGuide = false;
+  if (this.activeCampagne) {
+    this.deposerCandidature(this.activeCampagne.id);
+    this.showCandidatureModal = true;
+  }
+}
   // ─────────────────────────────────────────────────────────
   // Getters (inchangés)
   // ─────────────────────────────────────────────────────────
@@ -438,11 +468,40 @@ loadMonProfil(): void {
   // ─────────────────────────────────────────────────────────
   setFilter(statut: string): void { this.filterStatut = statut; }
 
-  openDetail(candidature: Candidature): void {
-    this.selectedCandidature = candidature;
-    this.showDetailModal = true;
-  }
+ openDetail(candidature: Candidature): void {
 
+  console.log('👉 candidature:', candidature);
+
+  // ✅ 1. Pré-remplir DIRECTEMENT (comme profil)
+  this.selectedCandidature = {
+    ...candidature,
+    structureId: candidature.structureId
+      ? Number(candidature.structureId)
+      : undefined
+  };
+
+  this.showDetailModal = true;
+
+  // ✅ 2. Charger structures après
+  if (candidature.regionId) {
+    this.structureService.getStructuresCampagneActivePublique().subscribe({
+      next: (data) => {
+
+        const regionNom = this.regions.find(r => r.id == candidature.regionId)?.nom;
+
+        this.structures = data
+          .filter(s => s.region === regionNom)
+          .map(s => ({
+            ...s,
+            id: Number(s.id) // 🔥 IMPORTANT
+          }));
+
+        console.log('✅ structures chargées:', this.structures);
+        console.log('🎯 structureId actuel:', this.selectedCandidature?.structureId);
+      }
+    });
+  }
+}
   closeDetail(): void {
     this.showDetailModal = false;
     this.selectedCandidature = null;
@@ -490,7 +549,7 @@ loadMonProfil(): void {
 }
 
   closeModal(): void {
-    this.showCandidatureModal = false;
+  this.showCandidatureModal = false;
   }
 
   onFileChange(event: any, type: string): void {
@@ -577,6 +636,61 @@ loadMonProfil(): void {
   });
 }
 
+
+
+saveCandidatureDetail(): void {
+  if (!this.selectedCandidature) return;
+
+  const formData = new FormData();
+  formData.append('prenom',           this.selectedCandidature['prenom']          ?? '');
+  formData.append('nom',              this.selectedCandidature['nom']              ?? '');
+  formData.append('cin',              this.selectedCandidature['cin']              ?? '');
+  formData.append('rib',              this.selectedCandidature['rib']              ?? '');
+  formData.append('telephone',        this.selectedCandidature['telephone']        ?? '');
+  formData.append('email',            this.selectedCandidature['email']            ?? '');
+  formData.append('niveauEtude',      this.selectedCandidature['niveauEtude']      ?? '');
+  formData.append('diplomeNom',       this.selectedCandidature['diplomeNom']       ?? '');
+  formData.append('specialite',       this.selectedCandidature['specialite']       ?? '');
+  formData.append('moisTravail',      this.selectedCandidature['moisTravail']      ?? '');
+  formData.append('nomPrenomParent',  this.selectedCandidature['nomPrenomParent']  ?? '');
+  formData.append('matriculeParent',  this.selectedCandidature['matriculeParent']  ?? '');
+  formData.append('statut', this.selectedCandidature.statut ?? '');
+  formData.append('structureId', this.selectedCandidature['structureId']?.toString() ?? '');
+
+
+    const regionId = this.selectedCandidature['regionId'] ?? '';
+  formData.append('regionId', regionId.toString());
+
+  Swal.fire({
+    title: 'Mise à jour...',
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
+
+  this.candidatureService.updateCandidature(this.selectedCandidature.id, formData).subscribe({
+    next: () => {
+      Swal.fire({ icon: 'success', title: 'Modifications enregistrées', timer: 1500, showConfirmButton: false });
+      this.loadMesCandidatures();
+      this.closeDetail();
+    },
+    error: (err) => {
+      Swal.fire({ icon: 'error', title: 'Erreur', text: err.error?.message ?? 'Erreur lors de la modification' });
+    }
+  });
+}
+
+
+get canEditCandidature(): boolean {
+  return this.selectedCandidature?.statut !== 'ACCEPTEE';
+}
+
+onStructureDetailChange(structureId: number): void {
+  const structure = this.structures.find(s => s.id === structureId);
+  if (structure && this.selectedCandidature) {
+    this.selectedCandidature['structureNom'] = structure.nom;
+  }
+}
+
   loadMesCandidatures(): void {
   this.candidatureService.getMonHistorique().subscribe({
     next: (data) => {
@@ -591,6 +705,26 @@ loadMonProfil(): void {
         statut:          c.statut,
         poste:           c.saisonnier?.diplome ?? '—',
         message:         c.commentaire ?? undefined,
+        // ── champs éditables ──
+        prenom:          c.saisonnier?.prenom             ?? '',
+        nom:             c.saisonnier?.nom                ?? '',
+        email:           c.saisonnier?.email              ?? '',
+        telephone:       c.saisonnier?.telephone          ?? '',
+        cin:             c.saisonnier?.cin                ?? '',
+        rib:             c.saisonnier?.rib                ?? '',
+        niveauEtude:     c.saisonnier?.niveauEtude        ?? '',
+        diplomeNom:      c.saisonnier?.diplomeNom         ?? '',
+        specialite:      c.saisonnier?.specialiteDiplome  ?? '',
+        moisTravail:     c.saisonnier?.moisTravail        ?? '',
+        nomPrenomParent: c.saisonnier?.nomPrenomParent    ?? '',
+        matriculeParent: c.saisonnier?.matriculeParent    ?? '',
+          regionId: c.saisonnier?.region?.id ?? '',
+          structureId: c.saisonnier?.structure?.id
+  ? Number(c.saisonnier.structure.id)
+  : undefined,
+
+structureNom: c.saisonnier?.structure?.nom ?? '—',
+
       }));
     },
     error: (err) => console.error('Erreur historique:', err)
@@ -610,10 +744,35 @@ getDocIcon(type: string): string {
 
 // ── Téléchargement direct ────────────────────────────────────
 telechargerDoc(url: string, nom: string): void {
-  const a = document.createElement('a');
-  a.href = url;
-  a.target = '_blank';
-  a.download = nom;
-  a.click();
+  fetch(url)
+    .then(res => res.blob())
+    .then(blob => {
+      const extension = nom.includes('.') ? '' : this.getExtensionFromBlob(blob);
+      const nomFinal = nom.endsWith(extension) ? nom : nom + extension;
+      const blobUrl = URL.createObjectURL(blob);
+
+      if (blob.type === 'application/pdf') {
+        // PDF → ouvrir dans nouvel onglet
+        window.open(blobUrl, '_blank');
+      } else {
+        // Autres types → télécharger
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = nomFinal;
+        a.click();
+        URL.revokeObjectURL(blobUrl);
+      }
+    });
+}
+
+private getExtensionFromBlob(blob: Blob): string {
+  const mimeMap: Record<string, string> = {
+    'application/pdf':                                                          '.pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+    'application/msword':                                                       '.doc',
+    'image/jpeg':                                                               '.jpg',
+    'image/png':                                                                '.png',
+  };
+  return mimeMap[blob.type] ?? '';
 }
 }
