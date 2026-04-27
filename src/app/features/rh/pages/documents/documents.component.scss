@@ -824,3 +824,171 @@ $amber-lt: #fffbeb;
 .hidden-row {
   display: none;
 }
+
+// ══════════════════════════════════════════════════════
+//  ÉTAT RH — styles complets
+// ══════════════════════════════════════════════════════
+
+// ── Zone principale ──────────────────────────────────
+.etat-upload-zone {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 0 16px;
+
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary, #1a1a2e);
+    margin: 0 0 6px;
+  }
+
+  p {
+    font-size: 13px;
+    color: var(--text-muted, #888);
+    margin: 0 0 24px;
+  }
+}
+
+// ── Drop zone ────────────────────────────────────────
+.upload-drop-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 24px;
+  border: 2px dashed rgba(74, 158, 255, 0.35);
+  border-radius: 16px;
+  background: rgba(74, 158, 255, 0.04);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+  text-align: center;
+
+  span {
+    font-size: 14px;
+    color: var(--text-secondary, #555);
+    line-height: 1.4;
+  }
+
+  &:hover {
+    border-color: #4A9EFF;
+    background: rgba(74, 158, 255, 0.08);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// ── Feedback upload ──────────────────────────────────
+.upload-feedback {
+  margin-top: 14px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(74, 158, 255, 0.08);
+  color: #4A9EFF;
+  text-align: center;
+
+  &.success {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10B981;
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  ÉTAT ACTUEL (card affichée si monEtat != null)
+// ══════════════════════════════════════════════════════
+
+.etat-current {
+  max-width: 600px;
+  margin: 32px auto 0;
+  padding: 0 16px;
+}
+
+// ── Bannière statut ──────────────────────────────────
+.etat-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 14px;
+
+  &.soumis {
+    background: rgba(245, 158, 11, 0.1);
+    color: #D97706;
+    border-left: 3px solid #F59E0B;
+  }
+
+  &.valide {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+    border-left: 3px solid #10B981;
+  }
+
+  &.rejete {
+    background: rgba(239, 68, 68, 0.1);
+    color: #DC2626;
+    border-left: 3px solid #EF4444;
+  }
+}
+
+// ── Card fichier ─────────────────────────────────────
+.etat-file-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  background: var(--surface-2, #f8f9fa);
+  border: 1px solid var(--border-color, rgba(0,0,0,0.08));
+  border-radius: 12px;
+  margin-bottom: 28px;
+
+  svg {
+    flex-shrink: 0;
+    color: #4A9EFF;
+  }
+
+  div {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .file-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary, #1a1a2e);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 280px;
+  }
+
+  .file-date {
+    font-size: 11px;
+    color: var(--text-muted, #888);
+  }
+
+  .btn-download {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.2s;
+
+    &.green {
+      background: rgba(16, 185, 129, 0.12);
+      color: #059669;
+
+      &:hover { opacity: 0.8; }
+    }
+  }
+}

@@ -7,6 +7,16 @@
       <p class="header-sub">Consultez et gérez les candidatures de votre équipe saisonnière</p>
     </div>
     <div class="header-actions">
+
+       <button class="btn-export-pdf" (click)="exportPDF()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="12" y1="18" x2="12" y2="12"/>
+      <line x1="9" y1="15" x2="12" y2="18" /><line x1="15" y1="15" x2="12" y2="18"/>
+    </svg>
+    Exporter PDF
+  </button>
       
       <button class="btn-primary-action" (click)="openModal()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -42,20 +52,29 @@
   </div>
 
   <!-- SUB TABS + SEARCH -->
-  <div class="toolbar">
-    <div class="sub-tabs">
-      <button class="sub-tab" [class.active]="activeFilter === 'ALL'" (click)="setFilter('ALL')">Tous</button>
-      <button class="sub-tab" [class.active]="activeFilter === 'EN_ATTENTE'" (click)="setFilter('EN_ATTENTE')">En attente</button>
-      <button class="sub-tab" [class.active]="activeFilter === 'ACCEPTEE'" (click)="setFilter('ACCEPTEE')">Acceptés</button>
-      <button class="sub-tab" [class.active]="activeFilter === 'REFUSEE'" (click)="setFilter('REFUSEE')">Refusés</button>
+   <div class="toolbar-right">
+
+    <!-- 🆕 filtre structure -->
+    <div class="filter-select-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+      </svg>
+      <select [(ngModel)]="activeStructureFilter">
+        <option value="ALL">Toutes les structures</option>
+        <option *ngFor="let s of structuresDisponibles" [value]="s">{{ s }}</option>
+      </select>
     </div>
+
+    <!-- search existant -->
     <div class="search-box">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
       <input type="text" placeholder="Rechercher un saisonnier..." [(ngModel)]="searchQuery">
     </div>
+
   </div>
+
 
   <!-- GRID -->
   <!-- TABLE -->
@@ -174,157 +193,203 @@
     </div>
 
     <div class="modal-content">
-      <div class="dossier-grid">
+  <div class="dossier-grid">
 
-        <!-- Colonne infos saisonnier -->
-        <div class="dossier-col">
-          <h4 class="col-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-            Informations personnelles
-          </h4>
-          <div class="field-group">
-            <label>Prénom</label>
-            <input [(ngModel)]="selectedCandidature.saisonnier.prenom" placeholder="Prénom">
-          </div>
-          <div class="field-group">
-            <label>Nom</label>
-            <input [(ngModel)]="selectedCandidature.saisonnier.nom" placeholder="Nom">
-          </div>
-          <div class="field-group">
-            <label>Email</label>
-            <input [(ngModel)]="selectedCandidature.saisonnier.email" placeholder="Email">
-          </div>
-          <div class="field-group">
-            <label>CIN</label>
-            <input [(ngModel)]="selectedCandidature.saisonnier.cin" placeholder="CIN">
-          </div>
-          <div class="field-group">
-            <label>Téléphone</label>
-            <input [(ngModel)]="selectedCandidature.saisonnier.telephone" placeholder="Téléphone">
-          </div>
-          <div class="field-group">
-            <label>RIB</label>
-            <input [(ngModel)]="selectedCandidature.saisonnier.rib" placeholder="RIB">
-          </div>
-          <div class="field-group">
-            <label>Direction de rattachement</label>
-            <select [(ngModel)]="selectedCandidature.saisonnier.region.id">
-              <option *ngFor="let r of regions" [value]="r.id">{{ r.nom }}</option>
-            </select>
-          </div>
+    <!-- ═══ COLONNE GAUCHE ═══ -->
+    <div class="dossier-col">
 
-          <div class="field-group">
-  <label>Structure</label>
-  <select [(ngModel)]="selectedStructureId"
-          (ngModelChange)="onStructureChange()"
-          >
+      <!-- Informations personnelles -->
+      <h4 class="col-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        Informations personnelles
+      </h4>
 
-    <option [ngValue]="null">— Toutes les structures —</option>
-
-    <optgroup label="🏪 Espaces Commerciaux" *ngIf="structuresEC.length > 0">
-      <option *ngFor="let s of structuresEC"
-              [ngValue]="s.id"
-              [disabled]="!s.disponible">
-        {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
-        {{ s.disponible ? '' : '⛔ COMPLET' }}
-      </option>
-    </optgroup>
-
-    <optgroup label="💻 Centres Technologiques" *ngIf="structuresCT.length > 0">
-      <option *ngFor="let s of structuresCT"
-              [ngValue]="s.id"
-              [disabled]="!s.disponible">
-        {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
-        {{ s.disponible ? '' : '⛔ COMPLET' }}
-      </option>
-    </optgroup>
-
-  </select>
-</div>
-
-          
-
-
-        </div>
-
-        <!-- Colonne candidature -->
-        <div class="dossier-col">
-          <h4 class="col-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 11l3 3L22 4"/>
-              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-            </svg>
-            Candidature
-          </h4>
-          <div class="field-group readonly">
-            <label>Date de dépôt</label>
-            <div class="readonly-val">{{ selectedCandidature?.dateDepot | date:'dd/MM/yyyy' }}</div>
-          </div>
-          <div class="field-group">
-            <label>Statut</label>
-            <select [(ngModel)]="selectedCandidature.statut">
-              <option value="EN_ATTENTE">En attente</option>
-              <option value="ACCEPTEE">Acceptée</option>
-              <option value="REJETEE">Refusée</option>
-            </select>
-          </div>
-          <div class="field-group">
-            <label>Mois de travail</label>
-            <select [(ngModel)]="selectedCandidature.saisonnier.moisTravail">
-              <option value="JUILLET">Juillet</option>
-              <option value="AOUT">Août</option>
-              <option value="JUILLET_AOUT">Juillet + Août</option>
-            </select>
-          </div>
-          <div class="field-group">
-            <label>Commentaire RH</label>
-            <textarea [(ngModel)]="selectedCandidature.commentaire" rows="4" placeholder="Ajouter un commentaire..."></textarea>
-          </div>
-
-          <!-- Alerte si Juillet + Août -->
-          <div class="alert-juillet-aout" *ngIf="selectedCandidature.saisonnier.moisTravail === 'JUILLET_AOUT'">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            <span>
-              Ce choix nécessite une <strong>autorisation admin</strong>.
-              Aucune modification ne sera sauvegardée. Un email sera envoyé
-              à tous les administrateurs pour validation.
-              Ajoutez un commentaire justificatif ci-dessus.
-            </span>
-          </div>
-
-          <!-- Documents -->
-          <h4 class="col-title" style="margin-top:20px">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-            </svg>
-            Documents joints
-          </h4>
-<div class="docs-list">
-  <div *ngFor="let doc of selectedCandidature?.documents" 
-       class="doc-item"
-       (click)="telechargerDoc(doc.url, doc.nomFichier)"
-       style="cursor:pointer">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-      <polyline points="14 2 14 8 20 8"/>
-    </svg>
-    <span>{{ doc.nomFichier }}</span>
-    <span class="doc-type">{{ doc.type }}</span>
-  </div>
-  <p class="no-docs" *ngIf="!selectedCandidature?.documents?.length">Aucun document joint.</p>
-</div>
-        </div>
-
+      <div class="field-group">
+        <label>Prénom</label>
+        <input [(ngModel)]="selectedCandidature.saisonnier.prenom" placeholder="Prénom">
       </div>
+      <div class="field-group">
+        <label>Nom</label>
+        <input [(ngModel)]="selectedCandidature.saisonnier.nom" placeholder="Nom">
+      </div>
+      <div class="field-group">
+        <label>Email</label>
+        <input [(ngModel)]="selectedCandidature.saisonnier.email" placeholder="Email">
+      </div>
+      <div class="field-group">
+        <label>CIN</label>
+        <input [(ngModel)]="selectedCandidature.saisonnier.cin" placeholder="CIN">
+      </div>
+      <div class="field-group">
+        <label>Téléphone</label>
+        <input [(ngModel)]="selectedCandidature.saisonnier.telephone" placeholder="Téléphone">
+      </div>
+      <div class="field-group">
+        <label>RIB</label>
+        <input [(ngModel)]="selectedCandidature.saisonnier.rib" placeholder="RIB">
+      </div>
+      <div class="field-group">
+        <label>Direction de rattachement</label>
+        <select [(ngModel)]="selectedCandidature.saisonnier.region.id">
+          <option *ngFor="let r of regions" [value]="r.id">{{ r.nom }}</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Structure</label>
+        <select [(ngModel)]="selectedStructureId" (ngModelChange)="onStructureChange()">
+          <option [ngValue]="null">— Toutes les structures —</option>
+          <optgroup label="🏪 Espaces Commerciaux" *ngIf="structuresEC.length > 0">
+            <option *ngFor="let s of structuresEC" [ngValue]="s.id" [disabled]="!s.disponible">
+              {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+              {{ s.disponible ? '' : '⛔ COMPLET' }}
+            </option>
+          </optgroup>
+          <optgroup label="💻 Centres Technologiques" *ngIf="structuresCT.length > 0">
+            <option *ngFor="let s of structuresCT" [ngValue]="s.id" [disabled]="!s.disponible">
+              {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+              {{ s.disponible ? '' : '⛔ COMPLET' }}
+            </option>
+          </optgroup>
+        </select>
+      </div>
+
+      <!-- Informations du parent -->
+      <h4 class="col-title" style="margin-top:18px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Informations du parent
+      </h4>
+      <div class="field-group">
+        <label>Nom & Prénom du parent</label>
+        <input [(ngModel)]="selectedCandidature.saisonnier.nomPrenomParent"
+               placeholder="Nom et prénom du parent">
+      </div>
+      <div class="field-group">
+        <label>Matricule du parent</label>
+        <input [(ngModel)]="selectedCandidature.saisonnier.matriculeParent"
+               placeholder="Matricule du parent">
+      </div>
+
+      <!-- Formation -->
+      <h4 class="col-title" style="margin-top:18px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+        Formation
+      </h4>
+      <div class="field-group">
+        <label>Niveau d'étude</label>
+        <input [(ngModel)]="selectedCandidature.saisonnier.niveauEtude" placeholder="Ex: BAC+2">
+      </div>
+      <div class="field-group">
+        <label>Diplôme</label>
+        <select [(ngModel)]="selectedCandidature.saisonnier.diplome">
+          <option value="" disabled>Choisir le diplôme</option>
+          <option value="BTP">BTP</option>
+          <option value="BTS">BTS</option>
+          <option value="Licence">Licence</option>
+          <option value="Master">Master</option>
+          <option value="Ingénierie">Ingénierie</option>
+          <option value="Doctorat">Doctorat</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Spécialité Diplôme</label>
+        <input [(ngModel)]="selectedCandidature.saisonnier.specialiteDiplome"
+               placeholder="Votre spécialité">
+      </div>
+
     </div>
+
+    <!-- ═══ COLONNE DROITE ═══ -->
+    <div class="dossier-col">
+
+      <!-- Candidature -->
+      <h4 class="col-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 11l3 3L22 4"/>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+        Candidature
+      </h4>
+
+      <div class="field-group readonly">
+        <label>Date de dépôt</label>
+        <div class="readonly-val">{{ selectedCandidature?.dateDepot | date:'dd/MM/yyyy' }}</div>
+      </div>
+      <div class="field-group">
+        <label>Statut</label>
+        <select [(ngModel)]="selectedCandidature.statut">
+          <option value="EN_ATTENTE">En attente</option>
+          <option value="ACCEPTEE">Acceptée</option>
+          <option value="REJETEE">Refusée</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Mois de travail</label>
+        <select [(ngModel)]="selectedCandidature.saisonnier.moisTravail">
+          <option value="JUILLET">Juillet</option>
+          <option value="AOUT">Août</option>
+          <option value="JUILLET_AOUT">Juillet + Août</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Commentaire RH</label>
+        <textarea [(ngModel)]="selectedCandidature.commentaire"
+                  rows="4" placeholder="Ajouter un commentaire..."></textarea>
+      </div>
+
+      <!-- Alerte Juillet + Août -->
+      <div class="alert-juillet-aout"
+           *ngIf="selectedCandidature.saisonnier.moisTravail === 'JUILLET_AOUT'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span>
+          Ce choix nécessite une <strong>autorisation admin</strong>.
+          Aucune modification ne sera sauvegardée. Un email sera envoyé
+          à tous les administrateurs pour validation.
+          Ajoutez un commentaire justificatif ci-dessus.
+        </span>
+      </div>
+
+      <!-- Documents -->
+      <h4 class="col-title" style="margin-top:18px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        Documents joints
+      </h4>
+      <div class="docs-list">
+        <div *ngFor="let doc of selectedCandidature?.documents"
+             class="doc-item"
+             (click)="telechargerDoc(doc.url, doc.nomFichier)"
+             style="cursor:pointer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          <span>{{ doc.nomFichier }}</span>
+          <span class="doc-type">{{ doc.type }}</span>
+        </div>
+        <p class="no-docs" *ngIf="!selectedCandidature?.documents?.length">
+          Aucun document joint.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
 
     <div class="modal-foot">
   <button class="btn-cancel-modal" (click)="closeDossier()">Fermer</button>
@@ -468,22 +533,94 @@
         </div>
 
         <!-- ====== Informations du parent ====== -->
-        <h4 class="section-title">Informations du parent</h4>
-        <div class="form-grid-2">
+        <!-- ====== Informations du parent ====== -->
+<h4 class="section-title">Informations du parent</h4>
 
-          <div class="field-group">
-            <label>Nom & Prénom du parent</label>
-            <input type="text" [(ngModel)]="form.nomPrenomParent" name="nomPrenomParent"
-                   placeholder="Nom et prénom du parent">
-          </div>
+<div class="form-grid-2">
 
-          <div class="field-group">
-            <label>Matricule du parent</label>
-            <input type="text" [(ngModel)]="form.matriculeParent" name="matriculeParent"
-                   placeholder="Matricule du parent">
-          </div>
+  <!-- Matricule -->
+  <div class="field-group">
+    <label>Matricule du parent *</label>
+    <input type="text"
+           [(ngModel)]="form.matriculeParent"
+           name="matriculeParent"
+           placeholder="Matricule du parent"
+           (blur)="onMatriculeChange(form.matriculeParent)"
+           required
+           #matriculeParent="ngModel"
+           [class.input-error]="matriculeParent.invalid && matriculeParent.touched">
 
-        </div>
+    <small *ngIf="loadingParent" style="color:#999">🔄 Recherche en cours...</small>
+
+    <small *ngIf="parentInfo && !quotaDepasse" style="color:#16a34a; font-weight:600;">
+      ✅ {{ parentInfo.utilise }} / {{ parentInfo.autorises }} utilisations
+    </small>
+
+    <small *ngIf="parentInfo && quotaDepasse" style="color:#e74c3c; font-weight:600;">
+      ⚠️ Quota dépassé ({{ parentInfo.utilise }}/{{ parentInfo.autorises }})
+    </small>
+
+    <small class="error-msg" *ngIf="matriculeParent.touched && matriculeParent.errors?.['required']">
+      ⚠️ Le matricule est obligatoire.
+    </small>
+  </div>
+
+  <!-- Nom & Prénom auto-rempli -->
+  <div class="field-group">
+    <label>Nom & Prénom du parent</label>
+    <input type="text"
+           [(ngModel)]="form.nomPrenomParent"
+           name="nomPrenomParent"
+           placeholder="Rempli automatiquement"
+           [readonly]="!!parentInfo"
+           [style.background]="parentInfo ? '#f1f5f9' : ''"
+           [style.color]="parentInfo ? '#475569' : ''">
+  </div>
+
+</div>
+
+<!-- ====== Alerte quota dépassé + message ====== -->
+<div *ngIf="quotaDepasse"
+     style="
+       background: #fff7ed;
+       border: 1.5px solid #fb923c;
+       border-radius: 10px;
+       padding: 16px 18px;
+       margin-bottom: 20px;
+       display: flex;
+       flex-direction: column;
+       gap: 10px;
+     ">
+
+  <!-- bannière info -->
+  <div style="display:flex; align-items:center; gap:8px;">
+    <span style="font-size:1.2rem;">⚠️</span>
+    <div>
+      <p style="margin:0; font-weight:700; color:#c2410c; font-size:.85rem;">
+        Quota parent dépassé
+      </p>
+      <p style="margin:0; color:#9a3412; font-size:.78rem;">
+        Une demande d'autorisation sera envoyée aux administrateurs.
+        La candidature sera en attente de validation.
+      </p>
+    </div>
+  </div>
+
+  <!-- champ message -->
+  <!-- champ message -->
+<div class="field-group" style="margin:0;">
+  <label style="color:#c2410c;">Commentaire / Message de justification *</label>
+  <textarea [(ngModel)]="form.commentaire"
+            name="commentaire"
+            rows="3"
+            placeholder="Expliquez pourquoi vous demandez une autorisation exceptionnelle...">
+  </textarea>
+  <small style="color:#e74c3c;" *ngIf="formSubmitted && quotaDepasse && !form.commentaire">
+    ⚠️ Le commentaire est obligatoire pour soumettre la demande.
+  </small>
+</div>
+
+</div>
 
         <!-- ====== Formation ====== -->
         <h4 class="section-title">Formation</h4>
@@ -506,6 +643,20 @@
             <input type="text" [(ngModel)]="form.specialiteDiplome" name="specialiteDiplome"
                    placeholder="Votre spécialité">
           </div>
+
+            <div class="field-group">
+  <label>Mois de travail *</label>
+  <select [(ngModel)]="form.moisTravail" name="moisTravail"
+          #moisTravail="ngModel" required
+          [class.input-error]="moisTravail.invalid && moisTravail.touched">
+    <option value="" disabled selected>Choisir le mois</option>
+    <option value="JUILLET">Juillet</option>
+    <option value="AOUT">Août</option>
+  </select>
+  <small class="error-msg" *ngIf="moisTravail.touched && moisTravail.errors?.['required']">
+    ⚠️ Le mois de travail est obligatoire.
+  </small>
+</div>
 
         </div>
 
@@ -578,20 +729,20 @@
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
               </svg>
-              <span>CIN (PDF)</span>
+              <span>CIN</span>
               <small *ngIf="cinFileName" class="file-name">{{ cinFileName }}</small>
               <small class="error-msg" *ngIf="formSubmitted && !cinFile">⚠️ Fichier CIN obligatoire.</small>
-              <input type="file" accept=".pdf" (change)="onFileChange($event,'cin')">
+              <input type="file"  (change)="onFileChange($event,'cin')">
             </label>
 
             <label class="file-zone" [class.file-error]="formSubmitted && !diplome">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
               </svg>
-              <span>Diplôme (PDF)</span>
+              <span>Diplôme </span>
               <small *ngIf="diplomeFileName" class="file-name">{{ diplomeFileName }}</small>
               <small class="error-msg" *ngIf="formSubmitted && !diplome">⚠️ Fichier Diplôme obligatoire.</small>
-              <input type="file" accept=".pdf" (change)="onFileChange($event,'diplome')">
+              <input type="file"  (change)="onFileChange($event,'diplome')">
             </label>
 
             <label class="file-zone" [class.file-error]="formSubmitted && !contrat">
@@ -599,10 +750,10 @@
                 <path d="M9 11l3 3L22 4"/>
                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
               </svg>
-              <span>Contrat (PDF)</span>
+              <span>Contrat </span>
               <small *ngIf="contratFileName" class="file-name">{{ contratFileName }}</small>
               <small class="error-msg" *ngIf="formSubmitted && !contrat">⚠️ Fichier Contrat obligatoire.</small>
-              <input type="file" accept=".pdf" (change)="onFileChange($event,'contrat')">
+              <input type="file"  (change)="onFileChange($event,'contrat')">
             </label>
 
             <label class="file-zone" [class.file-error]="formSubmitted && !ribFile">
@@ -610,10 +761,10 @@
                 <rect x="2" y="5" width="20" height="14" rx="2"/>
                 <line x1="2" y1="10" x2="22" y2="10"/>
               </svg>
-              <span>RIB Bancaire (PDF)</span>
+              <span>RIB Bancaire </span>
               <small *ngIf="ribFileName" class="file-name">{{ ribFileName }}</small>
               <small class="error-msg" *ngIf="formSubmitted && !ribFile">⚠️ Fichier RIB obligatoire.</small>
-              <input type="file" accept=".pdf" (change)="onFileChange($event,'rib')">
+              <input type="file"  (change)="onFileChange($event,'rib')">
             </label>
 
           </div>

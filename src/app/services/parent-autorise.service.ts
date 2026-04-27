@@ -29,23 +29,12 @@ export class ParentAutoriseService {
   }
 
   // ➕ ADD
-  addParent(nomPrenom: string, matricule: string): Observable<any> {
-    const params = new HttpParams()
-      .set('nomPrenom', nomPrenom)
-      .set('matricule', matricule);
+  addParent(nomPrenom: string, matricule: string, autorises: number): Observable<any> {
+  return this.http.post(`${this.apiUrl}?nomPrenom=${nomPrenom}&matricule=${matricule}&autorises=${autorises}`, {});
+}
 
-    return this.http.post(this.apiUrl, params);
-  }
-
-  // ✏️ UPDATE
-  updateParent(id: number, nomPrenom: string, matricule: string, utilise: boolean) {
-
-  const params = new HttpParams()
-    .set('nomPrenom', nomPrenom)
-    .set('matricule', matricule)
-    .set('utilise', utilise);
-
-  return this.http.put(`${this.apiUrl}/${id}`, params);
+updateParent(id: number, nomPrenom: string, matricule: string, autorises: number, utilise: number): Observable<any> {
+  return this.http.put(`${this.apiUrl}/${id}?nomPrenom=${nomPrenom}&matricule=${matricule}&autorises=${autorises}&utilise=${utilise}`, {});
 }
 
   // ❌ DELETE

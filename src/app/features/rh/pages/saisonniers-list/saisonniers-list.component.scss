@@ -153,9 +153,48 @@ $shadow-lg:  0 8px 30px rgba(0,0,0,.12);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   flex-wrap: wrap;
-  animation: fadeUp .35s .1s ease both;
+  margin-bottom: 18px;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-select-wrap {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  background: $white;
+  border: 1.5px solid $border;
+  border-radius: 10px;
+  transition: border-color .2s;
+
+  svg {
+    width: 13px;
+    height: 13px;
+    color: $text-lt;
+    flex-shrink: 0;
+  }
+
+  select {
+    border: none;
+    outline: none;
+    font-size: .82rem;
+    color: $text-dk;
+    background: transparent;
+    cursor: pointer;
+    min-width: 170px;
+    font-family: $font;
+  }
+
+  &:focus-within {
+    border-color: $blue;
+  }
 }
 
 .sub-tabs {
@@ -861,5 +900,27 @@ $shadow-lg:  0 8px 30px rgba(0,0,0,.12);
 
   &:active {
     transform: translateY(0);
+  }
+}
+
+.btn-export-pdf {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  background: #fff;
+  border: 1.5px solid #1e50a0;
+  color: #1e50a0;
+  border-radius: 10px;
+  font-size: .84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s, color .2s;
+
+  svg { width: 16px; height: 16px; }
+
+  &:hover {
+    background: #1e50a0;
+    color: #fff;
   }
 }

@@ -24,8 +24,13 @@ export class CandidatureService {
   /**
    * Dépose une candidature sans JWT
    */
-  deposerCandidature(formData: FormData) {
-  return this.http.post<any>(`${this.baseUrl}/depot`, formData);
+  deposerCandidature(formData: FormData): Observable<any> {
+  const token = localStorage.getItem('token');
+  return this.http.post<any>(`${this.baseUrl}/depot`, formData, {
+    headers: {
+      Authorization: `Bearer ${token}`   // 🆕
+    }
+  });
 }
 
   /**
@@ -51,6 +56,10 @@ envoyerDemandeJuilletAout(payload: {
   directionNom: string;
 }): Observable<any> {
   return this.http.post(`${this.baseUrl}/demande-autorisation`, payload);
+}
+
+getParentByMatricule(matricule: string): Observable<any> {
+  return this.http.get<any>(`${this.baseUrl}/parent-by-matricule?matricule=${matricule}`);
 }
 
 getDocumentsBySaisonnier(saisonnierId: number) {

@@ -2,6 +2,7 @@ import { Component, OnInit, SecurityContext } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { EtatRHService } from 'src/app/service/etat-rh.service';
 import { AuthService, Region } from 'src/app/services/auth.service';
 import { CampagneService, CampagneRequestDTO } from 'src/app/services/campagne.service';
 import { CandidatureService } from 'src/app/services/candidature.service';
@@ -159,7 +160,7 @@ interface PresenceTotals {
 export class HomeAdminComponent implements OnInit {
 
   // ── Navigation ──────────────────────────────────────────────────
-  activeSection: 'campagnes' | 'candidatures' | 'utilisateurs' | 'memo' | 'structures' | 'presence' = 'campagnes';
+activeSection: 'campagnes' | 'candidatures' | 'utilisateurs' | 'memo' | 'structures' | 'presence' | 'etats' = 'campagnes';
   searchQuery = '';
   pageTitle = 'Pilotage des Campagnes';
   pageSubtitle = 'Gérez et suivez toutes vos campagnes de recrutement';
@@ -251,16 +252,14 @@ saveParent() {
   }
 
   if (this.isEditParent) {
-    if (this.parentForm.id == null) {
-  return;
-}
-
+    if (this.parentForm.id == null) return;
 
     this.parentService.updateParent(
       this.parentForm.id,
       this.parentForm.nomPrenom,
       this.parentForm.matricule,
-      this.parentForm.utilise   // 🔥 AJOUT
+      this.parentForm.autorises,  // 🆕 int
+      this.parentForm.utilise     // 🆕 int
     ).subscribe({
       next: () => {
         this.loadParents();
@@ -273,7 +272,8 @@ saveParent() {
 
     this.parentService.addParent(
       this.parentForm.nomPrenom,
-      this.parentForm.matricule
+      this.parentForm.matricule,
+      this.parentForm.autorises   // 🆕 int
     ).subscribe({
       next: () => {
         this.loadParents();
@@ -359,7 +359,8 @@ onStructureChange(): void {
     saisonnersRecrutes: 0
   };
 
-  
+  etatsRH: any[] = [];
+
   filteredStructures: Structure[] = [];
   structureTypeFilter = 'tous';
   selectedGouvernorat = '';
@@ -420,12 +421,12 @@ parents: any[] = [];
 showParentModal = false;
 isEditParent = false;
 
-parentForm = {
-  id: null as number | null,
+parentForm: any = {
+  id: null,
   nomPrenom: '',
   matricule: '',
-    utilise: false   
-
+  autorises: 0,   // 🆕
+  utilise: 0      // 🆕
 };
 
   // ─── Constructor ──────────────────────────────────────────────────
@@ -440,7 +441,8 @@ parentForm = {
     private structureService: StructureService,
     private router: Router,
     private docCampagneService: DocumentCampagneService,
-    private parentService: ParentAutoriseService
+    private parentService: ParentAutoriseService,
+    private etatRHService: EtatRHService
   ) {}
 
   nomUtilisateur = '';
@@ -459,10 +461,34 @@ roleUtilisateur = '';
     this.loadStructures();
     this.loadPresenceRows();
       this.loadParents();
+        this.loadEtatsRH();
+
 
     this.nomUtilisateur = this.authService.getNomComplet();
   this.roleUtilisateur = this.authService.getRole();
   }
+
+
+  loadEtatsRH(): void {
+  this.etatRHService.getAllEtats().subscribe({
+    next: (data) => this.etatsRH = data,
+    error: () => this.etatsRH = []
+  });
+}
+
+validerEtat(id: number): void {
+  this.etatRHService.changerStatut(id, 'VALIDE').subscribe(() => {
+    this.loadEtatsRH();
+    this.showToast('✅ État validé');
+  });
+}
+
+rejeterEtat(id: number): void {
+  this.etatRHService.changerStatut(id, 'REJETE').subscribe(() => {
+    this.loadEtatsRH();
+    this.showToast('❌ État rejeté');
+  });
+}
 
  loadParents() {
   this.parentService.getAllParents().subscribe({
@@ -551,7 +577,7 @@ ouvrirLienDoc(url: string): void {
 }
   // ─── Navigation ───────────────────────────────────────────────────
 
-  setActive(section: 'campagnes' | 'candidatures' | 'utilisateurs' | 'memo' | 'structures' | 'presence'): void {
+  setActive(section: 'campagnes' | 'candidatures' | 'utilisateurs' | 'memo' | 'structures' | 'presence' | 'etats'): void {
   this.activeSection = section;
 
   if (section === 'campagnes' || section === 'memo' || section === 'structures') {

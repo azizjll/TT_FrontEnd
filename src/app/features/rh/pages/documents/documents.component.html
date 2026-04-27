@@ -25,7 +25,71 @@
       </svg>
       Documents Campagne
     </button>
+
+    <button class="doc-tab" [class.active]="activeTab==='etat'" (click)="activeTab='etat'">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+    <polyline points="14 2 14 8 20 8"/>
+    <line x1="16" y1="13" x2="8" y2="13"/>
+  </svg>
+  Mon État Signé
+</button>
   </div>
+
+
+
+  <!-- Tab panel -->
+<div class="tab-panel" *ngIf="activeTab==='etat'">
+
+  <!-- État actuel -->
+  <div class="etat-current" *ngIf="monEtat">
+    <div class="etat-status-banner"
+         [class.soumis]="monEtat.statut==='SOUMIS'"
+         [class.valide]="monEtat.statut==='VALIDE'"
+         [class.rejete]="monEtat.statut==='REJETE'">
+      <span *ngIf="monEtat.statut==='SOUMIS'">⏳ En attente de validation</span>
+      <span *ngIf="monEtat.statut==='VALIDE'">✅ État validé par l'administration</span>
+      <span *ngIf="monEtat.statut==='REJETE'">❌ État rejeté — veuillez soumettre à nouveau</span>
+    </div>
+
+    <div class="etat-file-card">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+           style="width:32px;height:32px">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      <div>
+        <span class="file-name">{{ monEtat.nomFichier }}</span>
+        <span class="file-date">Soumis le {{ monEtat.dateUpload | date:'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+      <a [href]="monEtat.url" target="_blank" class="btn-download green">Voir</a>
+    </div>
+  </div>
+
+  <!-- Zone upload -->
+  <div class="etat-upload-zone">
+    <h3>{{ monEtat ? 'Remplacer mon état signé' : 'Soumettre mon état signé' }}</h3>
+    <p>Téléversez votre état de présence signé au format PDF</p>
+
+    <label class="upload-drop-zone" style="cursor:pointer">
+      <svg viewBox="0 0 48 48" fill="none" style="width:40px;height:40px">
+        <rect x="4" y="4" width="28" height="36" rx="3"
+              fill="rgba(74,158,255,0.08)" stroke="#4A9EFF" stroke-width="1.5"/>
+        <path d="M24 4v10h10" stroke="#4A9EFF" stroke-width="1.5" fill="none"/>
+        <path d="M36 36v-8M32 32l4-4 4 4" stroke="#4A9EFF"
+              stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span>Glisser-déposer ou cliquer pour sélectionner</span>
+      <span style="font-size:12px;opacity:0.6">PDF uniquement</span>
+      <input type="file" accept=".pdf"
+             (change)="onEtatSelected($event)"
+             style="display:none"/>
+    </label>
+
+    <div class="upload-feedback" *ngIf="isUploadingEtat">⏳ Upload en cours...</div>
+    <div class="upload-feedback success" *ngIf="etatUploadSuccess">✅ État soumis avec succès</div>
+  </div>
+</div>
 
   <!-- ══════════════ TAB 1 — PDF ══════════════ -->
   
