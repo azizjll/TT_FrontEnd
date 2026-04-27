@@ -334,14 +334,10 @@
           </svg>
         </span>
         <input type="text" class="field-input"
-               value="Responsable RH Régional"
+               value="Responsable RH"
                readonly
                style="cursor:not-allowed; opacity:.7;"/>
-        <label class="field-label"
-               style="transform:translateY(-22px) scale(.82);
-                      color:var(--color-primary);">
-          Rôle
-        </label>
+        
       </div>
     </div>
 
@@ -367,11 +363,7 @@
             {{ region.nom }}
           </option>
         </select>
-        <label class="field-label" for="s-region"
-               [style.transform]="signupData.regionId
-                 ? 'translateY(-22px) scale(.82)' : ''">
-          Direction régionale *
-        </label>
+        
       </div>
       <span class="field-error" *ngIf="errors['regionId']">
         {{ errors['regionId'] }}

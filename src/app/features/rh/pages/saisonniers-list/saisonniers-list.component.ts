@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { AffectationService } from 'src/app/services/affectation.service';
 import { AuthService, Region } from 'src/app/services/auth.service';
 import { CandidatureService } from 'src/app/services/candidature.service';
+import { PdfExportService } from 'src/app/services/pdf-export.service';
 import { StructureDTO, StructureService } from 'src/app/structure.service';
 import Swal from 'sweetalert2';
 
@@ -39,6 +40,16 @@ diplomeFileName: string = '';
 contratFileName: string = '';
 ribFile!: File;
 ribFileName = '';
+
+parentInfo: any = null;
+quotaDepasse = false;
+messageAdmin = '';
+loadingParent = false;
+
+// ── nouvelles propriétés ──
+structureMap: Record<number, string> = {};
+structuresDisponibles: string[] = [];
+activeStructureFilter: string = 'ALL';
 
 
 
@@ -93,6 +104,7 @@ get toutesCompletes(): boolean {
     private authService: AuthService,
     private structureService: StructureService,
     private affectationService: AffectationService,
+    private pdfExport: PdfExportService
   ) {}
 
   ngOnInit(): void {
@@ -128,15 +140,48 @@ get toutesCompletes(): boolean {
 
   // Charger candidatures par campagne et région
   loadCandidatures(regionId: number) {
-    this.candidatureService.getCandidaturesByCampagneAndRegion(this.campagneId, regionId)
-      .subscribe({
-        next: (res: any) => {
-          this.candidatures = res;
-          console.log("Candidatures filtrées par région RH :", this.candidatures);
-        },
-        error: err => console.error("Erreur chargement candidatures", err)
-      });
-  }
+  this.candidatureService.getCandidaturesByCampagneAndRegion(this.campagneId, regionId)
+    .subscribe({
+      next: (res: any) => {
+        this.candidatures = res;
+
+        // 🆕 charger la structure de chaque candidature
+        const requests = res.map((c: any) =>
+          this.candidatureService.getStructureByCandidature(c.id).toPromise()
+            .then((st: any) => { this.structureMap[c.id] = st?.nom ?? '—'; })
+            .catch(() => { this.structureMap[c.id] = '—'; })
+        );
+
+        Promise.all(requests).then(() => {
+          // extraire les structures uniques pour le select filtre
+          const noms = res
+            .map((c: any) => this.structureMap[c.id])
+            .filter((n: string) => !!n && n !== '—');
+          this.structuresDisponibles = [...new Set<string>(noms)];
+        });
+      },
+      error: err => console.error(err)
+    });
+}
+
+// ── getter filteredCandidatures mis à jour ──
+get filteredCandidatures() {
+  return this.candidatures.filter(c => {
+    const matchStatut    = this.activeFilter === 'ALL' || c.statut === this.activeFilter;
+    const matchStructure = this.activeStructureFilter === 'ALL' ||
+                           this.structureMap[c.id] === this.activeStructureFilter;
+    const q = this.searchQuery.toLowerCase().trim();
+    const matchSearch = !q ||
+      c.saisonnier.nom.toLowerCase().includes(q) ||
+      c.saisonnier.prenom.toLowerCase().includes(q) ||
+      (c.saisonnier.email || '').toLowerCase().includes(q);
+    return matchStatut && matchStructure && matchSearch;
+  });
+}
+
+setStructureFilter(nom: string): void {
+  this.activeStructureFilter = nom;
+}
 
   loadStructuresByRegion(regionId: number) {
   if (!regionId) return;
@@ -283,6 +328,9 @@ submit(saisonnierForm: NgForm): void {
   formData.append('diplome', this.diplome);
   formData.append('contrat', this.contrat);
   formData.append('ribFile', this.ribFile);
+  formData.append('moisTravail', this.form.moisTravail);
+  formData.append('demandeAdminAutorisee', this.quotaDepasse ? 'true' : 'false');
+formData.append('messageDemandeAdmin', this.form.commentaire ?? '');  // 🆕 même valeur
 
 
   Swal.fire({
@@ -302,18 +350,77 @@ submit(saisonnierForm: NgForm): void {
         showConfirmButton: false
       });
       this.closeModal();
+      this.loadCandidatures(this.myRegion.id);
     },
     error: err => {
-      console.error(err);
-      Swal.fire({
-        icon: 'error',
-        title: 'Erreur',
-        text: "Erreur lors de l'ajout du saisonnier"
-      });
+  const msg = err?.error?.message;
+  if (msg === 'QUOTA_DEPASSE') {
+    this.quotaDepasse = true;
+    Swal.fire({
+      icon: 'warning',
+      title: 'Quota dépassé',
+      text: 'Ce matricule a atteint le nombre maximum d\'utilisations. Une demande d\'autorisation sera envoyée à l\'administrateur.'
+    });
+  } else {
+    Swal.fire({ icon: 'error', title: 'Erreur', text: msg || 'Erreur serveur' });
+  }
+}
+  });
+}
+
+
+onMatriculeChange(matricule: string): void {
+  this.parentInfo = null;
+  this.quotaDepasse = false;
+  this.form.nomPrenomParent = '';
+
+  if (!matricule || matricule.trim().length === 0) return;
+
+  this.loadingParent = true;
+
+  this.candidatureService.getParentByMatricule(matricule.trim()).subscribe({
+    next: (data) => {
+      this.parentInfo = data;
+      this.form.nomPrenomParent = data.nomPrenom; // 🔥 auto-fill
+      this.quotaDepasse = data.depasse;
+      this.loadingParent = false;
+    },
+    error: () => {
+      this.parentInfo = null;
+      this.form.nomPrenomParent = '';
+      this.quotaDepasse = false;
+      this.loadingParent = false;
     }
   });
 }
 
+// méthode
+exportPDF(): void {
+  const decoded = (this.authService as any)['decodeToken']?.() ?? {};
+
+  // 🆕 construire le map structure par candidature
+  const structureMap: Record<number, string> = {};
+  const requests = this.filteredCandidatures.map(c =>
+    this.candidatureService.getStructureByCandidature(c.id).toPromise()
+      .then((st: any) => {
+        structureMap[c.id] = st?.nom ?? '—';
+      })
+      .catch(() => {
+        structureMap[c.id] = '—';
+      })
+  );
+
+  // attendre toutes les réponses puis générer le PDF
+  Promise.all(requests).then(() => {
+    this.pdfExport.exportCandidatures(
+      this.filteredCandidatures,
+      decoded?.nom    ?? '',
+      decoded?.prenom ?? '',
+      this.myRegion?.nom ?? '',
+      structureMap   // 🆕
+    );
+  });
+}
   updateCandidature(): void {
   const formData = new FormData();
   formData.append('nom',        this.selectedCandidature.saisonnier.nom);
@@ -326,6 +433,17 @@ submit(saisonnierForm: NgForm): void {
   formData.append('statut',     this.selectedCandidature.statut);
   formData.append('commentaire', this.selectedCandidature.commentaire || '');
   formData.append('moisTravail', this.selectedCandidature.saisonnier.moisTravail || '');
+
+   // 🆕 nouveaux champs
+  formData.append('nomPrenomParent',   this.selectedCandidature.saisonnier.nomPrenomParent  || '');
+  formData.append('matriculeParent',   this.selectedCandidature.saisonnier.matriculeParent  || '');
+  formData.append('niveauEtude',       this.selectedCandidature.saisonnier.niveauEtude      || '');
+  formData.append('diplome',           this.selectedCandidature.saisonnier.diplome          || '');
+  formData.append('specialiteDiplome', this.selectedCandidature.saisonnier.specialiteDiplome || '');
+
+if (this.selectedStructureId) {
+  formData.append('structureId', this.selectedStructureId.toString());
+}
 
   Swal.fire({
     title: 'Mise à jour...',
@@ -393,6 +511,52 @@ submit(saisonnierForm: NgForm): void {
     });
 }
 
+
+envoyerDemandeAutorisation(): void {
+  // Commentaire obligatoire
+  if (!this.selectedCandidature.commentaire?.trim()) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Commentaire requis',
+      text: 'Veuillez ajouter un commentaire justificatif avant d\'envoyer.'
+    });
+    return;
+  }
+
+  Swal.fire({
+    title: 'Envoi en cours...',
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
+
+  const payload = {
+    candidatureId:  this.selectedCandidature.id,
+    commentaire:    this.selectedCandidature.commentaire,
+    directionNom:   this.selectedCandidature.saisonnier.region.nom
+  };
+
+  this.candidatureService.envoyerDemandeJuilletAout(payload).subscribe({
+    next: () => {
+      Swal.fire({
+        icon: 'success',
+        title: 'Demande envoyée',
+        text: 'Les administrateurs ont été notifiés par email.',
+        timer: 2500,
+        showConfirmButton: false
+      });
+      this.closeDossier();
+      this.loadCandidatures(this.myRegion.id);
+    },
+    error: () => {
+      Swal.fire({
+        icon: 'error',
+        title: 'Erreur',
+        text: 'Impossible d\'envoyer la demande.'
+      });
+    }
+  });
+}
+
   // ==========================
   // Affectation
   // ==========================
@@ -433,17 +597,7 @@ activeFilter: string = 'ALL';
 searchQuery:  string = '';
 
 // ── Getter filtré ─────────────────────────────────
-get filteredCandidatures() {
-  return this.candidatures.filter(c => {
-    const matchFilter = this.activeFilter === 'ALL' || c.statut === this.activeFilter;
-    const q = this.searchQuery.toLowerCase().trim();
-    const matchSearch = !q ||
-      c.saisonnier.nom.toLowerCase().includes(q) ||
-      c.saisonnier.prenom.toLowerCase().includes(q) ||
-      (c.saisonnier.email || '').toLowerCase().includes(q);
-    return matchFilter && matchSearch;
-  });
-}
+
 
 // ── Filtrer par statut ────────────────────────────
 setFilter(status: string): void {
@@ -466,6 +620,37 @@ statusLabel(statut: string): string {
   return map[statut] || statut;
 }
 
+telechargerDoc(url: string, nom: string): void {
+  fetch(url)
+    .then(res => res.blob())
+    .then(blob => {
+      const extension = nom.includes('.') ? '' : this.getExtensionFromBlob(blob);
+      const nomFinal = nom.endsWith(extension) ? nom : nom + extension;
+      const blobUrl = URL.createObjectURL(blob);
 
+      if (blob.type === 'application/pdf') {
+        // PDF → ouvrir dans nouvel onglet
+        window.open(blobUrl, '_blank');
+      } else {
+        // Autres types → télécharger
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = nomFinal;
+        a.click();
+        URL.revokeObjectURL(blobUrl);
+      }
+    });
+}
+
+private getExtensionFromBlob(blob: Blob): string {
+  const mimeMap: Record<string, string> = {
+    'application/pdf':                                                          '.pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+    'application/msword':                                                       '.doc',
+    'image/jpeg':                                                               '.jpg',
+    'image/png':                                                                '.png',
+  };
+  return mimeMap[blob.type] ?? '';
+}
 
 }

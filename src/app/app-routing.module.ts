@@ -16,6 +16,15 @@ import { LoginAdminComponent } from './features/admin/pages/login-admin/login-ad
 import { AuthGuard } from './security/auth.guard';
 import { RhGuard } from './security/rh.guard';
 import { LoginSaisonnierComponent } from './features/saisonnier/login-saisonnier/login-saisonnier.component';
+import { AdminLayoutComponent } from './features/admin/layout/admin-layout/admin-layout.component';
+import { CampagnesComponent } from './features/admin/pages/campagnes/campagnes.component';
+import { CandidaturesComponent } from './features/admin/pages/candidatures/candidatures.component';
+import { PresenceComponent } from './features/admin/pages/presence/presence.component';
+import { MemoComponent } from './features/admin/pages/memo/memo.component';
+import { StructuresComponent } from './features/admin/pages/structures/structures.component';
+import { CampagneGuard } from './guards/campagne.guard';
+import { CampagneExpireeComponent } from './pages/campagne-expiree/campagne-expiree.component';
+import { IltizamComponent } from './pages/iltizam/iltizam.component';
 
 const routes: Routes = [
 
@@ -44,10 +53,36 @@ const routes: Routes = [
   
   { path: 'saisonniers/validation', component: SaisonniersValidationComponent },
   {path: 'admin', component: HomeAdminComponent,canActivate: [AuthGuard]},
-  {path: 'espace-saisonnier', component: EspacesaisonnierComponent},
-  { path: 'admin/login', component: LoginAdminComponent },
 
-  { path: '', redirectTo: '/home-ge', pathMatch: 'full' }
+  {
+  path: 'saisonnier/iltizam',
+  component: IltizamComponent,
+ 
+},
+{ 
+  path: 'espace-saisonnier', 
+  component: EspacesaisonnierComponent,
+  canActivate: [CampagneGuard]
+}, 
+ { path: 'admin/login', component: LoginAdminComponent },
+ { path: 'campagne-expiree', component: CampagneExpireeComponent },
+
+  { path: '', redirectTo: '/home-ge', pathMatch: 'full' },
+  {
+    path: 'dash',
+    component: AdminLayoutComponent,
+    children: [
+      { path: '',             redirectTo: 'campagnes', pathMatch: 'full' },
+      { path: 'campagnes',    component: CampagnesComponent },
+      { path: 'candidatures', component: CandidaturesComponent },
+      { path: 'presence',     component: PresenceComponent },
+      { path: 'memo',         component: MemoComponent },
+      { path: 'structures',   component: StructuresComponent },
+    ]
+  }
+
+
+  
 ];
 
 @NgModule({

@@ -289,12 +289,19 @@ $shadow:  0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
   }
 
   .input-rib {
+      display: block;
+  margin: 0 auto;
+  text-align: center;
     padding:5px 8px; border:1.5px solid $border; border-radius:7px;
     font-family:monospace; font-size:.72rem; color:$text-dk; outline:none;
     background:$white; width:170px; letter-spacing:.3px;
     &:focus { border-color:$blue; }
     &::placeholder { color:$text-lt; font-family:$font; }
   }
+
+  .text-center {
+  text-align: center;
+}
 }
 
 // Status pills

@@ -38,7 +38,7 @@ export interface Region {
 })
 export class AuthService {
 
-  private baseUrl = 'https://tt-backend-b7j3.onrender.com/auth'; // changer si besoin
+  private baseUrl = 'http://localhost:8080/auth'; // changer si besoin
 
   constructor(private http: HttpClient) { }
 

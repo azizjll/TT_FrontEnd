@@ -23,7 +23,9 @@ export class AppComponent {
         this.showLayout = !(
           url.startsWith('/login') ||
           url.startsWith('/admin') ||
-          url.startsWith('/home-ge')
+          url.startsWith('/home-ge')||
+          url.startsWith('/dash')||
+          url.startsWith('/campagne-expiree')
         );
       });
   }

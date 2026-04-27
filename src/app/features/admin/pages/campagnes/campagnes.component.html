@@ -1,0 +1,728 @@
+<section class="content-section" >
+
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card primary">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <div class="stat-data">
+            <span class="stat-value">{{ stats.campagnesActives }}</span>
+            <span class="stat-label">Campagnes Actives</span>
+          </div>
+          <div class="stat-trend up">+2 ce mois</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <div class="stat-data">
+            <span class="stat-value">{{ stats.campagnesTotal }}</span>
+            <span class="stat-label">Total Campagnes</span>
+          </div>
+          <div class="stat-trend">Toutes périodes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div class="stat-data">
+            <span class="stat-value">{{ stats.affectationsVerrouillees }}</span>
+            <span class="stat-label">Affectations Verrouillées</span>
+          </div>
+          <div class="stat-trend">Sécurisées</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div class="stat-data">
+            <span class="stat-value">{{ stats.joursRestants }}</span>
+            <span class="stat-label">Jours Restants</span>
+          </div>
+          <div class="stat-trend">Campagne en cours</div>
+        </div>
+      </div>
+
+      <!-- Action Bar -->
+      <div class="section-header">
+        <h2 class="section-title">Gestion des Campagnes</h2>
+        <div class="action-buttons">
+          <button class="btn btn-outline" (click)="openCreateModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+            Créer Campagne
+          </button>
+          <button class="btn btn-primary" (click)="activerCampagne()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            Activer
+          </button>
+        </div>
+      </div>
+
+      <!-- Table Campagnes -->
+      <div class="table-card">
+        <div class="table-filters">
+          <button class="filter-tab active">Toutes</button>
+          <button class="filter-tab">Actives</button>
+          <button class="filter-tab">Cloturées</button>
+          <button class="filter-tab">Brouillons</button>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Campagne</th>
+              <th>Période</th>
+              <th>Statut</th>
+              <th>Candidatures</th>
+              
+              <th>Lien de candidature</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let campagne of campagnes" class="table-row">
+              <td>
+                <div class="campagne-name">
+                  <div class="campagne-dot" [ngClass]="campagne.statut"></div>
+                  <div>
+                    <span class="name-primary">{{ campagne.nom }}</span>
+                    <span class="name-secondary">{{ campagne.code }}</span>
+                  </div>
+                </div>
+              </td>
+              <td class="period-cell">
+                <span>{{ campagne.dateDebut }}</span>
+                <span class="period-sep">→</span>
+                <span>{{ campagne.dateFin }}</span>
+              </td>
+              <td>
+                <span class="status-badge" [ngClass]="campagne.statut">{{ campagne.statutLabel }}</span>
+              </td>
+              <td>
+                <span class="candidatures-count-badge" 
+                      [class.zero]="campagne.candidatures === 0"
+                      >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" 
+                      style="width:13px;height:13px">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                  </svg>
+                  {{ campagne.candidatures }}
+                </span>
+              </td>
+
+              <td>
+                <div class="lien-cell" *ngIf="campagne.statut === 'active'">
+                <a [href]="getCandidatureUrl(campagne)" target="_blank" class="lien-url">
+                  Espace saisonnier
+                </a>
+                  <button class="action-icon" 
+                          title="Copier le lien" 
+                          (click)="copierLien(campagne)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2"/>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>
+                  </button>
+                  <button class="action-icon" 
+                          title="Ouvrir dans un nouvel onglet" 
+                          (click)="ouvrirLien(campagne)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                      <polyline points="15 3 21 3 21 9"/>
+                      <line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
+                  </button>
+                </div>
+                <span *ngIf="campagne.statut !== 'active'" class="text-muted" style="font-size:12px">
+                  — Inactive
+                </span>
+              </td>
+              
+              <td>
+                <div class="row-actions">
+                  <button class="action-icon" title="Voir" (click)="ouvrirVoirCampagne(campagne)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </button>
+                  <button class="action-icon" title="Modifier" (click)="ouvrirModifierCampagne(campagne)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                  </button>
+                  <button class="action-icon danger" title="Supprimer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ===== DOCUMENTS DE LA CAMPAGNE ACTIVE ===== -->
+
+      <div class="modal-overlay" *ngIf="showCreateModal" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Créer une Campagne</h3>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-group">
+        <label>Année de la campagne *</label>
+        <input type="number"
+               placeholder="Ex: 2025"
+               [(ngModel)]="newCampagneAnnee"
+               (ngModelChange)="onAnneeChange()"
+               min="2020" max="2099" />
+      </div>
+
+      <div class="form-group">
+        <label>Nom de Campagne</label>
+        <input type="text"
+               [value]="newCampagne.nom"
+               readonly
+               style="background: var(--surface-2); color: var(--text-muted); cursor: not-allowed;" />
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea rows="3" placeholder="Description de la campagne..." [(ngModel)]="newCampagne.description"></textarea>
+      </div>
+
+      
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date début Candidature *</label>
+          <input type="date" [(ngModel)]="newCampagne.dateDebut"/>
+        </div>
+        <div class="form-group">
+          <label>Date fin Candidature *</label>
+          <input type="date" [(ngModel)]="newCampagne.dateFin"/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Prime mensuelle (dt) *</label>
+        <input type="number" placeholder="Ex: 240" [(ngModel)]="newCampagne.budget"/>
+      </div>
+
+      <!-- ===== NOUVEAU : Upload Excel pour affectation des régions ===== -->
+      <div class="form-group">
+        <label>
+          Directions et Structures d'affectation *
+          <span style="font-size:11px; color: var(--text-muted); font-weight:400;">
+            
+          </span>
+        </label>
+
+        <div class="excel-upload-zone"
+             [class.has-file]="campagneExcelFile"
+             [class.dragover]="campagneExcelDragOver"
+             (dragover)="$event.preventDefault(); campagneExcelDragOver = true"
+             (dragleave)="campagneExcelDragOver = false"
+             (drop)="onCampagneExcelDrop($event)">
+
+          <ng-container *ngIf="!campagneExcelFile">
+            <svg viewBox="0 0 48 48" fill="none" style="width:36px;height:36px">
+              <rect x="4" y="6" width="40" height="36" rx="3" fill="#E8F5E9" stroke="#4CAF50" stroke-width="1.5"/>
+              <line x1="4" y1="16" x2="44" y2="16" stroke="#4CAF50" stroke-width="1"/>
+              <line x1="18" y1="6" x2="18" y2="42" stroke="#4CAF50" stroke-width="1"/>
+              <path d="M28 28l4-4 4 4M32 24v8" stroke="#4CAF50" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <div style="text-align:center">
+              <span style="font-size:13px; color: var(--text-secondary); display:block">
+                Glissez le fichier Excel ici
+              </span>
+              <span style="font-size:11px; color: var(--text-muted)">ou</span>
+            </div>
+            <label class="btn btn-outline btn-sm" style="cursor:pointer; margin-top:4px">
+              Parcourir
+              <input type="file"
+                     accept=".xlsx,.xls"
+                     (change)="onCampagneExcelSelected($event)"
+                     style="display:none" />
+            </label>
+          </ng-container>
+
+          <ng-container *ngIf="campagneExcelFile">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2" style="width:28px;height:28px">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="9" y1="3" x2="9" y2="21"/>
+            </svg>
+            <div style="flex:1; min-width:0">
+              <span style="font-size:13px; font-weight:500; color: var(--text-primary); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">
+                {{ campagneExcelFile.name }}
+              </span>
+              <span style="font-size:11px; color: var(--text-muted)">
+                {{ (campagneExcelFile.size / 1024).toFixed(1) }} KB
+              </span>
+            </div>
+            <button class="remove-file" (click)="campagneExcelFile = null; $event.stopPropagation()">✕</button>
+          </ng-container>
+        </div>
+
+        <!-- Indicateur des régions détectées -->
+        <div class="regions-detected" *ngIf="campagneExcelFile && regionsDetectees.length > 0"
+             style="margin-top:8px; padding:8px 12px; background:rgba(74,158,255,0.08); border-radius:6px; border-left:3px solid #4A9EFF;">
+          <span style="font-size:12px; color:#4A9EFF; font-weight:500;">
+            ✓ {{ regionsDetectees.length }} Direction(s) de rattachement(s) :
+          </span>
+       
+        </div>
+      </div>
+      <!-- ===== FIN Upload Excel ===== -->
+
+      <!-- ===== Upload Excel Parents ===== -->
+<div class="form-group">
+  <label>
+    Liste des parents autorisés
+    <span style="font-size:11px; color: var(--text-muted); font-weight:400;">
+      (optionnel — Nom & Prénom + Matricule)
+    </span>
+  </label>
+
+  <div class="excel-upload-zone"
+       [class.has-file]="parentsExcelFile"
+       [class.dragover]="parentsExcelDragOver"
+       (dragover)="$event.preventDefault(); parentsExcelDragOver = true"
+       (dragleave)="parentsExcelDragOver = false"
+       (drop)="onParentsExcelDrop($event)">
+
+    <ng-container *ngIf="!parentsExcelFile">
+      <svg viewBox="0 0 48 48" fill="none" style="width:36px;height:36px">
+        <rect x="4" y="6" width="40" height="36" rx="3" fill="#E8F5E9" 
+              stroke="#4CAF50" stroke-width="1.5"/>
+        <line x1="4"  y1="16" x2="44" y2="16" stroke="#4CAF50" stroke-width="1"/>
+        <line x1="18" y1="6"  x2="18" y2="42" stroke="#4CAF50" stroke-width="1"/>
+        <path d="M28 28l4-4 4 4M32 24v8" stroke="#4CAF50" 
+              stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <div style="text-align:center">
+        <span style="font-size:13px; color: var(--text-secondary); display:block">
+          Glissez le fichier Excel des parents ici
+        </span>
+        <span style="font-size:11px; color: var(--text-muted)">
+          Colonnes : Nom & Prénom | Matricule
+        </span>
+      </div>
+      <label class="btn btn-outline btn-sm" style="cursor:pointer; margin-top:4px">
+        Parcourir
+        <input type="file"
+               accept=".xlsx,.xls"
+               (change)="onParentsExcelSelected($event)"
+               style="display:none" />
+      </label>
+    </ng-container>
+
+    <ng-container *ngIf="parentsExcelFile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2" 
+           style="width:28px;height:28px">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <line x1="3" y1="9"  x2="21" y2="9"/>
+        <line x1="9" y1="3"  x2="9"  y2="21"/>
+      </svg>
+      <div style="flex:1; min-width:0">
+        <span style="font-size:13px; font-weight:500; color: var(--text-primary); 
+                     display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">
+          {{ parentsExcelFile.name }}
+        </span>
+        <span style="font-size:11px; color: var(--text-muted)">
+          {{ (parentsExcelFile.size / 1024).toFixed(1) }} KB
+        </span>
+      </div>
+      <button class="remove-file" 
+              (click)="parentsExcelFile = null; $event.stopPropagation()">✕</button>
+    </ng-container>
+  </div>
+
+  <div style="font-size:11px; color: var(--text-muted); margin-top:6px; 
+              padding: 6px 10px; background: rgba(74,158,255,0.06); 
+              border-radius:4px; border-left:2px solid #4A9EFF;">
+    📋 Format attendu : colonne A = Nom & Prénom, colonne B = Matricule
+  </div>
+</div>
+<!-- ===== FIN Upload Excel Parents ===== -->
+
+      <!-- ===== DOCUMENTS LORS DE CRÉATION ===== -->
+<div class="form-group">
+  <label>
+    Documents de la campagne
+    <span style="font-size:11px; color: var(--text-muted); font-weight:400;">
+      (optionnel — مذكرة الإنتداب, التزامات…)
+    </span>
+  </label>
+
+  <!-- Zone d'ajout -->
+  <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+    <label class="btn btn-outline btn-sm" style="cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           style="width:14px;height:14px">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+      </svg>
+      Ajouter un document
+      <input type="file"
+             accept=".pdf,.jpg,.png"
+             (change)="onDocumentPendantSelected($event)"
+             style="display:none" />
+    </label>
+    <span style="font-size:11px; color: var(--text-muted)">
+      {{ documentsPendants.length }} document(s) ajouté(s)
+    </span>
+  </div>
+
+  <!-- Liste des documents pendants -->
+  <div *ngFor="let doc of documentsPendants; let i = index"
+       style="display:flex; gap:8px; align-items:center; padding:8px; 
+              background:var(--surface-2); border-radius:6px; margin-bottom:6px;">
+
+    <!-- Icône fichier -->
+    <svg viewBox="0 0 24 24" fill="none" stroke="#4A9EFF" stroke-width="2"
+         style="width:20px;height:20px;flex-shrink:0">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+    </svg>
+
+    <!-- Nom éditable -->
+    <input type="text"
+           [value]="doc.nom"
+           (input)="updateDocumentPendantNom(i, $any($event.target).value)"
+           placeholder="Nom du document"
+           style="flex:1; font-size:12px;" />
+
+    <!-- Type -->
+    <select [value]="doc.type"
+            (change)="updateDocumentPendantType(i, $any($event.target).value)"
+            style="font-size:12px; min-width:150px;">
+      <option value="مذكرة الإنتداب">مذكرة الإنتداب</option>
+      <option value="إلتزام">إلتزام — عمل موسمي</option>
+      <option value="autre">Autre</option>
+    </select>
+
+    <!-- Taille fichier -->
+    <span style="font-size:11px; color:var(--text-muted); white-space:nowrap;">
+      {{ (doc.file.size / 1024).toFixed(0) }} KB
+    </span>
+
+    <!-- Supprimer -->
+    <button class="action-icon danger"
+            title="Retirer"
+            (click)="supprimerDocumentPendant(i)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <div *ngIf="documentsPendants.length === 0"
+       style="font-size:12px; color:var(--text-muted); padding:8px 0;">
+    Aucun document ajouté — vous pourrez en ajouter après la création.
+  </div>
+</div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Annuler</button>
+      <button class="btn btn-outline"
+              (click)="saveCampagne(false)"
+              [disabled]="isSavingCampagne">
+        Enregistrer Brouillon
+      </button>
+      <button class="btn btn-primary"
+              (click)="saveCampagne(true)"
+              [disabled]="isSavingCampagne">
+        <span *ngIf="isSavingCampagne">⏳ Création...</span>
+        <span *ngIf="!isSavingCampagne">Créer & Activer</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showActiveCampagneWarning" (click)="fermerWarning()">
+  <div class="modal modal-warning" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>⚠️ Campagne active existante</h3>
+      <button class="modal-close" (click)="fermerWarning()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Icône alerte -->
+      <div class="warning-icon-wrap">
+        <svg viewBox="0 0 64 64" fill="none">
+          <circle cx="32" cy="32" r="30" fill="rgba(245,158,11,0.12)" stroke="#F59E0B" stroke-width="2"/>
+          <path d="M32 18v18" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="32" cy="44" r="2.5" fill="#F59E0B"/>
+        </svg>
+      </div>
+
+      <!-- Message principal -->
+      <p class="warning-title">Une campagne est déjà active</p>
+      <p class="warning-message">
+        La campagne <strong>« {{ activeCampagneNom }} »</strong> est actuellement active.
+        Il ne peut y avoir qu'une seule campagne active à la fois.
+      </p>
+
+      <!-- Options -->
+      <div class="warning-options">
+        <div class="warning-option" (click)="cloturerEtActiver()">
+          <div class="warning-option-icon danger">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </div>
+          <div class="warning-option-text">
+            <strong>Clôturer et activer</strong>
+            <span>Clôturer la campagne active et activer la nouvelle</span>
+          </div>
+        </div>
+
+        <div class="warning-option" (click)="saveCampagne(false); fermerWarning()">
+          <div class="warning-option-icon info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+              <polyline points="17 21 17 13 7 13 7 21"/>
+            </svg>
+          </div>
+          <div class="warning-option-text">
+            <strong>Enregistrer en brouillon</strong>
+            <span>Créer la campagne sans l'activer</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="fermerWarning()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: VOIR CAMPAGNE ===== -->
+<div class="modal-overlay" *ngIf="showViewModal" (click)="fermerVoirModal()">
+  <div class="modal modal-view" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>
+        <span class="view-modal-dot" [ngClass]="viewingCampagne?.statut"></span>
+        {{ viewingCampagne?.nom }}
+      </h3>
+      <button class="modal-close" (click)="fermerVoirModal()">✕</button>
+    </div>
+    <div class="modal-body" *ngIf="viewingCampagne">
+
+      <!-- Statut + Code -->
+      <div class="view-top-row">
+        <span class="status-badge" [ngClass]="viewingCampagne.statut">
+          {{ viewingCampagne.statutLabel }}
+        </span>
+        <span class="view-code">{{ viewingCampagne.code }}</span>
+      </div>
+
+      <!-- Infos principales -->
+      <div class="view-info-grid">
+        <div class="view-info-card">
+          <div class="view-info-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <div>
+            <span class="view-info-label">Date de début</span>
+            <span class="view-info-val">{{ viewingCampagne.dateDebut }}</span>
+          </div>
+        </div>
+
+        <div class="view-info-card">
+          <div class="view-info-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <div>
+            <span class="view-info-label">Date de fin</span>
+            <span class="view-info-val">{{ viewingCampagne.dateFin }}</span>
+          </div>
+        </div>
+
+        <div class="view-info-card">
+          <div class="view-info-icon blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div>
+            <span class="view-info-label">Candidatures</span>
+            <span class="view-info-val highlight-blue">{{ viewingCampagne.candidatures }}</span>
+          </div>
+        </div>
+
+        <div class="view-info-card">
+          <div class="view-info-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div>
+            <span class="view-info-label">Affectations</span>
+            <span class="view-info-val highlight-green">{{ viewingCampagne.affectations }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="view-description" *ngIf="viewingCampagne.description">
+        <span class="view-desc-label">Description</span>
+        <p class="view-desc-text">{{ viewingCampagne.description }}</p>
+      </div>
+
+      <!-- Candidatures list -->
+      <div class="view-candidatures-section" *ngIf="viewingCampagneCandidatures.length > 0">
+        <div class="view-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               style="width:16px;height:16px">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+          </svg>
+          Candidatures ({{ viewingCampagneCandidatures.length }})
+        </div>
+        <div class="view-cand-list">
+          <div class="view-cand-item" *ngFor="let cand of viewingCampagneCandidatures">
+            <div class="user-avatar-sm">
+              {{ cand.saisonnier.nom[0] }}{{ cand.saisonnier.prenom[0] }}
+            </div>
+            <div class="view-cand-info">
+              <span class="name-primary">{{ cand.saisonnier.nom }} {{ cand.saisonnier.prenom }}</span>
+              <span class="name-secondary">{{ cand.saisonnier.cin }} — {{ cand.saisonnier.region.nom }}</span>
+            </div>
+            <span class="status-badge" [ngClass]="cand.statut.toLowerCase()">{{ cand.statut }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="view-empty-cand" *ngIf="viewingCampagneCandidatures.length === 0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             style="width:32px;height:32px;color:var(--text-muted)">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+        </svg>
+        <span>Aucune candidature pour cette campagne</span>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="fermerVoirModal()">Fermer</button>
+      <button class="btn btn-primary" (click)="fermerVoirModal(); ouvrirModifierCampagne(viewingCampagne!)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        Modifier
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: MODIFIER CAMPAGNE ===== -->
+<div class="modal-overlay" *ngIf="showEditModal" (click)="fermerEditModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Modifier la Campagne</h3>
+      <button class="modal-close" (click)="fermerEditModal()">✕</button>
+    </div>
+    <div class="modal-body" *ngIf="editingCampagne">
+
+      <div class="form-group">
+        <label>Nom de la campagne *</label>
+        <input type="text" [(ngModel)]="editingCampagne.nom" />
+      </div>
+
+      <div class="form-group">
+        <label>Code campagne</label>
+        <input type="text" [(ngModel)]="editingCampagne.code" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date de début *</label>
+          <input type="date" [(ngModel)]="editingCampagne.dateDebut" />
+        </div>
+        <div class="form-group">
+          <label>Date de fin *</label>
+          <input type="date" [(ngModel)]="editingCampagne.dateFin" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea rows="3" [(ngModel)]="editingCampagne.description"></textarea>
+      </div>
+
+      <!-- Changer statut -->
+      <div class="form-group">
+        <label>Statut</label>
+        <div class="statut-selector">
+          <div class="statut-option"
+               [class.selected]="editingCampagne.statut === 'brouillon'"
+               (click)="changerStatutCampagne('BROUILLON')">
+            <span class="campagne-dot brouillon"></span>
+            Brouillon
+          </div>
+          <div class="statut-option"
+               [class.selected]="editingCampagne.statut === 'active'"
+               (click)="changerStatutCampagne('ACTIVE')">
+            <span class="campagne-dot active"></span>
+            Active
+          </div>
+          <div class="statut-option"
+               [class.selected]="editingCampagne.statut === 'termine'"
+               (click)="changerStatutCampagne('CLOTUREE')">
+            <span class="campagne-dot termine"></span>
+            Clôturée
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="fermerEditModal()">Annuler</button>
+      <button class="btn btn-primary" (click)="sauvegarderModificationCampagne()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+        </svg>
+        Enregistrer
+      </button>
+    </div>
+  </div>
+</div>
+
+    </section>

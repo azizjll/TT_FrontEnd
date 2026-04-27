@@ -4,7 +4,6 @@
   <div class="page-header">
     <div>
       <h1>Présence & Paiement</h1>
-      <p>Suivi des absences et calcul automatique des salaires — Campagne 2025</p>
     </div>
     <div class="header-actions">
       <button class="btn-outline-dark" (click)="exportPdf()">
@@ -39,18 +38,7 @@
         <span class="stat-lbl">Saisonniers</span>
       </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-icon green">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="1" x2="12" y2="23"/>
-          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-        </svg>
-      </div>
-      <div>
-        <span class="stat-val">{{ getTotalMontant() | number:'1.0-0' }} DT</span>
-        <span class="stat-lbl">Masse salariale</span>
-      </div>
-    </div>
+   
     <div class="stat-card">
       <div class="stat-icon amber">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -64,18 +52,7 @@
         <span class="stat-lbl">Jours d'absence</span>
       </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-icon purple">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="4" width="18" height="18" rx="2"/>
-          <line x1="3" y1="10" x2="21" y2="10"/>
-        </svg>
-      </div>
-      <div>
-        <span class="stat-val">{{ tauxJourDT }} DT</span>
-        <span class="stat-lbl">Taux journalier</span>
-      </div>
-    </div>
+    
   </div>
 
   <!-- ── PARAMETRES ── -->
@@ -85,19 +62,12 @@
       <input type="number" [(ngModel)]="tauxJourDT" min="1" (change)="recalcAll()">
     </div>
     <div class="param-group">
-      <label>Durée contrat (jours)</label>
-      <input type="number" [(ngModel)]="dureeContrat" min="1" (change)="recalcAll()">
-    </div>
-    <div class="param-group">
-      <label>Date de prise de fonction</label>
-      <input type="date" [(ngModel)]="dateMbacharah" (change)="recalcAll()">
-    </div>
-    <div class="param-group">
-      <label>Campagne</label>
-      <select [(ngModel)]="campagneId">
-        <option *ngFor="let c of campagnes" [value]="c.id">{{ c.libelle }}</option>
-      </select>
-    </div>
+  <label>Durée contrat (jours)</label>
+  <input type="number" [(ngModel)]="dureeContrat" min="1" 
+         (change)="onDureeContratChange()">
+</div>
+    
+    
 
     <div class="param-group">
   <label>Structure</label>
@@ -127,15 +97,7 @@
 
   </select>
 </div>
-    <div class="param-info">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="12" y1="8" x2="12" y2="12"/>
-        <line x1="12" y1="16" x2="12.01" y2="16"/>
-      </svg>
-      Salaire brut = {{ dureeContrat }} × {{ tauxJourDT }} = <strong>{{ dureeContrat * tauxJourDT }} DT</strong>
-      &nbsp;|&nbsp; Net = ({{ dureeContrat }} - absences) × {{ tauxJourDT }}
-    </div>
+   
   </div>
 
   <!-- ── TABLEAU PRINCIPAL ── -->
@@ -148,30 +110,24 @@
         </svg>
         <input type="text" placeholder="Rechercher un saisonnier..." [(ngModel)]="searchQ">
       </div>
-      <div class="filter-chips">
-        <button [class.active]="filterPaye === 'ALL'"   (click)="filterPaye='ALL'">Tous</button>
-        <button [class.active]="filterPaye === 'PAYE'"  (click)="filterPaye='PAYE'" class="chip-green">Payés</button>
-        <button [class.active]="filterPaye === 'IMPAYE'" (click)="filterPaye='IMPAYE'" class="chip-amber">Impayés</button>
-      </div>
+      
     </div>
 
     <div class="table-wrap">
       <table class="data-table" dir="ltr">
         <thead>
-          <tr>
-            <th>عدد</th>
-            <th>الاسم و اللقب المرئيص</th>
-            <th>رقم بطاقة التعريف</th>
-            <th>تاريخ المباشرة</th>
-            <th>مدة العمل</th>
-            <th>الغيابات</th>
-            <th>المبلغ الصافي (DT)</th>
-
-            <th>رقم الحساب</th>
-            <th>الحالة</th>
-            <th>إجراءات</th>
-          </tr>
-        </thead>
+  <tr>
+    <th>N°</th>
+    <th>Nom et Prénom</th>
+    <th>N° CIN</th>
+    <th>N° Compte</th>
+    <th>Absences(Jours)</th>
+    <th>Durée de travail(Jours)</th>
+    <th>Montant net (DT)</th>
+    <th>Statut</th>
+    <th>Actions</th>
+  </tr>
+</thead>
         <tbody>
           <tr *ngIf="filteredSaisonniers.length === 0">
             <td colspan="12" class="empty-row">
@@ -197,26 +153,30 @@
             <!-- CIN -->
             <td class="td-center td-mono">{{ s.cin }}</td>
 
-            <!-- Date début -->
-            <td class="td-center">
-              <input type="date" class="input-date"
-                     [(ngModel)]="s.dateMbacharah"
+            <td>
+              <input type="text" class="input-rib text-center"
+                     [(ngModel)]="s.rib"
+                     placeholder="RIB / N° compte..."
                      (change)="save()">
             </td>
 
-            <!-- Durée -->
-            <td class="td-center">
-              <input type="number" class="input-num"
-                     [(ngModel)]="s.duree" min="0"
-                     (change)="recalcRow(s); save()">
-            </td>
-
-            <!-- Absences -->
-            <td class="td-center">
+            <!-- Date début -->
+            
+                <td class="td-center">
               <input type="number" class="input-num absence-input"
                      [(ngModel)]="s.absences" min="0" [max]="s.duree"
                      (change)="recalcRow(s); save()">
             </td>
+            <!-- Durée -->
+            <!-- Durée -->
+              <td class="td-center">
+                <span class="input-num" style="display:inline-block; padding: 4px 8px;">
+                  {{ s.duree }}
+                </span>
+              </td>
+
+            <!-- Absences -->
+            
 
             <!-- Montant net -->
             <td class="td-center td-montant" [class.montant-zero]="s.montantNet === 0">
@@ -227,12 +187,7 @@
            
 
             <!-- Numéro compte -->
-            <td>
-              <input type="text" class="input-rib"
-                     [(ngModel)]="s.rib"
-                     placeholder="RIB / N° compte..."
-                     (change)="save()">
-            </td>
+            
 
             <!-- Statut paiement -->
             <td class="td-center">
@@ -247,21 +202,7 @@
             <!-- Actions -->
             <td class="td-center">
               <div class="action-btns">
-                <button class="btn-action"
-                        [class.btn-pay]="!s.paye"
-                        [class.btn-unpay]="s.paye"
-                        (click)="togglePaye(s)"
-                        [title]="s.paye ? 'Marquer impayé' : 'Marquer payé'">
-                  <svg *ngIf="!s.paye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                    <polyline points="22 4 12 14.01 9 11.01"/>
-                  </svg>
-                  <svg *ngIf="s.paye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="15" y1="9" x2="9" y2="15"/>
-                    <line x1="9" y1="9" x2="15" y2="15"/>
-                  </svg>
-                </button>
+                
                 <button class="btn-action btn-detail" (click)="openDetail(s)" title="Détail">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
@@ -276,7 +217,7 @@
         <!-- TOTAL ROW -->
         <tfoot *ngIf="filteredSaisonniers.length > 0">
           <tr class="total-row">
-            <td colspan="4" dir="rtl">المجموع الإجمالي</td>
+            <td colspan="4">Total général</td>
             <td class="td-center">{{ getTotalJours() }}</td>
             <td class="td-center">{{ getTotalAbsences() }}</td>
             <td class="td-center"><strong>{{ getTotalMontant() | number:'1.3-3' }} DT</strong></td>

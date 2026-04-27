@@ -108,6 +108,18 @@
       <!-- DOCUMENTS : groupe collapsible sous Campagnes -->
 
 
+      <a class="nav-item" [class.active]="activeSection==='etats'"
+   (click)="setActive('etats')">
+  <span class="nav-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+    </svg>
+  </span>
+  <span>États RH Régionaux</span>
+  <span class="nav-badge secondary">{{ etatsRH.length }}</span>
+</a>
+
 
       <a class="nav-item">
         <span class="nav-icon">
@@ -177,6 +189,72 @@
     </div>
   </header>
 
+
+  <section class="content-section" *ngIf="activeSection==='etats'">
+  <div class="section-header">
+    <h2 class="section-title">États signés par Direction</h2>
+  </div>
+
+  <div class="table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Direction (Région)</th>
+          <th>RH Responsable</th>
+          <th>Fichier</th>
+          <th>Date soumission</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let e of etatsRH" class="table-row">
+          <td><strong>{{ e.regionNom }}</strong></td>
+          <td>{{ e.rhNom }}</td>
+          <td>
+            <a [href]="e.url" target="_blank" class="lien-url">
+              {{ e.nomFichier }}
+            </a>
+          </td>
+          <td>{{ e.dateUpload | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>
+            <span class="status-badge"
+                  [class.active]="e.statut==='VALIDE'"
+                  [class.en-attente]="e.statut==='SOUMIS'"
+                  [class.danger]="e.statut==='REJETE'">
+              {{ e.statut }}
+            </span>
+          </td>
+          <td>
+            <div class="row-actions">
+              <button class="action-icon" title="Valider"
+                      (click)="validerEtat(e.id)"
+                      *ngIf="e.statut !== 'VALIDE'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </button>
+              <button class="action-icon danger" title="Rejeter"
+                      (click)="rejeterEtat(e.id)"
+                      *ngIf="e.statut !== 'REJETE'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="etatsRH.length === 0">
+          <td colspan="6" style="text-align:center;padding:32px;opacity:0.5">
+            Aucun état soumis pour la campagne active
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
     <!-- ===== SECTION: CAMPAGNES ===== -->
     <section class="content-section" *ngIf="activeSection === 'campagnes'">
 
@@ -189,8 +267,8 @@
             </svg>
           </div>
           <div class="stat-data">
-            <span class="stat-value">{{ stats.campagnesActives }}</span>
-            <span class="stat-label">Campagnes Actives</span>
+            <span class="stat-value">{{ stats.campagnesCloturee }}</span>
+            <span class="stat-label">Campagnes Cloturées</span>
           </div>
           <div class="stat-trend up">+2 ce mois</div>
         </div>
@@ -213,8 +291,8 @@
             </svg>
           </div>
           <div class="stat-data">
-            <span class="stat-value">{{ stats.affectationsVerrouillees }}</span>
-            <span class="stat-label">Affectations Verrouillées</span>
+            <span class="stat-value">{{ stats.totalParents }}</span>
+            <span class="stat-label">Parents Autorisés</span>
           </div>
           <div class="stat-trend">Sécurisées</div>
         </div>
@@ -242,12 +320,17 @@
             </svg>
             Créer Campagne
           </button>
-          <button class="btn btn-primary" (click)="activerCampagne()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="5 3 19 12 5 21 5 3"/>
-            </svg>
-            Activer
-          </button>
+          
+
+          <button class="btn btn-outline" (click)="openAddParentModal()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+    <circle cx="9" cy="7" r="4"/>
+  </svg>
+  Parents autorisés
+</button>
+
+
         </div>
       </div>
 
@@ -304,7 +387,7 @@
               </td>
 
               <td>
-                <div class="lien-cell" *ngIf="campagne.statut === 'active'">
+                <div class="lien-cell" *ngIf="campagne.statut === 'active' && !isCampagneExpiree(campagne)">
                 <a [href]="getCandidatureUrl(campagne)" target="_blank" class="lien-url">
                   Espace saisonnier
                 </a>
@@ -358,7 +441,48 @@
         </table>
       </div>
 
-      <!-- ===== DOCUMENTS DE LA CAMPAGNE ACTIVE ===== -->
+      <div class="table-card" style="margin-top:20px;">
+  <div class="section-header">
+    <h3>Parents Autorisés</h3>
+    <button class="btn btn-primary btn-sm" (click)="openAddParentModal()">
+      + Ajouter Parent
+    </button>
+  </div>
+
+  <table class="data-table">
+  <thead>
+    <tr>
+      <th>Nom & Prénom</th>
+      <th>Matricule</th>
+      <th>Utilisations</th>
+      <th>Statut</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr *ngFor="let p of parents">
+      <td>{{ p.nomPrenom }}</td>
+      <td>{{ p.matricule }}</td>
+
+      <!-- 🆕 colonne utilisations -->
+      <td>{{ p.utilise }} / {{ p.autorises }}</td>
+
+      <td>
+        <span *ngIf="p.utilise < p.autorises" class="status-badge success">Disponible</span>
+        <span *ngIf="p.utilise >= p.autorises" class="status-badge danger">Quota atteint</span>
+      </td>
+
+      <td>
+        <div class="row-actions">
+          <button class="action-icon" (click)="editParent(p)">✏️</button>
+          <button class="action-icon danger" (click)="deleteParent(p.id)">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</div>
 
     </section>
 
@@ -408,7 +532,7 @@
             <circle cx="12" cy="10" r="3"/>
             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
           </svg>
-          Région
+          Directions de rattachement
         </label>
         <select [(ngModel)]="candidatureFilterRegion"
                 (ngModelChange)="onRegionFilterChange()"
@@ -419,25 +543,39 @@
       </div>
 
       <!-- Filtre Structure -->
-      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 200px;">
-        <label style="font-size: 11px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-               style="width:11px;height:11px; margin-right:4px; vertical-align:middle">
-            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-          </svg>
-          Structure
-        </label>
-        <select [(ngModel)]="candidatureFilterStructure"
-                (ngModelChange)="filterCandidatures()"
-                [disabled]="structuresDisponibles.length === 0"
-                [style.opacity]="structuresDisponibles.length === 0 ? 0.5 : 1"
-                style="background: var(--surface-2); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 6px; padding: 6px 10px; font-size: 13px; color: var(--text-primary); cursor: pointer;">
-          <option value="">Toutes les structures</option>
-          <option *ngFor="let s of structuresDisponibles" [value]="s">{{ s }}</option>
-        </select>
-      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 220px;">
+  <label style="font-size: 11px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         style="width:11px;height:11px; margin-right:4px; vertical-align:middle">
+      <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+      <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+    </svg>
+    Structure
+  </label>
+  <select [(ngModel)]="candidatureFilterStructure"
+          (ngModelChange)="filterCandidatures()"
+          [disabled]="structuresDisponibles.length === 0"
+          [style.opacity]="structuresDisponibles.length === 0 ? 0.5 : 1"
+          style="background: var(--surface-2); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 6px; padding: 6px 10px; font-size: 13px; color: var(--text-primary); cursor: pointer;">
+    
+    <option value="">Toutes les structures</option>
 
+    <optgroup label="🏪 Espaces Commerciaux" *ngIf="structuresECDisponibles.length > 0">
+      <option *ngFor="let s of structuresECDisponibles" [value]="s.nom">
+        {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+        {{ s.disponible ? '' : '⛔' }}
+      </option>
+    </optgroup>
+
+    <optgroup label="💻 Centres Technologiques" *ngIf="structuresCTDisponibles.length > 0">
+      <option *ngFor="let s of structuresCTDisponibles" [value]="s.nom">
+        {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+        {{ s.disponible ? '' : '⛔' }}
+      </option>
+    </optgroup>
+
+  </select>
+</div>
       <!-- Filtre Statut -->
       <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px;">
         <label style="font-size: 11px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">
@@ -452,9 +590,10 @@
                 (ngModelChange)="filterCandidatures()"
                 style="background: var(--surface-2); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 6px; padding: 6px 10px; font-size: 13px; color: var(--text-primary); cursor: pointer;">
           <option value="">Tous les statuts</option>
-          <option value="en_attente">En attente</option>
-          <option value="acceptee">Acceptée</option>
-          <option value="refusee">Refusée</option>
+          <option value="EN_ATTENTE">En attente</option>
+          <option value="ACCEPTEE">Acceptée</option>
+          <option value="REJETEE">Refusée</option>
+          <option value="EN_ATTENTE_VALIDATION_ADMIN">En attente de validation</option>
         </select>
       </div>
 
@@ -490,6 +629,7 @@
           <th>Date Dépôt</th>
           <th>Statut</th>
           <th>Documents</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -521,6 +661,18 @@
             <div *ngFor="let doc of cand.documents">
               <a [href]="doc.url" target="_blank">{{ doc.type }}</a>
             </div>
+          </td>
+
+                    <td>
+            <button class="btn btn-sm btn-primary"
+                    (click)="openDossier(cand)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  style="width:14px;height:14px;">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              Voir
+            </button>
           </td>
         </tr>
 
@@ -673,17 +825,22 @@
       </div>
 
       <!-- Formula Bar -->
-      <div class="presence-formula-bar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#4A9EFF" stroke-width="2" style="width:16px;height:16px;flex-shrink:0">
-          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
-        <span>
-          Salaire brut = {{ presenceConfig.dureeContrat }} × {{ presenceConfig.tauxJournalier }} =
-          <strong>{{ presenceConfig.dureeContrat * presenceConfig.tauxJournalier }} DT</strong>
-          &nbsp;|&nbsp;
-          Net = ({{ presenceConfig.dureeContrat }} - absences) × {{ presenceConfig.tauxJournalier }}
-        </span>
-      </div>
+      <<div class="presence-formula-bar">
+  <svg viewBox="0 0 24 24" fill="none" stroke="#4A9EFF" stroke-width="2" 
+       style="width:16px;height:16px;flex-shrink:0">
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="12" y1="8" x2="12" y2="12"/>
+    <line x1="12" y1="16" x2="12.01" y2="16"/>
+  </svg>
+  <span>
+    Salaire mensuel (budget) : <strong>{{ getCampagneBudget() | number:'1.3-3' }} DT</strong>
+    &nbsp;|&nbsp;
+    Taux journalier = {{ getCampagneBudget() | number:'1.3-3' }} ÷ {{ presenceConfig.dureeContrat }} =
+    <strong>{{ presenceConfig.tauxJournalier | number:'1.3-3' }} DT/jour</strong>
+    &nbsp;|&nbsp;
+    Montant net = ({{ presenceConfig.dureeContrat }} - absences) × {{ presenceConfig.tauxJournalier | number:'1.3-3' }}
+  </span>
+</div>
 
       <!-- Config Bar -->
       <div class="presence-config-bar">
@@ -697,9 +854,13 @@
           <input type="number" [(ngModel)]="presenceConfig.dureeContrat" (ngModelChange)="recalculerPresence()" min="1" />
         </div>
         <div class="config-field">
-          <label>Prime journalière (dt)</label>
-          <input type="number" [(ngModel)]="presenceConfig.tauxJournalier" (ngModelChange)="recalculerPresence()" min="1" />
-        </div>
+  <label>Prime journalière (dt) <small style="color:#4A9EFF">(calculé depuis budget)</small></label>
+  <input type="number" 
+         [(ngModel)]="presenceConfig.tauxJournalier" 
+         (ngModelChange)="recalculerPresence()" 
+         min="0.001" 
+         step="0.001" />
+</div>
        
 
         <div class="config-field">
@@ -719,109 +880,107 @@
             </svg>
             <input type="text" placeholder="Rechercher un saisonnier..." [(ngModel)]="presenceSearchQuery" (ngModelChange)="filterPresence()" />
           </div>
-          <div class="presence-filter-tabs">
-            <button class="filter-tab" [class.active]="presenceFilter === 'tous'" (click)="setPresenceFilter('tous')">Tous</button>
-            <button class="filter-tab" [class.active]="presenceFilter === 'payes'" (click)="setPresenceFilter('payes')">Payés</button>
-            <button class="filter-tab" [class.active]="presenceFilter === 'impayes'" (click)="setPresenceFilter('impayes')">Impayés</button>
-          </div>
+          
         </div>
 
         <!-- Présence Table -->
-        <div class="presence-table-wrap">
-          <table class="data-table presence-table">
-            <thead>
-              <tr>
-                <th class="col-num">عد</th>
-                <th class="col-name">الاسم واللقب </th>
-                <th class="col-cin">رقم بطاقة التعريف</th>
-                <th class="col-date">تاريخ المباشرة</th>
-                <th class="col-duree">مدة العمل</th>
-                <th class="col-absences">الغيابات</th>
-                <th class="col-montant">المبلغ الصافي (DT)</th>
-                <th class="col-rib">رقم الحساب</th>
-                <th class="col-statut">الحالة</th>
-                <th class="col-actions">إجراءات</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let row of filteredPresenceRows; let i = index" class="table-row presence-row">
-                <td class="number-cell">{{ i + 1 }}</td>
-                <td>
-                  <span class="name-primary">{{ row.nom }}</span>
-                </td>
-                <td class="mono-cell">{{ row.cin }}</td>
-                <td>
-                  <input type="date"
-                         class="presence-date-input"
-                         [(ngModel)]="row.dateMbacharaa"
-                         (ngModelChange)="onPresenceRowChange(row)" />
-                </td>
-                <td>
-                  <span class="duree-badge">{{ row.dureeContrat }}</span>
-                </td>
-                <td>
-                  <button class="absence-btn"
-                          [class.has-absences]="row.absences > 0"
-                          (click)="openAbsenceModal(row)">
-                    {{ row.absences }}
-                  </button>
-                </td>
-                <td>
-                  <span class="montant-value">{{ row.montantNet | number:'1.3-3' }} DT</span>
-                </td>
-                <td>
-                  <input type="text"
-                         class="rib-input"
-                         placeholder="RIB / N° compte..."
-                         [(ngModel)]="row.rib"
-                         (ngModelChange)="onPresenceRowChange(row)" />
-                </td>
-                <td>
-                  <span class="paiement-badge"
-                        [class.paye]="row.statut === 'paye'"
-                        [class.impaye]="row.statut === 'impaye'"
-                        (click)="togglePaiementStatut(row)">
-                    <span class="badge-dot"></span>
-                    {{ row.statut === 'paye' ? 'Payé' : 'Impayé' }}
-                  </span>
-                </td>
-                <td>
-                  <div class="row-actions">
-                    <button class="action-icon" title="Marquer payé" (click)="marquerPaye(row)">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="20 6 9 17 4 12"/>
-                      </svg>
-                    </button>
-                    <button class="action-icon danger" title="Marquer impayé" (click)="marquerImpaye(row)">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="15" y1="9" x2="9" y2="15"/>
-                        <line x1="9" y1="9" x2="15" y2="15"/>
-                      </svg>
-                    </button>
-                    <button class="action-icon" title="Voir détail" (click)="voirDetailSaisonnier(row)">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                        <circle cx="12" cy="12" r="3"/>
-                      </svg>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-            <!-- Footer totals -->
-            <tfoot>
-              <tr class="presence-totals-row">
-                <td colspan="3" class="totals-label">المجموع الإجمالي</td>
-                <td></td>
-                <td><strong>{{ presenceTotals.totalJours }}</strong></td>
-                <td><strong>{{ presenceTotals.totalAbsences }}</strong></td>
-                <td><strong class="total-montant">{{ presenceTotals.totalMontant | number:'1.3-3' }} DT</strong></td>
-                <td colspan="3"></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+        <div class="presence-table-wrap" >
+  <table class="data-table presence-table">
+    <thead>
+      <tr>
+        <th class="col-num">N°</th>
+        <th class="col-name">Nom et prénom</th>
+        <th class="col-cin">Numéro CIN</th>
+        <th class="col-rib">Numéro de compte</th>
+        <th class="col-absences">Absences(Jours)</th>
+        <th class="col-duree">Durée de travail(Jours)</th>
+        
+        <th class="col-montant">Montant net (DT)</th>
+        
+        <th class="col-actions">Actions</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let row of filteredPresenceRows; let i = index" class="table-row presence-row">
+        <td class="number-cell">{{ i + 1 }}</td>
+
+        <td>
+          <span class="name-primary">{{ row.nom }}</span>
+        </td>
+
+        <td class="mono-cell">{{ row.cin }}</td>
+
+        <td>
+          <input type="text"
+                 class="rib-input"
+                 placeholder="RIB / N° compte..."
+                 [(ngModel)]="row.rib"
+                 (ngModelChange)="onPresenceRowChange(row)" />
+        </td>
+
+        <td>
+          <button class="absence-btn"
+                  [class.has-absences]="row.absences > 0"
+                  (click)="openAbsenceModal(row)">
+            {{ row.absences }}
+          </button>
+        </td>
+
+        <td>
+          <span class="duree-badge">{{ row.dureeContrat }}</span>
+        </td>
+
+        
+
+        <td>
+          <span class="montant-value">{{ row.montantNet | number:'1.3-3' }} DT</span>
+        </td>
+
+        
+
+        
+
+        <td>
+          <div class="row-actions">
+            <button class="action-icon" title="Marquer comme payé" (click)="marquerPaye(row)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </button>
+
+            <button class="action-icon danger" title="Marquer comme impayé" (click)="marquerImpaye(row)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+              </svg>
+            </button>
+
+            <button class="action-icon" title="Voir les détails" (click)="voirDetailSaisonnier(row)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+
+    <!-- Footer totals -->
+    <tfoot>
+      <tr class="presence-totals-row">
+        <td colspan="3" class="totals-label">Total général</td>
+        <td></td>
+        <td><strong>{{ presenceTotals.totalJours }}</strong></td>
+        <td><strong>{{ presenceTotals.totalAbsences }}</strong></td>
+        <td><strong class="total-montant">{{ presenceTotals.totalMontant | number:'1.3-3' }} DT</strong></td>
+        <td colspan="3"></td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
       </div>
     </section>
 
@@ -1288,8 +1447,8 @@
           <div class="struct-type-filters">
             <div class="struct-filter-label">Filtrer par type</div>
             <button class="struct-type-btn" [class.active]="structureTypeFilter === 'tous'" (click)="setStructureFilter('tous')">Tous</button>
-            <button class="struct-type-btn" [class.active]="structureTypeFilter === 'EC'" (click)="setStructureFilter('EC')">Espace TT</button>
-            <button class="struct-type-btn" [class.active]="structureTypeFilter === 'CT'" (click)="setStructureFilter('CT')">Centre Technique</button>
+            <button class="struct-type-btn" [class.active]="structureTypeFilter === 'EC'" (click)="setStructureFilter('ESPACE_COMMERCIAL')">Espace TT</button>
+            <button class="struct-type-btn" [class.active]="structureTypeFilter === 'CT'" (click)="setStructureFilter('CENTRE_TECHNOLOGIQUE')">Centre Technique</button>
           </div>
 
           <div class="struct-gov-list">
@@ -1344,7 +1503,8 @@
                     <span class="name-primary">{{ s.nom }}</span>
                   </td>
                   <td>
-                    <span class="type-badge" [ngClass]="s.type === 'EC' ? 'type-ec' : 'type-ct'">{{ s.type }}</span>
+                    <span class="type-badge"
+      [ngClass]="s.type === 'ESPACE_COMMERCIAL' ? 'type-ec' : 'type-ct'">{{ s.type }}</span>
                   </td>
                  
                   <td>
@@ -1414,12 +1574,15 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label>Date début Candidature *</label>
-          <input type="date" [(ngModel)]="newCampagne.dateDebut"/>
-        </div>
+        <label>Date début Candidature *</label>
+        <input type="date" 
+              [(ngModel)]="newCampagne.dateDebut"
+              [min]="today" />
+      </div>
         <div class="form-group">
           <label>Date fin Candidature *</label>
-          <input type="date" [(ngModel)]="newCampagne.dateFin"/>
+          <input type="date" [(ngModel)]="newCampagne.dateFin"
+                 [min]="newCampagne.dateDebut" />
         </div>
       </div>
 
@@ -1658,6 +1821,54 @@
         <span *ngIf="!isSavingCampagne">Créer & Activer</span>
       </button>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showParentModal" (click)="closeParentModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h3>{{ isEditParent ? 'Modifier Parent' : 'Ajouter Parent' }}</h3>
+      <button class="modal-close" (click)="closeParentModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="form-group">
+        <label>Nom & Prénom</label>
+        <input type="text" [(ngModel)]="parentForm.nomPrenom" />
+      </div>
+
+      <div class="form-group">
+        <label>Matricule</label>
+        <input type="text" [(ngModel)]="parentForm.matricule" />
+      </div>
+
+      <!-- Statut utilise -->
+<div class="form-group">
+  <label>Statut</label>
+  <select [(ngModel)]="parentForm.utilise">
+    <option [ngValue]="0">Disponible (0)</option>
+    <option [ngValue]="1">Utilisé (1)</option>
+  </select>
+</div>
+
+<!-- Ajouter aussi le champ autorises -->
+<div class="form-group">
+  <label>Autorisés</label>
+  <input type="number" [(ngModel)]="parentForm.autorises" min="0" />
+</div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeParentModal()">Annuler</button>
+
+      <button class="btn btn-primary" (click)="saveParent()">
+        {{ isEditParent ? 'Modifier' : 'Ajouter' }}
+      </button>
+    </div>
+
   </div>
 </div>
 
@@ -2014,17 +2225,7 @@
           </div>
         </div>
 
-        <div class="view-info-card">
-          <div class="view-info-icon green">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>
-          </div>
-          <div>
-            <span class="view-info-label">Affectations</span>
-            <span class="view-info-val highlight-green">{{ viewingCampagne.affectations }}</span>
-          </div>
-        </div>
+        
       </div>
 
       <!-- Description -->
@@ -2102,11 +2303,11 @@
       <div class="form-row">
         <div class="form-group">
           <label>Date de début *</label>
-          <input type="date" [(ngModel)]="editingCampagne.dateDebut" />
+          <input type="date" [min]="today" [(ngModel)]="editingCampagne.dateDebut" />
         </div>
         <div class="form-group">
           <label>Date de fin *</label>
-          <input type="date" [(ngModel)]="editingCampagne.dateFin" />
+          <input type="date" [min]="editingCampagne.dateDebut" [(ngModel)]="editingCampagne.dateFin" />
         </div>
       </div>
 
@@ -2151,6 +2352,184 @@
         Enregistrer
       </button>
     </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" *ngIf="showDossierModal">
+  <div class="modal-box wide" (click)="$event.stopPropagation()">
+
+    <div class="modal-head">
+      <div class="modal-title-grp">
+        <div class="modal-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+        </div>
+        <div>
+          <h2>Dossier candidat</h2>
+          <p>{{ selectedCandidature?.saisonnier.prenom }} {{ selectedCandidature?.saisonnier.nom }}</p>
+        </div>
+      </div>
+      <button class="modal-close-btn" (click)="closeDossier()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-content">
+      <div class="dossier-grid">
+
+        <!-- Colonne infos saisonnier -->
+        <div class="dossier-col">
+          <h4 class="col-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            Informations personnelles
+          </h4>
+          <div class="field-group">
+            <label>Prénom</label>
+            <input [(ngModel)]="selectedCandidature.saisonnier.prenom" placeholder="Prénom">
+          </div>
+          <div class="field-group">
+            <label>Nom</label>
+            <input [(ngModel)]="selectedCandidature.saisonnier.nom" placeholder="Nom">
+          </div>
+          <div class="field-group">
+            <label>Email</label>
+            <input [(ngModel)]="selectedCandidature.saisonnier.email" placeholder="Email">
+          </div>
+          <div class="field-group">
+  <label>CIN</label>
+  <input [(ngModel)]="selectedCandidature.saisonnier.cin" 
+         placeholder="CIN"
+         type="text"
+         maxlength="8"/>
+</div>
+          <div class="field-group">
+            <label>Téléphone</label>
+            <input [(ngModel)]="selectedCandidature.saisonnier.telephone" placeholder="Téléphone">
+          </div>
+          <div class="field-group">
+            <label>RIB</label>
+            <input [(ngModel)]="selectedCandidature.saisonnier.rib" placeholder="RIB">
+          </div>
+          <div class="field-group">
+            <label>Direction de rattachement</label>
+            <select [(ngModel)]="selectedCandidature.saisonnier.region.id">
+              <option *ngFor="let r of regions" [value]="r.id">{{ r.nom }}</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+  <label>Structure</label>
+  <select [(ngModel)]="selectedStructureId"
+          (ngModelChange)="onStructureChange()"
+          >
+
+    <option [ngValue]="null">— Toutes les structures —</option>
+
+    <optgroup label="🏪 Espaces Commerciaux" *ngIf="structuresEC.length > 0">
+      <option *ngFor="let s of structuresEC"
+              [ngValue]="s.id"
+              [disabled]="!s.disponible">
+        {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+        {{ s.disponible ? '' : '⛔ COMPLET' }}
+      </option>
+    </optgroup>
+
+    <optgroup label="💻 Centres Technologiques" *ngIf="structuresCT.length > 0">
+      <option *ngFor="let s of structuresCT"
+              [ngValue]="s.id"
+              [disabled]="!s.disponible">
+        {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+        {{ s.disponible ? '' : '⛔ COMPLET' }}
+      </option>
+    </optgroup>
+
+  </select>
+</div>
+
+          
+
+
+        </div>
+
+        <!-- Colonne candidature -->
+        <div class="dossier-col">
+          <h4 class="col-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 11l3 3L22 4"/>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+            Candidature
+          </h4>
+          <div class="field-group readonly">
+            <label>Date de dépôt</label>
+            <div class="readonly-val">{{ selectedCandidature?.dateDepot | date:'dd/MM/yyyy' }}</div>
+          </div>
+          <div class="field-group">
+            <label>Statut</label>
+            <select [(ngModel)]="selectedCandidature.statut">
+              <option value="EN_ATTENTE">En attente</option>
+              <option value="ACCEPTEE">Acceptée</option>
+              <option value="REFUSEE">Refusée</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Mois de travail</label>
+            <select [(ngModel)]="selectedCandidature.saisonnier.moisTravail">
+              <option value="JUILLET">Juillet</option>
+              <option value="AOUT">Août</option>
+              <option value="JUILLET_AOUT">Juillet + Août</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Commentaire RH</label>
+            <textarea [(ngModel)]="selectedCandidature.commentaire" rows="4" placeholder="Ajouter un commentaire..."></textarea>
+          </div>
+
+          <!-- Documents -->
+          <h4 class="col-title" style="margin-top:20px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            Documents joints
+          </h4>
+          <div class="docs-list">
+            <a *ngFor="let doc of selectedCandidature?.documents"
+               [href]="doc.url" target="_blank" class="doc-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+              <span>{{ doc.nomFichier }}</span>
+              <span class="doc-type">{{ doc.type }}</span>
+            </a>
+            <p class="no-docs" *ngIf="!selectedCandidature?.documents?.length">Aucun document joint.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn-cancel-modal" (click)="closeDossier()">Fermer</button>
+      <button class="btn-save-modal" (click)="updateCandidature()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+          <polyline points="7 3 7 8 15 8"/>
+        </svg>
+        Enregistrer
+      </button>
+    </div>
+
   </div>
 </div>
 

@@ -31,7 +31,7 @@ export interface Campagne {
 })
 export class CampagneService {
 
-  private baseUrl = 'https://tt-backend-b7j3.onrender.com/api/campagnes';
+  private baseUrl = 'http://localhost:8080/api/campagnes';
 
   private getAuthHeaders(): { headers: HttpHeaders } {
   return { headers: this.authService['authHeaders']() }; // utilise la méthode privée authHeaders()

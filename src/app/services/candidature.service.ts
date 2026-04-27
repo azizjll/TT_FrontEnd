@@ -17,15 +17,20 @@ export interface Candidature {
 })
 export class CandidatureService {
 
-  private baseUrl = 'https://tt-backend-b7j3.onrender.com/api/candidatures';
+  private baseUrl = 'http://localhost:8080/api/candidatures';
 
   constructor(private http: HttpClient) {}
 
   /**
    * Dépose une candidature sans JWT
    */
-  deposerCandidature(formData: FormData) {
-  return this.http.post<any>(`${this.baseUrl}/depot`, formData);
+  deposerCandidature(formData: FormData): Observable<any> {
+  const token = localStorage.getItem('token');
+  return this.http.post<any>(`${this.baseUrl}/depot`, formData, {
+    headers: {
+      Authorization: `Bearer ${token}`   // 🆕
+    }
+  });
 }
 
   /**
@@ -43,6 +48,18 @@ export class CandidatureService {
   }
   updateCandidature(id: number, formData: FormData) {
   return this.http.put(`${this.baseUrl}/update/${id}`, formData);
+}
+
+envoyerDemandeJuilletAout(payload: {
+  candidatureId: number;
+  commentaire: string;
+  directionNom: string;
+}): Observable<any> {
+  return this.http.post(`${this.baseUrl}/demande-autorisation`, payload);
+}
+
+getParentByMatricule(matricule: string): Observable<any> {
+  return this.http.get<any>(`${this.baseUrl}/parent-by-matricule?matricule=${matricule}`);
 }
 
 getDocumentsBySaisonnier(saisonnierId: number) {

@@ -6,6 +6,9 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import * as XLSX from 'xlsx';
 import { DocumentService } from 'src/app/services/document.service';
 import { DocumentCampagneDTO, DocumentCampagneService } from 'src/app/services/document-campagne.service';
+import { AuthService } from 'src/app/services/auth.service';
+import { StructureService } from 'src/app/structure.service';
+import { EtatRHService } from 'src/app/service/etat-rh.service';
 
 export interface Structure {
   name: string;
@@ -27,8 +30,9 @@ export interface Region {
 })
 export class DocumentsComponent implements OnInit {
 
-  activeTab: 'campagne' | 'excel' | 'campagne' = 'campagne';
-  circulairePdfUrl: string = '';
+activeTab: 'campagne' | 'excel' | 'etat' = 'campagne';
+
+circulairePdfUrl: string = '';
   zoomLevel = 100;
   selectedRegion = '';
   filterType: 'ALL' | 'ESPACE_COMMERCIAL' | 'CENTRE_TECHNOLOGIQUE' = 'ALL';
@@ -48,135 +52,21 @@ safeDocUrl: SafeResourceUrl | null = null;
   documentsCampagne: DocumentCampagneDTO[] = [];
 loadingDocs = false;
 
-  regions: Region[] = [
-    { name: 'Gouvernorat de Tunis', structures: [
-      { name: 'Espace Commercial Habib Bourguiba', type: 'ESPACE_COMMERCIAL', adresse: 'Avenue Habib Bourguiba' },
-      { name: 'Espace Commercial Berges du Lac',   type: 'ESPACE_COMMERCIAL', adresse: 'Berges du Lac II' },
-      { name: 'Espace Commercial Montplaisir',      type: 'ESPACE_COMMERCIAL', adresse: 'Montplaisir' },
-      { name: 'Espace Commercial El Khadra',        type: 'ESPACE_COMMERCIAL', adresse: 'Cité El Khadra' },
-      { name: 'Siège Social',                       type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Jardins du Lac II' },
-      { name: 'Data Center National',               type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Data Center National' },
-    ]},
-    { name: "Gouvernorat de l'Ariana", structures: [
-      { name: 'Espace Commercial Ariana Ville',       type: 'ESPACE_COMMERCIAL',    adresse: 'Ariana Ville' },
-      { name: 'Espace Commercial Ennasr II',          type: 'ESPACE_COMMERCIAL',    adresse: 'Ennasr II' },
-      { name: 'Espace Commercial La Soukra',          type: 'ESPACE_COMMERCIAL',    adresse: 'La Soukra' },
-      { name: 'Espace Commercial Menzah VI',          type: 'ESPACE_COMMERCIAL',    adresse: 'Menzah VI' },
-      { name: 'Pôle de Compétitivité El Ghazala',     type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Pôle de Compétitivité El Ghazala' },
-      { name: 'Centre Technique Régional',            type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Centre Technique Regional' },
-    ]},
-    { name: 'Gouvernorat de Ben Arous', structures: [
-      { name: 'Espace Commercial Ben Arous',  type: 'ESPACE_COMMERCIAL',    adresse: 'Ben Arous Centre' },
-      { name: 'Espace Commercial Megrine',    type: 'ESPACE_COMMERCIAL',    adresse: 'Megrine' },
-      { name: 'Espace Commercial Hammam Lif', type: 'ESPACE_COMMERCIAL',    adresse: 'Hammam Lif' },
-      { name: 'Espace Commercial Azur City',  type: 'ESPACE_COMMERCIAL',    adresse: 'Azur City' },
-      { name: 'Zone Industrielle Megrine',    type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Zone Industrielle Megrine' },
-      { name: 'Fibre Optique High-Tech',      type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Fibre Optique High-Tech' },
-    ]},
-    { name: 'Gouvernorat de Manouba', structures: [
-      { name: 'Espace Commercial Manouba Ville',  type: 'ESPACE_COMMERCIAL',    adresse: 'Manouba Ville' },
-      { name: 'Espace Commercial Denden',         type: 'ESPACE_COMMERCIAL',    adresse: 'Denden' },
-      { name: 'Espace Commercial Mornaguia',      type: 'ESPACE_COMMERCIAL',    adresse: 'Mornaguia' },
-      { name: 'Campus Universitaire Manouba',     type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Campus Universitaire Manouba' },
-      { name: 'Connectivité Fibre Universitaire', type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Connectivité Fibre Universitaire' },
-    ]},
-    { name: 'Gouvernorat de Nabeul', structures: [
-      { name: 'Espace Commercial Nabeul Centre',        type: 'ESPACE_COMMERCIAL',    adresse: 'Nabeul Centre' },
-      { name: 'Espace Commercial Hammamet',             type: 'ESPACE_COMMERCIAL',    adresse: 'Hammamet' },
-      { name: 'Espace Commercial Yasmine Hammamet',     type: 'ESPACE_COMMERCIAL',    adresse: 'Yasmine Hammamet' },
-      { name: 'Espace Commercial Korba',                type: 'ESPACE_COMMERCIAL',    adresse: 'Korba' },
-      { name: 'Cyberparc Nabeul',                       type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Cyberparc Nabeul' },
-      { name: 'Nœuds de raccordement fibre FTTH',       type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Nœuds de raccordement fibre FTTH' },
-    ]},
-    { name: 'Gouvernorat de Bizerte', structures: [
-      { name: 'Espace Commercial Bizerte Ville',    type: 'ESPACE_COMMERCIAL',    adresse: 'Bizerte Ville' },
-      { name: 'Espace Commercial Menzel Bourguiba', type: 'ESPACE_COMMERCIAL',    adresse: 'Menzel Bourguiba' },
-      { name: 'Espace Commercial Zarzouna',         type: 'ESPACE_COMMERCIAL',    adresse: 'Zarzouna' },
-      { name: 'Cyberparc Bizerte',                  type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Cyberparc Bizerte' },
-      { name: 'Stations sous-marines de câbles',    type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Stations sous-marines de câbles' },
-    ]},
-    { name: 'Gouvernorat de Sousse', structures: [
-      { name: 'Espace Commercial Sousse Médina', type: 'ESPACE_COMMERCIAL',    adresse: 'Sousse Médina' },
-      { name: 'Espace Commercial Kantaoui',      type: 'ESPACE_COMMERCIAL',    adresse: 'Kantaoui' },
-      { name: 'Espace Commercial Sahloul',       type: 'ESPACE_COMMERCIAL',    adresse: 'Sahloul' },
-      { name: 'Espace Commercial Akouda',        type: 'ESPACE_COMMERCIAL',    adresse: 'Akouda' },
-      { name: 'Technopole de Sousse',            type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Technopole de Sousse' },
-      { name: 'Centre de Support Régional',      type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Centre de Support Régional' },
-    ]},
-    { name: 'Gouvernorat de Monastir', structures: [
-      { name: 'Espace Commercial Monastir Centre',  type: 'ESPACE_COMMERCIAL',    adresse: 'Monastir Centre' },
-      { name: 'Espace Commercial Jemmel',           type: 'ESPACE_COMMERCIAL',    adresse: 'Jemmel' },
-      { name: 'Espace Commercial Ksar Hellal',      type: 'ESPACE_COMMERCIAL',    adresse: 'Ksar Hellal' },
-      { name: 'Cyberparc Monastir',                 type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Cyberparc Monastir' },
-      { name: 'Infrastructure de Cloud régional',   type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Infrastructure de Cloud régional' },
-    ]},
-    { name: 'Gouvernorat de Mahdia', structures: [
-      { name: 'Espace Commercial Mahdia Ville',  type: 'ESPACE_COMMERCIAL',    adresse: 'Mahdia Ville' },
-      { name: 'Espace Commercial Ksour Essef',   type: 'ESPACE_COMMERCIAL',    adresse: 'Ksour Essef' },
-      { name: 'Espace Commercial El Jem',        type: 'ESPACE_COMMERCIAL',    adresse: 'El Jem' },
-      { name: 'Direction Régionale Technique',   type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Direction Régionale Technique' },
-    ]},
-    { name: 'Gouvernorat de Sfax', structures: [
-      { name: 'Espace Commercial Sfax El Médina', type: 'ESPACE_COMMERCIAL',    adresse: 'Sfax El Médina' },
-      { name: 'Espace Commercial Sakiet Ezzit',   type: 'ESPACE_COMMERCIAL',    adresse: 'Sakiet Ezzit' },
-      { name: 'Espace Commercial Sfax Jdid',      type: 'ESPACE_COMMERCIAL',    adresse: 'Sfax Jdid' },
-      { name: 'Technopole de Sfax',               type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Technopole de Sfax' },
-      { name: 'Data Center Régional Sfax',        type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Data Center Régional' },
-    ]},
-    { name: 'Gouvernorat de Kairouan', structures: [
-      { name: 'Espace Commercial Kairouan Ville', type: 'ESPACE_COMMERCIAL',    adresse: 'Kairouan Ville' },
-      { name: 'Espace Commercial Bouhajla',       type: 'ESPACE_COMMERCIAL',    adresse: 'Bouhajla' },
-      { name: 'Espace Commercial Nasrallah',      type: 'ESPACE_COMMERCIAL',    adresse: 'Nasrallah' },
-      { name: 'Cyberparc Kairouan',               type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Cyberparc Kairouan' },
-      { name: 'Relais de transmission Centre',    type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Relais de transmission Centre' },
-    ]},
-    { name: 'Gouvernorat de Kasserine', structures: [
-      { name: 'Espace Commercial Kasserine Ville', type: 'ESPACE_COMMERCIAL',    adresse: 'Kasserine Ville' },
-      { name: 'Espace Commercial Thala',           type: 'ESPACE_COMMERCIAL',    adresse: 'Thala' },
-      { name: 'Espace Commercial Sbeitla',         type: 'ESPACE_COMMERCIAL',    adresse: 'Sbeitla' },
-      { name: 'Cyberparc Kasserine',               type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Cyberparc Kasserine' },
-      { name: 'Infrastructures MobiRif',           type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Infrastructures MobiRif' },
-    ]},
-    { name: 'Gouvernorat de Sidi Bouzid', structures: [
-      { name: 'Espace Commercial Sidi Bouzid', type: 'ESPACE_COMMERCIAL',    adresse: 'Sidi Bouzid Centre' },
-      { name: 'Espace Commercial Regueb',      type: 'ESPACE_COMMERCIAL',    adresse: 'Regueb' },
-      { name: 'Espace Commercial Jilma',       type: 'ESPACE_COMMERCIAL',    adresse: 'Jilma' },
-      { name: 'Cyberparc Sidi Bouzid',         type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Cyberparc Sidi Bouzid' },
-      { name: 'Extension Réseau 4G/5G',        type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Extension Réseau 4G/5G' },
-    ]},
-    { name: 'Gouvernorat de Gafsa', structures: [
-      { name: 'Espace Commercial Gafsa Ville',       type: 'ESPACE_COMMERCIAL',    adresse: 'Gafsa Ville' },
-      { name: 'Espace Commercial Metlaoui',          type: 'ESPACE_COMMERCIAL',    adresse: 'Metlaoui' },
-      { name: 'Espace Commercial El Ksar',           type: 'ESPACE_COMMERCIAL',    adresse: 'El Ksar' },
-      { name: 'Cyberparc Gafsa',                     type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Cyberparc Gafsa' },
-      { name: 'Hub Maintenance Technique Sud-Ouest', type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Hub maintenance technique Sud-Ouest' },
-    ]},
-    { name: 'Gouvernorat de Tozeur', structures: [
-      { name: 'Espace Commercial Tozeur Centre',  type: 'ESPACE_COMMERCIAL',    adresse: 'Tozeur Centre' },
-      { name: 'Espace Commercial Nefta',          type: 'ESPACE_COMMERCIAL',    adresse: 'Nefta' },
-      { name: 'Station Transmission Satellite',   type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Station transmission satellite' },
-      { name: 'Faisceaux Hertziens',              type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Faisceaux hertziens' },
-    ]},
-    { name: 'Gouvernorat de Kébili', structures: [
-      { name: 'Espace Commercial Kébili Ville',    type: 'ESPACE_COMMERCIAL',    adresse: 'Kébili Ville' },
-      { name: 'Espace Commercial Douz',            type: 'ESPACE_COMMERCIAL',    adresse: 'Douz' },
-      { name: 'Infrastructure Réseau Désertique',  type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Infrastructure réseau désertique' },
-      { name: 'MobiRif Kébili',                    type: 'CENTRE_TECHNOLOGIQUE', adresse: 'MobiRif' },
-    ]},
-    { name: 'Gouvernorat de Gabès', structures: [
-      { name: 'Espace Commercial Gabès Centre', type: 'ESPACE_COMMERCIAL',    adresse: 'Gabès Centre' },
-      { name: 'Espace Commercial Mareth',       type: 'ESPACE_COMMERCIAL',    adresse: 'Mareth' },
-      { name: 'Espace Commercial El Hamma',     type: 'ESPACE_COMMERCIAL',    adresse: 'El Hamma' },
-      { name: 'Cyberparc Gabès',                type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Cyberparc Gabès' },
-      { name: 'Centre Technique Portuaire',     type: 'CENTRE_TECHNOLOGIQUE', adresse: 'Centre Technique Portuaire' },
-    ]},
-  ];
+  regions: Region[] = [];
+
+  monEtat: any = null;
+isUploadingEtat = false;
+etatUploadSuccess = false;
 
   // ── Constructor : injection DocumentService ───────────
   constructor(
     private sanitizer: DomSanitizer,
     private documentService: DocumentService,
-      private documentCampagneService: DocumentCampagneService 
+      private documentCampagneService: DocumentCampagneService ,
+      private authService: AuthService,
+        private structureService: StructureService,  // ← ajouter
+        private etatRHService: EtatRHService             
+
 
   ) {}
 
@@ -185,7 +75,71 @@ loadingDocs = false;
     this.loadFromStorage();
     this.loadCirculaireFromServer();
      this.loadDocumentsCampagne(); 
+       this.loadRegions(); // ← ajouter
+         this.loadMonEtat();
+
+
   }
+
+
+  loadMonEtat(): void {
+  this.etatRHService.getMonEtat().subscribe({
+    next: (data) => this.monEtat = data,
+    error: () => this.monEtat = null
+  });
+}
+
+onEtatSelected(event: Event): void {
+  const file = (event.target as HTMLInputElement).files?.[0];
+  if (file?.type === 'application/pdf') this.uploadEtat(file);
+}
+
+uploadEtat(file: File): void {
+  this.isUploadingEtat = true;
+  this.etatRHService.uploadEtat(file).subscribe({
+    next: (res) => {
+      this.monEtat = res;
+      this.isUploadingEtat = false;
+      this.etatUploadSuccess = true;
+      setTimeout(() => this.etatUploadSuccess = false, 4000);
+    },
+    error: (err) => {
+      this.isUploadingEtat = false;
+      // ← afficher le message exact du backend
+      console.error('Erreur upload état:', err);
+      console.error('Message backend:', err.error);
+      alert('Erreur : ' + (err.error || err.message));
+    }
+  });
+}
+
+ loadRegions(): void {
+  this.structureService.getStructuresCampagneActive().subscribe({
+    next: (data) => {
+      // Grouper les structures par région (comme HomeAdminComponent)
+      const regionMap = new Map<string, Structure[]>();
+
+      data.forEach(s => {
+        if (!regionMap.has(s.region)) {
+          regionMap.set(s.region, []);
+        }
+        regionMap.get(s.region)!.push({
+          name: s.nom,
+          type: s.type,
+          adresse: s.adresse
+        });
+      });
+
+      this.regions = Array.from(regionMap.entries()).map(([name, structures]) => ({
+        name,
+        structures
+      }));
+
+      this.initStructureData();
+    },
+    error: err => console.error('Erreur chargement structures', err)
+  });
+}
 
 
 

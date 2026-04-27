@@ -11,11 +11,11 @@ export class HeroSliderComponent implements OnInit, OnDestroy {
   
   slides = [
     
-        { image: 'assets/slides/slide5.jpg', alt: 'Big Bonus 500%' },
+        
+                { image: 'assets/slides/slide7.jpeg', alt: 'Big Bonus 500%' },
 
-            { image: 'assets/slides/slide6.jpg', alt: 'Big Bonus 500%' },
-
-                { image: 'assets/slides/Tunisie-Telecom.jpg', alt: 'Big Bonus 500%' },
+                { image: 'assets/slides/slide8.jpeg', alt: 'Big Bonus 500%' },
+                {image: 'assets/slides/slide9.jpeg', alt: 'Big Bonus 500%' },
 
 
 

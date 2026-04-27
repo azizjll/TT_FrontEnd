@@ -45,6 +45,9 @@ export class PresencePaiementComponent implements OnInit {
   structures: StructureDTO[] = [];
 selectedStructureId: number | null = null;
 
+budgetCampagne = 0;      // salaire mensuel par saisonnier
+campagneNom   = '';      // nom de la campagne active
+
 
   // ── UI state ──────────────────────────────────────
   searchQ      = '';
@@ -64,30 +67,47 @@ constructor(
 ) {}
 
   ngOnInit(): void {
-    this.loadFromStorage();
+  this.loadFromStorage();
 
-    this.authService.getMyRegion().subscribe({
-        next: (region) => {
-            this.regionId = region.id;
+  this.authService.getMyRegion().subscribe({
+    next: (region) => {
+      this.regionId = region.id;
 
-            this.campagneService.getCampagnesActives().subscribe({
-                next: (campagnes) => {
-                    if (campagnes.length > 0) {
-                        this.campagneId = campagnes[0].id;
-                        this.loadSaisonniers();
+      this.campagneService.getCampagnesActives().subscribe({
+        next: (campagnes) => {
+          if (campagnes.length > 0) {
+            this.campagneId = campagnes[0].id;
 
-                        // ✅ Charger structures avec campagneId connu
-                        this.structureService.getStructuresByRegion(region.id, this.campagneId).subscribe({
-                            next: (data) => { this.structures = data; },
-                            error: (err) => console.error('Erreur structures:', err)
-                        });
-                    }
-                },
-                error: (err) => console.error('Erreur campagne:', err)
+            // ✅ Récupérer le budget de la campagne active
+            const budget = Number(campagnes[0].budget);
+            this.budgetCampagne = budget;
+this.campagneNom    = campagnes[0].libelle ?? '';
+
+            if (budget > 0 && this.dureeContrat > 0) {
+              this.tauxJourDT = Math.round((budget / this.dureeContrat) * 1000) / 1000;
+            }
+
+            this.loadSaisonniers();
+
+            this.structureService.getStructuresByRegion(region.id, this.campagneId).subscribe({
+              next: (data) => { this.structures = data; },
+              error: (err) => console.error('Erreur structures:', err)
             });
+          }
         },
-        error: (err) => console.error('Erreur région RH:', err)
-    });
+        error: (err) => console.error('Erreur campagne:', err)
+      });
+    },
+    error: (err) => console.error('Erreur région RH:', err)
+  });
+}
+
+
+onDureeContratChange(): void {
+  if (this.budgetCampagne > 0 && this.dureeContrat > 0) {
+    this.tauxJourDT = Math.round((this.budgetCampagne / this.dureeContrat) * 1000) / 1000;
+  }
+  this.recalcAll();
 }
 
 
@@ -184,10 +204,9 @@ get structuresCT(): StructureDTO[] {
 
   // ── Calculs ───────────────────────────────────────
   recalcRow(s: SaisonnierPaie): void {
-    const joursEffectifs = Math.max(0, s.duree - s.absences);
-    s.montantNet = joursEffectifs * this.tauxJourDT;
-  }
-
+  s.duree = Math.max(0, this.dureeContrat - s.absences);
+  s.montantNet = s.duree * this.tauxJourDT;
+}
   recalcAll(): void {
     for (const s of this.saisonniers) {
       s.duree = this.dureeContrat;

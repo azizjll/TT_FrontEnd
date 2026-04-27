@@ -1,0 +1,109 @@
+<!-- sidebar.component.html -->
+<aside class="sidebar" [class.open]="sidebarOpen">
+
+  <div class="sidebar-logo">
+    <!-- Logo placeholder — personnalisez ici -->
+  </div>
+
+  <nav class="sidebar-nav">
+
+    <!-- ── CAMPAGNES groupe dropdown ── -->
+    <div class="nav-group">
+      <a class="nav-item nav-group-toggle"
+         [class.active]="isCampagnesGroupActive()"
+         (click)="toggleCampagnes()">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 3h18v18H3z"/><path d="M8 12h8M12 8v8"/>
+          </svg>
+        </span>
+        <span>Campagnes</span>
+        <span class="nav-chevron" [class.open]="campagnesOpen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </span>
+      </a>
+
+      <div class="nav-submenu" [class.open]="campagnesOpen">
+        <a class="nav-item nav-sub-item"
+           [class.active]="activeRoute === 'campagnes'"
+           (click)="navigate('campagnes')">
+          <span class="nav-sub-dot"></span>
+          <span>Toutes les campagnes</span>
+        </a>
+
+        <a class="nav-item nav-sub-item"
+           [class.active]="activeRoute === 'memo'"
+           (click)="navigate('memo')">
+          <span class="nav-sub-dot"></span>
+          <span>مذكرة الإنتداب</span>
+          <span class="nav-badge secondary">2025</span>
+        </a>
+
+        <a class="nav-item nav-sub-item"
+           [class.active]="activeRoute === 'structures'"
+           (click)="navigate('structures')">
+          <span class="nav-sub-dot"></span>
+          <span>Structures d'affectation</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- ── Candidatures ── -->
+    <a class="nav-item" [class.active]="activeRoute === 'candidatures'" (click)="navigate('candidatures')">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </span>
+      <span>Candidatures</span>
+      <span class="nav-badge secondary">{{ totalCandidatures }}</span>
+    </a>
+
+    <!-- ── Présence & Paiement ── -->
+    <a class="nav-item" [class.active]="activeRoute === 'presence'" (click)="navigate('presence')">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 3l-4 4-4-4"/>
+          <line x1="12" y1="12" x2="12" y2="16"/>
+          <line x1="10" y1="14" x2="14" y2="14"/>
+        </svg>
+      </span>
+      <span>Présence & Paiement</span>
+      <span class="nav-badge secondary">{{ totalSaisonniers }}</span>
+    </a>
+
+    <!-- ── Paramètres (placeholder) ── -->
+    <a class="nav-item">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M20 12h-2M4 12H2M17.66 17.66l-1.41-1.41M6.34 17.66l1.41-1.41M12 20v2M12 2v2"/>
+        </svg>
+      </span>
+      <span>Paramètres</span>
+    </a>
+
+  </nav>
+
+  <!-- ── User footer ── -->
+  <div class="sidebar-user">
+    <div class="user-avatar">
+      {{ nomUtilisateur | slice:0:2 | uppercase }}
+    </div>
+    <div class="user-info">
+      <span class="user-name">{{ nomUtilisateur }}</span>
+      <span class="user-role">{{ roleUtilisateur }}</span>
+    </div>
+    <button class="logout-btn" title="Déconnexion" (click)="onLogout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+      </svg>
+    </button>
+  </div>
+
+</aside>

@@ -13,7 +13,7 @@ export interface DocumentCampagneDTO {
 @Injectable({ providedIn: 'root' })
 export class DocumentCampagneService {
 
-  private readonly base = 'https://tt-backend-b7j3.onrender.com/api/admin/documents-campagne';
+  private readonly base = 'http://localhost:8080/api/admin/documents-campagne';
 
   constructor(private http: HttpClient) {}
 
