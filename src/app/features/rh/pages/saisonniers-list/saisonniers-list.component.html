@@ -340,11 +340,12 @@
           <option value="JUILLET_AOUT">Juillet + Août</option>
         </select>
       </div>
-      <div class="field-group">
-        <label>Commentaire RH</label>
-        <textarea [(ngModel)]="selectedCandidature.commentaire"
-                  rows="4" placeholder="Ajouter un commentaire..."></textarea>
-      </div>
+        <div class="field-group"
+            *ngIf="selectedCandidature.saisonnier.moisTravail === 'JUILLET_AOUT'">
+          <label>Commentaire RH <span style="color:red">*</span></label>
+          <textarea [(ngModel)]="selectedCandidature.commentaire"
+                    rows="4" placeholder="Justifiez le choix Juillet + Août..."></textarea>
+        </div>
 
       <!-- Alerte Juillet + Août -->
       <div class="alert-juillet-aout"

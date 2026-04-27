@@ -1114,6 +1114,8 @@
         </div>
       </div>
 
+      
+
       <div class="modal-actions">
         <button type="button" class="btn-cancel" (click)="closeModal()">Annuler</button>
         <button type="submit" class="btn-send">
@@ -1227,14 +1229,36 @@
           <p class="guide-step-desc">
             Remplissez le formulaire et joignez le document signé avec vos autres pièces justificatives.
           </p>
-          <button class="guide-btn guide-btn-green"
-                  (click)="openCandidatureFromGuide()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="12" y1="5" x2="12" y2="19"/>
-              <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            Déposer candidature
-          </button>
+          <button class="btn-deposer-candidature"
+        (click)="openCandidatureFromGuide()">
+ 
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" stroke-width="2">
+    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+    <polyline points="17 8 12 3 7 8"/>
+    <line x1="12" y1="3" x2="12" y2="15"/>
+  </svg>
+ 
+  Déposer une candidature
+ 
+  <!-- Badge état إلتزام -->
+  <span class="badge-iltizam"
+        [class.badge-ok]="iltizamAccepted"
+        [class.badge-pending]="!iltizamAccepted">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2.5">
+      <ng-container *ngIf="iltizamAccepted">
+        <polyline points="20 6 9 17 4 12"/>
+      </ng-container>
+      <ng-container *ngIf="!iltizamAccepted">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0110 0v4"/>
+      </ng-container>
+    </svg>
+    {{ iltizamAccepted ? 'Engagement signé' : 'Engagement requis' }}
+  </span>
+ 
+</button>
         </div>
       </div>
 

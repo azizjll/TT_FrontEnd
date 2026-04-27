@@ -3,10 +3,11 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface ParentAutorise {
-  id: number ;
+  id: number;
   nomPrenom: string;
   matricule: string;
-  utilise: boolean;
+  autorises: number;  // ✅ int
+  utilise: number;    // ✅ int (pas boolean)
 }
 
 @Injectable({

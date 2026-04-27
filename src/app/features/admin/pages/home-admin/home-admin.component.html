@@ -532,7 +532,7 @@
             <circle cx="12" cy="10" r="3"/>
             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
           </svg>
-          Région
+          Directions de rattachement
         </label>
         <select [(ngModel)]="candidatureFilterRegion"
                 (ngModelChange)="onRegionFilterChange()"
@@ -825,17 +825,22 @@
       </div>
 
       <!-- Formula Bar -->
-      <div class="presence-formula-bar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#4A9EFF" stroke-width="2" style="width:16px;height:16px;flex-shrink:0">
-          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
-        <span>
-          Salaire brut = {{ presenceConfig.dureeContrat }} × {{ presenceConfig.tauxJournalier }} =
-          <strong>{{ presenceConfig.dureeContrat * presenceConfig.tauxJournalier }} DT</strong>
-          &nbsp;|&nbsp;
-          Net = ({{ presenceConfig.dureeContrat }} - absences) × {{ presenceConfig.tauxJournalier }}
-        </span>
-      </div>
+      <<div class="presence-formula-bar">
+  <svg viewBox="0 0 24 24" fill="none" stroke="#4A9EFF" stroke-width="2" 
+       style="width:16px;height:16px;flex-shrink:0">
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="12" y1="8" x2="12" y2="12"/>
+    <line x1="12" y1="16" x2="12.01" y2="16"/>
+  </svg>
+  <span>
+    Salaire mensuel (budget) : <strong>{{ getCampagneBudget() | number:'1.3-3' }} DT</strong>
+    &nbsp;|&nbsp;
+    Taux journalier = {{ getCampagneBudget() | number:'1.3-3' }} ÷ {{ presenceConfig.dureeContrat }} =
+    <strong>{{ presenceConfig.tauxJournalier | number:'1.3-3' }} DT/jour</strong>
+    &nbsp;|&nbsp;
+    Montant net = ({{ presenceConfig.dureeContrat }} - absences) × {{ presenceConfig.tauxJournalier | number:'1.3-3' }}
+  </span>
+</div>
 
       <!-- Config Bar -->
       <div class="presence-config-bar">
@@ -849,9 +854,13 @@
           <input type="number" [(ngModel)]="presenceConfig.dureeContrat" (ngModelChange)="recalculerPresence()" min="1" />
         </div>
         <div class="config-field">
-          <label>Prime journalière (dt)</label>
-          <input type="number" [(ngModel)]="presenceConfig.tauxJournalier" (ngModelChange)="recalculerPresence()" min="1" />
-        </div>
+  <label>Prime journalière (dt) <small style="color:#4A9EFF">(calculé depuis budget)</small></label>
+  <input type="number" 
+         [(ngModel)]="presenceConfig.tauxJournalier" 
+         (ngModelChange)="recalculerPresence()" 
+         min="0.001" 
+         step="0.001" />
+</div>
        
 
         <div class="config-field">
@@ -871,26 +880,23 @@
             </svg>
             <input type="text" placeholder="Rechercher un saisonnier..." [(ngModel)]="presenceSearchQuery" (ngModelChange)="filterPresence()" />
           </div>
-          <div class="presence-filter-tabs">
-            <button class="filter-tab" [class.active]="presenceFilter === 'tous'" (click)="setPresenceFilter('tous')">Tous</button>
-            <button class="filter-tab" [class.active]="presenceFilter === 'payes'" (click)="setPresenceFilter('payes')">Payés</button>
-            <button class="filter-tab" [class.active]="presenceFilter === 'impayes'" (click)="setPresenceFilter('impayes')">Impayés</button>
-          </div>
+          
         </div>
 
         <!-- Présence Table -->
-        <div class="presence-table-wrap" dir="ltr">
+        <div class="presence-table-wrap" >
   <table class="data-table presence-table">
     <thead>
       <tr>
         <th class="col-num">N°</th>
         <th class="col-name">Nom et prénom</th>
         <th class="col-cin">Numéro CIN</th>
-        <th class="col-duree">Durée de travail</th>
-        <th class="col-absences">Absences</th>
-        <th class="col-montant">Montant net (DT)</th>
         <th class="col-rib">Numéro de compte</th>
-        <th class="col-statut">Statut</th>
+        <th class="col-absences">Absences(Jours)</th>
+        <th class="col-duree">Durée de travail(Jours)</th>
+        
+        <th class="col-montant">Montant net (DT)</th>
+        
         <th class="col-actions">Actions</th>
       </tr>
     </thead>
@@ -906,7 +912,11 @@
         <td class="mono-cell">{{ row.cin }}</td>
 
         <td>
-          <span class="duree-badge">{{ row.dureeContrat }}</span>
+          <input type="text"
+                 class="rib-input"
+                 placeholder="RIB / N° compte..."
+                 [(ngModel)]="row.rib"
+                 (ngModelChange)="onPresenceRowChange(row)" />
         </td>
 
         <td>
@@ -918,26 +928,18 @@
         </td>
 
         <td>
+          <span class="duree-badge">{{ row.dureeContrat }}</span>
+        </td>
+
+        
+
+        <td>
           <span class="montant-value">{{ row.montantNet | number:'1.3-3' }} DT</span>
         </td>
 
-        <td>
-          <input type="text"
-                 class="rib-input"
-                 placeholder="RIB / N° compte..."
-                 [(ngModel)]="row.rib"
-                 (ngModelChange)="onPresenceRowChange(row)" />
-        </td>
+        
 
-        <td>
-          <span class="paiement-badge"
-                [class.paye]="row.statut === 'paye'"
-                [class.impaye]="row.statut === 'impaye'"
-                (click)="togglePaiementStatut(row)">
-            <span class="badge-dot"></span>
-            {{ row.statut === 'paye' ? 'Payé' : 'Impayé' }}
-          </span>
-        </td>
+        
 
         <td>
           <div class="row-actions">
@@ -1842,12 +1844,19 @@
         <input type="text" [(ngModel)]="parentForm.matricule" />
       </div>
 
-      <div class="form-group">
+      <!-- Statut utilise -->
+<div class="form-group">
   <label>Statut</label>
   <select [(ngModel)]="parentForm.utilise">
-    <option [ngValue]="false">Disponible (0)</option>
-    <option [ngValue]="true">Utilisé (1)</option>
+    <option [ngValue]="0">Disponible (0)</option>
+    <option [ngValue]="1">Utilisé (1)</option>
   </select>
+</div>
+
+<!-- Ajouter aussi le champ autorises -->
+<div class="form-group">
+  <label>Autorisés</label>
+  <input type="number" [(ngModel)]="parentForm.autorises" min="0" />
 </div>
 
     </div>
@@ -2395,9 +2404,12 @@
             <input [(ngModel)]="selectedCandidature.saisonnier.email" placeholder="Email">
           </div>
           <div class="field-group">
-            <label>CIN</label>
-            <input [(ngModel)]="selectedCandidature.saisonnier.cin" placeholder="CIN">
-          </div>
+  <label>CIN</label>
+  <input [(ngModel)]="selectedCandidature.saisonnier.cin" 
+         placeholder="CIN"
+         type="text"
+         maxlength="8"/>
+</div>
           <div class="field-group">
             <label>Téléphone</label>
             <input [(ngModel)]="selectedCandidature.saisonnier.telephone" placeholder="Téléphone">

@@ -24,6 +24,7 @@ import { MemoComponent } from './features/admin/pages/memo/memo.component';
 import { StructuresComponent } from './features/admin/pages/structures/structures.component';
 import { CampagneGuard } from './guards/campagne.guard';
 import { CampagneExpireeComponent } from './pages/campagne-expiree/campagne-expiree.component';
+import { IltizamComponent } from './pages/iltizam/iltizam.component';
 
 const routes: Routes = [
 
@@ -52,6 +53,12 @@ const routes: Routes = [
   
   { path: 'saisonniers/validation', component: SaisonniersValidationComponent },
   {path: 'admin', component: HomeAdminComponent,canActivate: [AuthGuard]},
+
+  {
+  path: 'saisonnier/iltizam',
+  component: IltizamComponent,
+ 
+},
 { 
   path: 'espace-saisonnier', 
   component: EspacesaisonnierComponent,

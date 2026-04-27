@@ -8,7 +8,7 @@ import { CampagneService, CampagneRequestDTO } from 'src/app/services/campagne.s
 import { CandidatureService } from 'src/app/services/candidature.service';
 import { DocumentCampagneDTO, DocumentCampagneService } from 'src/app/services/document-campagne.service';
 import { DocumentService } from 'src/app/services/document.service';
-import { ParentAutoriseService } from 'src/app/services/parent-autorise.service';
+import { ParentAutorise, ParentAutoriseService } from 'src/app/services/parent-autorise.service';
 import {  StructureImportService } from 'src/app/services/structure-import.service';
 import { StructureDTO, StructureService } from 'src/app/structure.service';
 import * as XLSX from 'xlsx';
@@ -230,7 +230,7 @@ candidatureStructureMap = new Map<number, any>();
 
 openAddParentModal() {
   this.isEditParent = false;
-  this.parentForm = { id: null, nomPrenom: '', matricule: '' ,utilise: false};
+this.parentForm = { id: undefined, nomPrenom: '', matricule: '', autorises: 1, utilise: 0 };
   this.showParentModal = true;
 }
 
@@ -244,41 +244,43 @@ closeParentModal() {
   this.showParentModal = false;
 }
 
-saveParent() {
+parentForm: Partial<ParentAutorise> = {
+  nomPrenom: '',
+  matricule: '',
+  autorises: 1,  // valeur par défaut
+  utilise: 0     // valeur par défaut
+};
 
+saveParent() {
   if (!this.parentForm.nomPrenom || !this.parentForm.matricule) {
     alert("Champs obligatoires ❌");
     return;
   }
+
+  const autorises = Number(this.parentForm.autorises ?? 0);
+  const utilise   = Number(this.parentForm.utilise ?? 0);
 
   if (this.isEditParent) {
     if (this.parentForm.id == null) return;
 
     this.parentService.updateParent(
       this.parentForm.id,
-      this.parentForm.nomPrenom,
-      this.parentForm.matricule,
-      this.parentForm.autorises,  // 🆕 int
-      this.parentForm.utilise     // 🆕 int
+      this.parentForm.nomPrenom!,
+      this.parentForm.matricule!,
+      autorises,
+      utilise
     ).subscribe({
-      next: () => {
-        this.loadParents();
-        this.closeParentModal();
-      },
+      next: () => { this.loadParents(); this.closeParentModal(); },
       error: (err) => alert(err.error)
     });
 
   } else {
-
     this.parentService.addParent(
-      this.parentForm.nomPrenom,
-      this.parentForm.matricule,
-      this.parentForm.autorises   // 🆕 int
+      this.parentForm.nomPrenom!,
+      this.parentForm.matricule!,
+      autorises
     ).subscribe({
-      next: () => {
-        this.loadParents();
-        this.closeParentModal();
-      },
+      next: () => { this.loadParents(); this.closeParentModal(); },
       error: (err) => alert(err.error)
     });
   }
@@ -421,13 +423,7 @@ parents: any[] = [];
 showParentModal = false;
 isEditParent = false;
 
-parentForm: any = {
-  id: null,
-  nomPrenom: '',
-  matricule: '',
-  autorises: 0,   // 🆕
-  utilise: 0      // 🆕
-};
+
 
   // ─── Constructor ──────────────────────────────────────────────────
 
@@ -700,6 +696,8 @@ loadCampagnes(): void {
       if (this.campagnes.length > 0 && !this.presenceConfig.campagneId) {
         this.presenceConfig.campagneId = this.campagnes[0].id;
       }
+
+       this.appliquerBudgetCampagne();
 
       this.updateCandidaturesParCampagne();
       this.updateStats();
@@ -1497,17 +1495,14 @@ loadStructures(): void {
    * Adaptez l'appel à votre service réel.
    */
   loadPresenceRows(): void {
-  // Filtrer les candidatures de la campagne sélectionnée
   const campagneId = this.presenceConfig.campagneId;
-  
   let candidaturesFiltrees = this.candidatures;
-  
+
   if (campagneId) {
     candidaturesFiltrees = this.candidatures.filter(c => c.campagne.id === campagneId);
   }
 
-  // Transformer les candidatures en lignes de présence
-  this.presenceRows = candidaturesFiltrees.map((c, index) => ({
+  this.presenceRows = candidaturesFiltrees.map(c => ({
     id: c.id,
     nom: `${c.saisonnier.nom} ${c.saisonnier.prenom}`,
     cin: String(c.saisonnier.cin),
@@ -1520,8 +1515,16 @@ loadStructures(): void {
     campagneId: c.campagne.id
   }));
 
+  // ✅ Appliquer budget APRÈS avoir construit les rows
+  this.appliquerBudgetCampagne();
+
+  // ✅ Recalculer avec le bon taux
   this.recalculerPresence();
   this.filterPresence();
+}
+getCampagneBudget(): number {
+  const campagne = this.campagnes.find(c => c.id === this.presenceConfig.campagneId);
+  return campagne?.budget ? Number(campagne.budget) : 0;
 }
 
   /**
@@ -1584,8 +1587,34 @@ loadStructures(): void {
     this.filterPresence();
   }
 
-  onPresenceCampagneChange(): void {
-  this.loadPresenceRows(); // ← recharge selon la campagne choisie
+ onPresenceCampagneChange(): void {
+  const campagneActive = this.campagnes.find(
+    c => c.id === this.presenceConfig.campagneId && c.statut === 'active'
+  );
+
+  if (campagneActive?.budget) {
+    const budgetParSaisonnier = Number(campagneActive.budget);
+    const tauxCalcule = budgetParSaisonnier / this.presenceConfig.dureeContrat;
+    this.presenceConfig.tauxJournalier = Math.round(tauxCalcule * 1000) / 1000;
+  }
+
+  this.loadPresenceRows();
+}
+
+
+private appliquerBudgetCampagne(): void {
+  const campagneActive = this.campagnes.find(
+    c => c.id === this.presenceConfig.campagneId && c.statut === 'active'
+  );
+
+  if (campagneActive?.budget) {
+    const budgetParSaisonnier = Number(campagneActive.budget);
+    if (budgetParSaisonnier > 0 && this.presenceConfig.dureeContrat > 0) {
+      this.presenceConfig.tauxJournalier = 
+        Math.round((budgetParSaisonnier / this.presenceConfig.dureeContrat) * 1000) / 1000;
+      console.log('✅ Taux calculé:', this.presenceConfig.tauxJournalier); // debug
+    }
+  }
 }
 
   onPresenceRowChange(row: PresenceRow): void {

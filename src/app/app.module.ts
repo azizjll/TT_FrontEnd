@@ -32,6 +32,7 @@ import { PresenceComponent } from './features/admin/pages/presence/presence.comp
 import { MemoComponent } from './features/admin/pages/memo/memo.component';
 import { StructuresComponent } from './features/admin/pages/structures/structures.component';
 import { CampagneExpireeComponent } from './pages/campagne-expiree/campagne-expiree.component';
+import { IltizamComponent } from './pages/iltizam/iltizam.component';
 
 @NgModule({
   declarations: [
@@ -58,6 +59,7 @@ import { CampagneExpireeComponent } from './pages/campagne-expiree/campagne-expi
     MemoComponent,
     StructuresComponent,
     CampagneExpireeComponent,
+    IltizamComponent,
     
     
   ],

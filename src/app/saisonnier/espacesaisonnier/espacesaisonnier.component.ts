@@ -162,55 +162,6 @@ isLoadingProfil = false;
   // Données mock (inchangées)
   // ─────────────────────────────────────────────────────────
   candidatures: Candidature[] = [
-    {
-      id: 1,
-      campagne: 'Campagne de recrutement des saisonniers pour 2026',
-      entreprise: 'Domaine Beaupré',
-      localisation: "Provence-Alpes-Côte d'Azur",
-      datePostulation: '10/03/2025',
-      dateDebut: '15/06/2025',
-      dateFin: '15/09/2025',
-      statut: 'ACCEPTEE',
-      poste: 'Cueilleur saisonnier',
-      salaire: '1 500 € / mois',
-      message: 'Bienvenue ! Votre dossier a été validé. Veuillez confirmer votre disponibilité.',
-    },
-    {
-      id: 2,
-      campagne: 'Campagne de recrutement des saisonniers pour 2026',
-      entreprise: 'Château Montrachet',
-      localisation: 'Bourgogne-Franche-Comté',
-      datePostulation: '05/03/2025',
-      dateDebut: '01/09/2025',
-      dateFin: '30/10/2025',
-      statut: 'EN_ATTENTE',
-      poste: 'Vendangeur',
-      salaire: '1 400 € / mois',
-    },
-    {
-      id: 3,
-      campagne: 'Campagne de recrutement des saisonniers pour 2026',
-      entreprise: 'Coopérative Agri-Ouest',
-      localisation: 'Bretagne',
-      datePostulation: '12/01/2024',
-      dateDebut: '01/04/2024',
-      dateFin: '30/06/2024',
-      statut: 'EN_COURS',
-      poste: 'Agent maraîchage',
-      salaire: '1 350 € / mois',
-    },
-    {
-      id: 4,
-      campagne: 'Campagne de recrutement des saisonniers pour 2026',
-      entreprise: 'Les Vergers du Val',
-      localisation: 'Normandie',
-      datePostulation: '20/02/2025',
-      dateDebut: '15/08/2025',
-      dateFin: '15/11/2025',
-      statut: 'REFUSEE',
-      poste: 'Récolteur',
-      message: 'Votre profil ne correspond pas aux critères requis pour cette campagne.',
-    },
   ];
 
  
@@ -253,6 +204,9 @@ isLoadingProfil = false;
 
   this.loadRegions();
 }
+
+
+
 
 // ── Nouvelle méthode ────────────────────────────────────────
 loadMesDocuments(): void {
@@ -317,6 +271,13 @@ getDocTypIcon(type: string): string {
   };
   return icons[type] ?? 'M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z M14 2v6h6';
 }
+
+
+
+
+
+
+
 
   // ─────────────────────────────────────────────────────────
   // ✅ NOUVEAU : Charger le profil depuis le token JWT
@@ -412,9 +373,14 @@ loadMonProfil(): void {
   // Candidature
   // ─────────────────────────────────────────────────────────
   deposerCandidature(campagneId: number): void {
-    this.campagneIdSelectionnee = campagneId;
-    this.showGuide = true; // ← fermer le guide si ouvert
+  this.campagneIdSelectionnee = campagneId;
+ 
+  if (sessionStorage.getItem('iltizamAccepted') === 'true') {
+    this.showCandidatureModal = true;
+  } else {
+    this.router.navigate(['/saisonnier/iltizam']);
   }
+}
 
 
   closeGuide(): void {
@@ -423,6 +389,17 @@ loadMonProfil(): void {
 
 openCandidatureFromGuide(): void {
   this.showGuide = false;
+
+  // Vérifier si l'إلتزام a déjà été accepté
+  const accepted = sessionStorage.getItem('iltizamAccepted');
+  
+  if (!accepted) {
+    // Rediriger vers la page إلتزام d'abord
+    this.router.navigate(['/saisonnier/iltizam']);
+    return;
+  }
+
+  // Sinon ouvrir directement le formulaire
   if (this.activeCampagne) {
     this.deposerCandidature(this.activeCampagne.id);
     this.showCandidatureModal = true;
@@ -462,6 +439,10 @@ openCandidatureFromGuide(): void {
   get toutesCompletes(): boolean {
     return this.structures.length > 0 && this.structures.every(s => !s.disponible);
   }
+
+  get iltizamAccepted(): boolean {
+  return sessionStorage.getItem('iltizamAccepted') === 'true';
+}
 
   // ─────────────────────────────────────────────────────────
   // Helpers (inchangés)

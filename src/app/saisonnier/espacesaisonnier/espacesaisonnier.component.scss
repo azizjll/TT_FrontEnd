@@ -2106,3 +2106,46 @@ $shadow:  0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
   &.sg-btn-green { background: #16a34a; color: white; &:hover { background: #15803d; } }
   &.sg-btn-amber { background: #d97706; color: white; &:hover { background: #b45309; } }
 }
+
+
+.btn-deposer-candidature {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #185FA5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+ 
+  &:hover {
+    background: #0C447C;
+  }
+}
+ 
+.badge-iltizam {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 20px;
+  padding: 2px 9px;
+  font-size: 11px;
+  font-weight: 500;
+ 
+  &.badge-pending {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border: 0.5px solid rgba(255,255,255,0.4);
+  }
+ 
+  &.badge-ok {
+    background: #EAF3DE;
+    color: #3B6D11;
+    border: 0.5px solid #C0DD97;
+  }
+}

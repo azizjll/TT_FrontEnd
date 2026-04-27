@@ -1,5 +1,4 @@
 .presence-table-wrap {
-  direction: ltr;
   text-align: left;
 }
 
@@ -27,7 +26,7 @@
 }
 
 .data-table th {
-  text-align: left;
+  text-align: center;
   padding: 12px;
   font-weight: 600;
   color: #555;
@@ -820,8 +819,8 @@ select:hover {
 
 /* Table présence */
 
-.presence-table { direction: rtl; font-size: 13px; width: 100%; min-width: 900px; }
-.presence-table td { text-align: left; padding: 10px 12px; white-space: nowrap; }
+.presence-table {  font-size: 13px; width: 100%; min-width: 900px; }
+.presence-table td {   text-align: center; padding: 10px 12px; white-space: nowrap; }
 .presence-table th {
   background: #1E293B; color: #E2E8F0;
   font-size: 12px; font-weight: 500; border-bottom: none;
@@ -845,7 +844,7 @@ select:hover {
 .presence-date-input {
   border: 1px solid var(--border); border-radius: 5px;
   padding: 4px 8px; font-size: 12px; background: var(--surface-1);
-  width: 130px; direction: ltr;
+  width: 130px; 
 }
 .presence-date-input:focus { outline: none; border-color: #3B82F6; }
 
@@ -868,9 +867,11 @@ select:hover {
 .montant-value { font-weight: 600; color: #10B981; font-size: 13px; }
 
 .rib-input {
+    text-align: center;
+
   border: 1px solid var(--border); border-radius: 5px;
   padding: 5px 8px; font-size: 12px; background: var(--surface-1);
-  width: 160px; direction: ltr; font-family: 'Courier New', monospace;
+  width: 160px;  font-family: 'Courier New', monospace;
 }
 .rib-input:focus { outline: none; border-color: #3B82F6; background: #fff; }
 .rib-input::placeholder { color: #D1D5DB; font-family: inherit; }
