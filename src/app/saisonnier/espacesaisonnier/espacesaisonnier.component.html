@@ -35,72 +35,7 @@
       </div>
     </div>
 
-    <!-- ===== GUIDE SIDEBAR ===== -->
-<div class="sidebar-guide" *ngIf="!isLoggedIn">
-  <button class="sidebar-guide-btn" (click)="showGuide = true">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-         stroke="currentColor" stroke-width="2">
-      <circle cx="12" cy="12" r="10"/>
-      <line x1="12" y1="8" x2="12" y2="12"/>
-      <line x1="12" y1="16" x2="12.01" y2="16"/>
-    </svg>
-    Comment postuler ?
-  </button>
-
-  <div class="sidebar-guide-steps">
-
-    <div class="sg-step">
-      <div class="sg-circle sg-blue">1</div>
-      <div class="sg-line"></div>
-      <div class="sg-content">
-        <span class="sg-title">Télécharger le document</span>
-        <button class="sg-action-btn sg-btn-blue"
-                *ngIf="iltizamDoc"
-                (click)="telechargerIltizam()">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          Télécharger
-        </button>
-      </div>
-    </div>
-
-    <div class="sg-step">
-      <div class="sg-circle sg-green">2</div>
-      <div class="sg-line"></div>
-      <div class="sg-content">
-        <span class="sg-title">Déposer candidature</span>
-        <button class="sg-action-btn sg-btn-green"
-                (click)="openCandidatureFromGuide()">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          Postuler
-        </button>
-      </div>
-    </div>
-
-    <div class="sg-step last">
-      <div class="sg-circle sg-amber">3</div>
-      <div class="sg-content">
-        <span class="sg-title">Se connecter</span>
-        <button class="sg-action-btn sg-btn-amber" (click)="goToLogin()">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2">
-            <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/>
-          </svg>
-          Connexion
-        </button>
-      </div>
-    </div>
-
-  </div>
-</div>
+    
 
     <div class="sidebar-iltizam-card" *ngIf="iltizamDoc">
   <div class="iltizam-header">
@@ -179,9 +114,23 @@
         <path d="M7 11V7a5 5 0 0110 0v4"/>
       </svg>
       <h2>Bienvenue sur votre Espace Saisonnier</h2>
-      <p>Connectez-vous pour accéder à vos candidatures, documents et notifications.</p>
-      <button class="btn-primary" (click)="goToLogin()">Se connecter</button>
-    </div>
+      
+ <div class="welcome-actions">
+  <button class="btn-primary"
+              *ngIf="activeCampagne"
+              (click)="ouvrirFormulairePublic()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Déposer ma candidature
+      </button>
+      <button class="btn-primary" (click)="goToLogin()">
+        Suivre ma candidature
+      </button>
+      
+    </div>    </div>
   </section>
 
     <!-- ===== CANDIDATURES ===== -->
@@ -597,6 +546,8 @@
       <h4 class="section-title">Informations personnelles</h4>
       <div class="modal-grid">
 
+        
+
         <div class="modal-field">
           <label>Prénom *</label>
           <input *ngIf="canEditCandidature"
@@ -849,7 +800,7 @@
     </div>
 
     <form #candidatureForm="ngForm" (ngSubmit)="submitCandidature(candidatureForm)" class="modal-form">
-
+<h4 class="section-title">Informations de saisonnier</h4>
       <div class="form-grid">
 
         <!-- Prénom -->
@@ -937,16 +888,18 @@
       <div class="form-grid">
 
         <div class="field">
+          <label>Matricule du parent</label>
+          <input type="text" [(ngModel)]="form.matriculeParent" name="matriculeParent"
+                 placeholder="Matricule du parent">
+        </div>
+
+        <div class="field">
           <label>Nom & Prénom du parent</label>
           <input type="text" [(ngModel)]="form.nomPrenomParent" name="nomPrenomParent"
                  placeholder="Nom et prénom du parent">
         </div>
 
-        <div class="field">
-          <label>Matricule du parent</label>
-          <input type="text" [(ngModel)]="form.matriculeParent" name="matriculeParent"
-                 placeholder="Matricule du parent">
-        </div>
+        
 
       </div>
 
@@ -956,9 +909,9 @@
 
         <div class="field">
           <label>Niveau d'étude</label>
-          <select [(ngModel)]="form.niveauEtude" name="niveauEtude">
-            <option value="" disabled selected>Choisir le niveau</option>
-            <option value="BAC">Bac</option>
+          <select [(ngModel)]="form.niveauEtude" name="niveauEtude" [style.color]="form.niveauEtude ? 'inherit' : '#999'">
+  <option [ngValue]="null" disabled style="color:#999">Choisir le niveau d'étude</option>
+            
             <option value="BAC+1">Bac+1</option>
             <option value="BAC+2">Bac+2</option>
             <option value="BAC+3">Bac+3</option>
@@ -970,14 +923,16 @@
 
         <div class="field">
           <label>Diplôme</label>
-          <select [(ngModel)]="form.diplomeNom" name="diplomeNom">
-            <option value="" disabled selected>Choisir le diplôme</option>
+          <select [(ngModel)]="form.diplomeNom" name="diplomeNom" [style.color]="form.diplomeNom ? 'inherit' : '#999'">
+            <option [ngValue]="null" disabled style="color:#999">Choisir le diplôme</option>
             <option value="BTP">BTP</option>
             <option value="BTS">BTS</option>
             <option value="LICENCE">Licence</option>
             <option value="MASTER">Master</option>
             <option value="Ingenierie">Ingénierie</option>
             <option value="DOCTORAT">Doctorat</option>
+            <option value="Diplôme national d'architecte">Diplôme national d'architecte</option>
+            <option value="Diplôme de sante">Diplôme de sante</option>
           </select>
         </div>
 
@@ -991,8 +946,8 @@
   <label>Mois de travail *</label>
   <select [(ngModel)]="form.moisTravail" name="moisTravail"
           #moisTravail="ngModel" required
-          [class.input-error]="moisTravail.invalid && moisTravail.touched">
-    <option value="" disabled selected>Choisir le mois</option>
+          [class.input-error]="moisTravail.invalid && moisTravail.touched" [style.color]="form.moisTravail ? 'inherit' : '#999'">
+    <option [ngValue]="null" disabled style="color:#999">Choisir le mois</option>
     <option value="JUILLET">Juillet</option>
     <option value="AOUT">Août</option>
   </select>
@@ -1013,8 +968,8 @@
           <select [(ngModel)]="form.regionId" name="regionId"
                   #regionId="ngModel" required
                   (ngModelChange)="loadStructuresByRegion($event)"
-                  [class.input-error]="regionId.invalid && regionId.touched">
-            <option value="" disabled selected>Choisir la direction</option>
+                  [class.input-error]="regionId.invalid && regionId.touched" [style.color]="form.regionId ? 'inherit' : '#999'">
+            <option [ngValue]="null" disabled style="color:#999">Choisir la direction</option>
             <option *ngFor="let region of regions" [value]="region.id">{{ region.nom }}</option>
           </select>
           <small class="error-msg" *ngIf="regionId.touched && regionId.errors?.['required']">
@@ -1027,8 +982,8 @@
           <label>Structure *</label>
           <select [(ngModel)]="form.structureId" name="structureId"
                   #structureId="ngModel" required
-                  [class.input-error]="structureId.invalid && structureId.touched">
-            <option value="" disabled selected>Choisir une structure</option>
+                  [class.input-error]="structureId.invalid && structureId.touched" [style.color]="form.structureId ? 'inherit' : '#999'">
+            <option [ngValue]="null" disabled style="color:#999">Choisir une structure</option>
 
             <optgroup label="🏪 Espaces Commerciaux" *ngIf="structuresEC.length > 0">
               <option *ngFor="let s of structuresEC"
@@ -1083,22 +1038,13 @@
               <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
               <path d="M6 12v5c3 3 9 3 12 0v-5"/>
             </svg>
-            <span>Diplôme </span>
+            <span>Attestation(Présence/Inscription) </span>
             <small *ngIf="diplomeFileName" class="file-name">{{ diplomeFileName }}</small>
             <small class="error-msg" *ngIf="formSubmitted && !diplome">⚠️ Fichier Diplôme obligatoire.</small>
             <input type="file"  (change)="onFileChange($event,'diplome')">
           </label>
 
-          <label class="file-drop" [class.file-error]="formSubmitted && !contrat">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M9 11l3 3L22 4"/>
-              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-            </svg>
-            <span>Engagement </span>
-            <small *ngIf="contratFileName" class="file-name">{{ contratFileName }}</small>
-            <small class="error-msg" *ngIf="formSubmitted && !contrat">⚠️ Fichier Contrat obligatoire.</small>
-            <input type="file"  (change)="onFileChange($event,'contrat')">
-          </label>
+          
 
           <label class="file-drop" [class.file-error]="formSubmitted && !ribFile">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -1113,6 +1059,111 @@
 
         </div>
       </div>
+
+      <!-- ===== SECTION ILTIZAM ===== -->
+      <!-- ===== SECTION ILTIZAM INTÉGRÉE ===== -->
+<div class="iltizam-section">
+
+  <h4 class="section-title">Engagement — إلتزام</h4>
+
+  <!-- Zone scrollable avec le contenu HTML de l'iltizam -->
+  <div class="iltizam-scroll-zone"
+     #iltizamZone
+     (scroll)="onIltizamScroll($event)">
+
+  <!-- Contenu iltizam correct -->
+  <div class="iltizam-content" dir="rtl">
+
+    <p style="margin-bottom:16px; line-height:2.1; font-size:20px;">
+      التزم بتقديم خدماتي للشركة الوطنية للاتصالات بصفتي عون موسمي لمدة يتم تحديدها
+      من طرف مصالح الشركة حسب التراتيب الجاري بها العمل مقابل منحة شهرية،
+      كما أُلتزم بـ :
+    </p>
+
+    <ul style="list-style:none; padding:0; margin:0 0 20px 0;">
+      <li style="display:flex; align-items:flex-start; gap:10px;
+                 margin-bottom:12px; line-height:2.1; font-size:19px;">
+        <span style="color:#1a56db; font-size:16px; margin-top:2px; flex-shrink:0;">◈</span>
+        إحترام الإجراءات القانونية المعمول بها بالشركة الوطنية للاتصالات.
+      </li>
+      <li style="display:flex; align-items:flex-start; gap:10px;
+                 margin-bottom:12px; line-height:1.9; font-size:19px;">
+        <span style="color:#1a56db; font-size:16px; margin-top:2px; flex-shrink:0;">◈</span>
+        الاضطلاع بالمهام الموكولة إليّ بكل إخلاص وتفانٍ.
+      </li>
+      <li style="display:flex; align-items:flex-start; gap:10px;
+                 margin-bottom:12px; line-height:1.9; font-size:19px;">
+        <span style="color:#1a56db; font-size:16px; margin-top:2px; flex-shrink:0;">◈</span>
+        إحترام التسلسل الإداري.
+      </li>
+      <li style="display:flex; align-items:flex-start; gap:10px;
+                 margin-bottom:12px; line-height:1.9; font-size:19px;">
+        <span style="color:#1a56db; font-size:16px; margin-top:2px; flex-shrink:0;">◈</span>
+        الظهور بمظهر لائق وحسن السلوك.
+      </li>
+      <li style="display:flex; align-items:flex-start; gap:10px;
+                 margin-bottom:12px; line-height:1.9; font-size:19px;">
+        <span style="color:#1a56db; font-size:16px; margin-top:2px; flex-shrink:0;">◈</span>
+        إحترام توقيت التربص الذي يحدده المسؤول المعني.
+      </li>
+    </ul>
+
+    <p style="line-height:1.9; font-size:20px;
+              border-top:1px solid rgba(0,0,0,0.08); padding-top:16px; margin-bottom:0;">
+      كما أعترف بحق الإدارة في إنهاء مدة التربص المذكورة في صورة إخلالي
+      بإحدى شروط هذا الالتزام.
+    </p>
+
+    <!-- Espace bas pour forcer le scroll -->
+    <div style="height:40px;"></div>
+  </div>
+
+  <!-- Indicateur scroll -->
+  <div class="scroll-hint" *ngIf="!iltizamScrolled">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+    Faites défiler pour lire l'intégralité du document
+  </div>
+
+  <!-- Confirmation lu -->
+  <div *ngIf="iltizamScrolled"
+       style="text-align:center; padding:8px; font-size:12px;
+              color:#16a34a; display:flex; align-items:center;
+              justify-content:center; gap:6px;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2.5">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+    Document lu ✓
+  </div>
+
+</div>
+
+  <!-- Checkbox — désactivée tant que non scrollé -->
+  <label class="iltizam-checkbox-label"
+         [class.enabled]="iltizamScrolled"
+         [class.disabled]="!iltizamScrolled">
+    <input type="checkbox"
+           [(ngModel)]="iltizamAcceptedForm"
+           name="iltizamAccepted"
+           [disabled]="!iltizamScrolled">
+    <div class="checkbox-text">
+      <span class="checkbox-main">
+        J'ai lu et j'accepte les termes de l'engagement
+      </span>
+      
+    </div>
+  </label>
+
+  <small class="error-msg"
+         *ngIf="formSubmitted && !iltizamAcceptedForm">
+    ⚠️ Vous devez lire et accepter l'engagement pour continuer.
+  </small>
+
+</div>
+
 
       
 
@@ -1170,117 +1221,3 @@
 </div>
 
 <!-- ===== GUIDE 3 ÉTAPES ===== -->
-<div class="modal-overlay" *ngIf="showGuide" (click)="closeGuide()" @fadeInUp>
-  <div class="guide-box" (click)="$event.stopPropagation()">
-
-    <div class="guide-head">
-      <div>
-        <h2 class="guide-title">Espace saisonnier</h2>
-        <p class="guide-sub">Suivez les étapes pour déposer votre candidature</p>
-      </div>
-      <button class="modal-close" (click)="closeGuide()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
-
-    <div class="guide-body">
-
-      <!-- Étape 1 -->
-      <div class="guide-step">
-        <div class="guide-step-left">
-          <div class="guide-circle step-blue">1</div>
-          <div class="guide-line"></div>
-        </div>
-        <div class="guide-step-content">
-          <h3 class="guide-step-title">Télécharger le document requis</h3>
-          <div class="guide-doc-badge" *ngIf="iltizamDoc">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-            </svg>
-            {{ iltizamDoc.nom }}
-          </div>
-          <p class="guide-step-desc">
-            Téléchargez ce document, signez-le, puis gardez-le prêt pour l'étape suivante.
-          </p>
-          <button class="guide-btn guide-btn-blue"
-                  *ngIf="iltizamDoc"
-                  (click)="telechargerIltizam()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            Télécharger et signer
-          </button>
-        </div>
-      </div>
-
-      <!-- Étape 2 -->
-      <div class="guide-step">
-        <div class="guide-step-left">
-          <div class="guide-circle step-green">2</div>
-          <div class="guide-line"></div>
-        </div>
-        <div class="guide-step-content">
-          <h3 class="guide-step-title">Déposer votre candidature</h3>
-          <p class="guide-step-desc">
-            Remplissez le formulaire et joignez le document signé avec vos autres pièces justificatives.
-          </p>
-          <button class="btn-deposer-candidature"
-        (click)="openCandidatureFromGuide()">
- 
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-       stroke="currentColor" stroke-width="2">
-    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-    <polyline points="17 8 12 3 7 8"/>
-    <line x1="12" y1="3" x2="12" y2="15"/>
-  </svg>
- 
-  Déposer une candidature
- 
-  <!-- Badge état إلتزام -->
-  <span class="badge-iltizam"
-        [class.badge-ok]="iltizamAccepted"
-        [class.badge-pending]="!iltizamAccepted">
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-         stroke="currentColor" stroke-width="2.5">
-      <ng-container *ngIf="iltizamAccepted">
-        <polyline points="20 6 9 17 4 12"/>
-      </ng-container>
-      <ng-container *ngIf="!iltizamAccepted">
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-        <path d="M7 11V7a5 5 0 0110 0v4"/>
-      </ng-container>
-    </svg>
-    {{ iltizamAccepted ? 'Engagement signé' : 'Engagement requis' }}
-  </span>
- 
-</button>
-        </div>
-      </div>
-
-      <!-- Étape 3 -->
-      <div class="guide-step last">
-        <div class="guide-step-left">
-          <div class="guide-circle step-amber">3</div>
-        </div>
-        <div class="guide-step-content">
-          <h3 class="guide-step-title">Se connecter pour suivre votre dossier</h3>
-          <p class="guide-step-desc">
-            Déjà candidat ? Connectez-vous pour consulter l'état de vos candidatures et documents.
-          </p>
-          <button class="guide-btn guide-btn-amber" (click)="goToLogin()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/>
-            </svg>
-            Se connecter
-          </button>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>

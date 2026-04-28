@@ -874,12 +874,55 @@
       <!-- Search & Filters -->
       <div class="table-card">
         <div class="presence-table-toolbar">
-          <div class="search-box presence-search">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-            </svg>
-            <input type="text" placeholder="Rechercher un saisonnier..." [(ngModel)]="presenceSearchQuery" (ngModelChange)="filterPresence()" />
-          </div>
+           <div style="display:flex;flex-direction:column;gap:4px;min-width:180px;">
+      <label style="font-size:11px;color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:0.05em;">
+        Direction
+      </label>
+      <select [(ngModel)]="presenceFilterRegion"
+              (ngModelChange)="onPresenceRegionChange()"
+              style="background:var(--surface-2);border:1px solid var(--border-color,rgba(255,255,255,0.1));border-radius:6px;padding:6px 10px;font-size:13px;color:var(--text-primary);">
+        <option value="">Toutes les directions</option>
+        <option *ngFor="let r of presenceRegionsDisponibles" [value]="r">{{ r }}</option>
+      </select>
+    </div>
+
+    <!-- Filtre Structure -->
+    <div style="display:flex;flex-direction:column;gap:4px;min-width:200px;">
+      <label style="font-size:11px;color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:0.05em;">
+        Structure
+      </label>
+      <select [(ngModel)]="presenceFilterStructure"
+              (ngModelChange)="filterPresence()"
+              [disabled]="!presenceFilterRegion"
+              style="background:var(--surface-2);border:1px solid var(--border-color,rgba(255,255,255,0.1));border-radius:6px;padding:6px 10px;font-size:13px;color:var(--text-primary);">
+        <option value="">Toutes les structures</option>
+        <option *ngFor="let s of presenceStructuresDisponibles" [value]="s">{{ s }}</option>
+      </select>
+    </div>
+
+    <!-- Search -->
+    <div class="search-box presence-search" style="flex:1">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input type="text" placeholder="Rechercher un saisonnier..."
+             [(ngModel)]="presenceSearchQuery"
+             (ngModelChange)="filterPresence()" />
+    </div>
+
+    <!-- Reset -->
+    <button class="btn btn-ghost"
+            *ngIf="presenceFilterRegion || presenceFilterStructure"
+            (click)="resetFiltresPresence()"
+            style="align-self:flex-end;">
+      Réinitialiser
+    </button>
+
+    <!-- Compteur -->
+    <div style="align-self:flex-end;font-size:12px;color:var(--text-muted);padding-bottom:6px;">
+      <span style="color:var(--text-primary);font-weight:600;">{{ filteredPresenceRows.length }}</span>
+      / {{ presenceRows.length }}
+    </div>
           
         </div>
 

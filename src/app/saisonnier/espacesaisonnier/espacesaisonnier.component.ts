@@ -124,10 +124,22 @@ showCandidatureModal = false;  campagnes: Campagne[] = [];
 loadingDocsCampagne = false;
 
   form: any = {
-    nom: '', prenom: '', cin: '', rib: '',
-    telephone: '', email: '', regionId: '',
-     moisTravail: '',
-  };
+  nom: '',
+  prenom: '',
+  cin: '',
+  rib: '',
+  telephone: '',
+  email: '',
+  nomPrenomParent: '',
+  matriculeParent: '',
+  specialiteDiplome: '',
+  niveauEtude: null,    // ← null
+  diplomeNom: null,     // ← null
+  moisTravail: null,    // ← null
+  regionId: null,       // ← null
+  structureId: null,    // ← null
+};
+
 
   cinFile!: File;
   diplome!: File;
@@ -143,10 +155,14 @@ isLoadingDocuments = false;
 
 
 
-isLoadingProfil = false;
+  isLoadingProfil = false;
 
 
   iltizamDoc: DocumentCampagneDTO | null = null;
+
+  iltizamScrolled = false;
+iltizamAcceptedForm = false;
+
 
 
   // ── ✅ NOUVEAU : modal "connexion requise" ────────────────
@@ -374,11 +390,26 @@ loadMonProfil(): void {
   // ─────────────────────────────────────────────────────────
   deposerCandidature(campagneId: number): void {
   this.campagneIdSelectionnee = campagneId;
+  this.iltizamScrolled = false;       // reset à chaque ouverture
+  this.iltizamAcceptedForm = false;   // reset
+  this.showCandidatureModal = true;
  
-  if (sessionStorage.getItem('iltizamAccepted') === 'true') {
-    this.showCandidatureModal = true;
-  } else {
-    this.router.navigate(['/saisonnier/iltizam']);
+  
+}
+
+
+
+onIltizamScroll(event: Event): void {
+  const el = event.target as HTMLElement;
+  // Considéré comme "lu" quand on approche du bas (dans les 40px)
+  if (el.scrollTop + el.clientHeight >= el.scrollHeight - 40) {
+    this.iltizamScrolled = true;
+  }
+}
+
+ouvrirFormulairePublic(): void {
+  if (this.activeCampagne) {
+    this.deposerCandidature(this.activeCampagne.id);
   }
 }
 
@@ -544,8 +575,18 @@ openCandidatureFromGuide(): void {
   }
 
   submitCandidature(candidatureForm: NgForm): void {
+
   this.formSubmitted = true;
   candidatureForm.form.markAllAsTouched();
+
+   if (!this.iltizamScrolled || !this.iltizamAcceptedForm) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Engagement requis',
+      text: 'Veuillez lire l\'engagement en entier et cocher la case d\'acceptation.'
+    });
+    return;
+  }
 
   if (candidatureForm.invalid) {
     Swal.fire({
@@ -556,11 +597,11 @@ openCandidatureFromGuide(): void {
     return;
   }
 
-  if (!this.cinFile || !this.diplome || !this.contrat || !this.ribFile) {
+  if (!this.cinFile || !this.diplome || !this.ribFile) {
     Swal.fire({
       icon: 'warning',
       title: 'Documents manquants',
-      text: 'Joignez tous les fichiers PDF (CIN, Diplôme, Contrat, RIB).'
+      text: 'Joignez tous les fichiers PDF (CIN, Diplôme,  RIB).'
     });
     return;
   }
@@ -570,7 +611,6 @@ openCandidatureFromGuide(): void {
   formData.append('campagneId', this.campagneIdSelectionnee.toString());
   formData.append('cinFile', this.cinFile);
   formData.append('diplome', this.diplome);
-  formData.append('contrat', this.contrat);
   formData.append('ribFile', this.ribFile);
 
 
