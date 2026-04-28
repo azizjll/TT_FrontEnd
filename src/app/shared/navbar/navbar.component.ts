@@ -13,7 +13,7 @@ export class NavbarComponent {
   isMenuOpen = false;
 
   navLinks = [
-    { name: 'Home', path: '/' },
+   
     { name: 'Espace Saisonnier', path: '/espace-saisonnier' },
     { name: 'Contact', path: '/contact' },
     { name: 'About', path: '/about' },

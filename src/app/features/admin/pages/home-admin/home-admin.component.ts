@@ -9,6 +9,7 @@ import { CandidatureService } from 'src/app/services/candidature.service';
 import { DocumentCampagneDTO, DocumentCampagneService } from 'src/app/services/document-campagne.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { ParentAutorise, ParentAutoriseService } from 'src/app/services/parent-autorise.service';
+import { PresencePdfExportService } from 'src/app/services/presence-pdf-export.service';
 import {  StructureImportService } from 'src/app/services/structure-import.service';
 import { StructureDTO, StructureService } from 'src/app/structure.service';
 import * as XLSX from 'xlsx';
@@ -225,6 +226,9 @@ isLoading = false;
 // ── Documents à uploader lors de la création ──────────────────
 documentsPendants: Array<{ file: File; nom: string; type: string }> = [];
 
+presenceFilterRegion = '';
+presenceFilterStructure = '';
+
 
 candidatureStructureMap = new Map<number, any>();
 
@@ -438,7 +442,8 @@ isEditParent = false;
     private router: Router,
     private docCampagneService: DocumentCampagneService,
     private parentService: ParentAutoriseService,
-    private etatRHService: EtatRHService
+    private etatRHService: EtatRHService,
+    private presencePdfService: PresencePdfExportService
   ) {}
 
   nomUtilisateur = '';
@@ -1058,6 +1063,44 @@ onRegionFilterChange(): void {
 }
 
 
+get presenceRegionsDisponibles(): string[] {
+  const set = new Set(
+    this.presenceRows
+      .map(r => {
+        const cand = this.candidatures.find(c => c.id === r.id);
+        return cand?.saisonnier?.region?.nom ?? '';
+      })
+      .filter(Boolean)
+  );
+  return Array.from(set).sort();
+}
+
+get presenceStructuresDisponibles(): string[] {
+  if (!this.presenceFilterRegion) return [];
+  const set = new Set<string>();
+  this.presenceRows.forEach(r => {
+    const cand = this.candidatures.find(c => c.id === r.id);
+    if (cand?.saisonnier?.region?.nom !== this.presenceFilterRegion) return;
+    const st = this.candidatureStructureMap.get(r.id);
+    if (st?.nom) set.add(st.nom);
+  });
+  return Array.from(set).sort();
+}
+
+
+
+onPresenceRegionChange(): void {
+  this.presenceFilterStructure = '';
+  this.filterPresence();
+}
+
+resetFiltresPresence(): void {
+  this.presenceFilterRegion = '';
+  this.presenceFilterStructure = '';
+  this.presenceSearchQuery = '';
+  this.filterPresence();
+}
+
 
 updateCandidature() {
   const cand = this.selectedCandidature;
@@ -1563,24 +1606,40 @@ getCampagneBudget(): number {
   }
 
   filterPresence(): void {
-    let list = [...this.presenceRows];
+  let list = [...this.presenceRows];
 
-    if (this.presenceFilter === 'payes') {
-      list = list.filter(r => r.statut === 'paye');
-    } else if (this.presenceFilter === 'impayes') {
-      list = list.filter(r => r.statut === 'impaye');
-    }
-
-    if (this.presenceSearchQuery.trim()) {
-      const q = this.presenceSearchQuery.toLowerCase();
-      list = list.filter(r =>
-        r.nom.toLowerCase().includes(q) ||
-        r.cin.toLowerCase().includes(q)
-      );
-    }
-
-    this.filteredPresenceRows = list;
+  if (this.presenceFilterRegion) {
+    list = list.filter(r => {
+      const cand = this.candidatures.find(c => c.id === r.id);
+      return cand?.saisonnier?.region?.nom === this.presenceFilterRegion;
+    });
   }
+
+  if (this.presenceFilterStructure) {
+    list = list.filter(r => {
+      const st = this.candidatureStructureMap.get(r.id);
+      return st?.nom?.trim().toLowerCase() ===
+             this.presenceFilterStructure.trim().toLowerCase();
+    });
+  }
+
+  if (this.presenceFilter === 'payes') {
+    list = list.filter(r => r.statut === 'paye');
+  } else if (this.presenceFilter === 'impayes') {
+    list = list.filter(r => r.statut === 'impaye');
+  }
+
+  if (this.presenceSearchQuery.trim()) {
+    const q = this.presenceSearchQuery.toLowerCase();
+    list = list.filter(r =>
+      r.nom.toLowerCase().includes(q) || r.cin.toLowerCase().includes(q)
+    );
+  }
+
+  this.filteredPresenceRows = list;
+}
+
+
 
   setPresenceFilter(filter: 'tous' | 'payes' | 'impayes'): void {
     this.presenceFilter = filter;
@@ -1685,9 +1744,29 @@ private appliquerBudgetCampagne(): void {
   // ── Exports Présence ─────────────────────────────────────────────
 
   exportPresencePDF(): void {
-    // TODO: Appeler service backend pour générer PDF
-    alert('Export PDF — à connecter au service backend.');
-  }
+  const directionNom = this.presenceFilterRegion || '';
+  const rhNom = this.nomUtilisateur;
+  const campagneNom = this.getCampagneNom();
+
+  // Recalculer les totaux sur les lignes filtrées
+  const totals = {
+    totalJours:    this.filteredPresenceRows.reduce((s, r) => s + r.dureeContrat, 0),
+    totalAbsences: this.filteredPresenceRows.reduce((s, r) => s + r.absences, 0),
+    totalMontant:  this.filteredPresenceRows.reduce((s, r) => s + r.montantNet, 0),
+  };
+
+  this.presencePdfService.export(
+    this.filteredPresenceRows,
+    {
+      tauxJournalier: this.presenceConfig.tauxJournalier,
+      dureeContrat:   this.presenceConfig.dureeContrat,
+      campagneNom,
+    },
+    totals,
+    directionNom,
+    rhNom
+  );
+}
 
   exportPresenceExcel(): void {
   // 1. Préparer les données
