@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
-import { SaisonnierDTO, SaisonnierService } from 'src/app/services/saisonnier.service';
+import { AgentResultat, SaisonnierDTO, SaisonnierService } from 'src/app/services/saisonnier.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { CampagneService } from 'src/app/services/campagne.service';
 import { StructureDTO, StructureService } from 'src/app/structure.service';
@@ -22,6 +22,7 @@ export interface SaisonnierPaie {
   nomTitulaireCompte: string;
   cinTitulaire: string;
   paye: boolean;
+  telephone?: string;
 }
 @Component({
   selector: 'app-presence-paiement',
@@ -57,6 +58,13 @@ campagneNom   = '';      // nom de la campagne active
 
   // ── Données ───────────────────────────────────────
   saisonniers: SaisonnierPaie[] = [];
+
+
+  // ── Propriétés agent ───────────────────────────
+agentLoading   = false;
+agentStatus    = '';
+agentError     = false;
+agentResultats: AgentResultat[] = [];
 
 constructor(
     private saisonnierService: SaisonnierService,
@@ -103,6 +111,72 @@ this.campagneNom    = campagnes[0].libelle ?? '';
 }
 
 
+private buildAbsencesData(): Record<string, number> {
+  const map: Record<string, number> = {};
+  this.saisonniers.forEach(s => {
+    const tel = s.telephone?.trim();
+    if (tel && s.absences > 0) {
+      map[tel] = s.absences;
+    }
+  });
+  return map;
+}
+
+// ── Lancer l'agent ─────────────────────────────
+lancerAgent(): void {
+  if (!this.campagneId || !this.regionId) {
+    this.agentStatus = 'Sélectionne une campagne et une région d\'abord';
+    this.agentError  = true;
+    return;
+  }
+
+  this.agentLoading   = true;
+  this.agentStatus    = '';
+  this.agentError     = false;
+  this.agentResultats = [];
+
+  const absencesData = this.buildAbsencesData();
+  // ← ajouter ce log
+  console.log('absencesData envoyé:', absencesData);
+  console.log('campagneId:', this.campagneId);
+  console.log('regionId:', this.regionId);
+
+  if (Object.keys(absencesData).length === 0) {
+    this.agentStatus = '⚠️ Aucune absence saisie dans le tableau';
+    this.agentError  = true;
+    return;
+  }
+
+  this.saisonnierService.lancerAgent(
+    this.campagneId,
+    this.regionId,
+    3,              // seuil — change selon ta règle métier
+    absencesData
+  ).subscribe({
+    next: (res) => {
+      this.agentLoading   = false;
+      this.agentResultats = res.resultats;
+      this.agentStatus    = res.message;
+    },
+    error: () => {
+      this.agentLoading = false;
+      this.agentError   = true;
+      this.agentStatus  = 'Impossible de joindre l\'agent IA (Flask sur :5003)';
+    }
+  });
+}
+
+// ── Couleur badge par action ───────────────────
+getActionClass(action: string): string {
+  const map: Record<string, string> = {
+    'APPELER': 'badge-appele',
+    'AVERTIR': 'badge-averti',
+    'REJETER': 'badge-rejete'
+  };
+  return map[action] ?? '';
+}
+
+
 onDureeContratChange(): void {
   if (this.budgetCampagne > 0 && this.dureeContrat > 0) {
     this.tauxJourDT = Math.round((this.budgetCampagne / this.dureeContrat) * 1000) / 1000;
@@ -135,6 +209,7 @@ onStructureChange(): void {
                     prenom:             dto.prenom,
                     cin:                dto.cin,
                     rib:                saved.rib ?? dto.rib ?? '',
+                    telephone:          dto.telephone ?? '',
                     dateMbacharah:      saved.dateMbacharah ?? this.dateMbacharah,
                     duree:              saved.duree ?? this.dureeContrat,
                     absences:           saved.absences ?? 0,
@@ -166,6 +241,7 @@ onStructureChange(): void {
                     prenom:             dto.prenom,
                     cin:                dto.cin,
                     rib:                saved.rib ?? dto.rib ?? '',
+                    telephone:          dto.telephone ?? '',
                     dateMbacharah:      saved.dateMbacharah ?? this.dateMbacharah,
                     duree:              saved.duree ?? this.dureeContrat,
                     absences:           saved.absences ?? 0,

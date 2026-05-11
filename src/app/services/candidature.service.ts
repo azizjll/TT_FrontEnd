@@ -21,6 +21,17 @@ export class CandidatureService {
 
   constructor(private http: HttpClient) {}
 
+
+
+  // Dans candidature.service.ts
+analyserCandidature(id: number): Observable<any> {
+  return this.http.post<any>(`${this.baseUrl}/${id}/analyser`, {});
+}
+
+getAnalyse(id: number): Observable<any> {
+  return this.http.get<any>(`${this.baseUrl}/${id}/analyse`);
+}
+
   /**
    * Dépose une candidature sans JWT
    */

@@ -100,6 +100,69 @@
    
   </div>
 
+
+  <!-- Barre Agent IA -->
+<div class="agent-bar">
+  <button class="btn-agent"
+          (click)="lancerAgent()"
+          [disabled]="agentLoading">
+
+    <svg *ngIf="!agentLoading" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2" width="16" height="16">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2
+               19.79 19.79 0 0 1-8.63-3.07
+               19.5 19.5 0 0 1-6-6
+               19.79 19.79 0 0 1-3.07-8.67
+               A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72
+               c.127.96.361 1.903.7 2.81
+               a2 2 0 0 1-.45 2.11L8.09 9.91
+               a16 16 0 0 0 6 6l1.27-1.27
+               a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7
+               A2 2 0 0 1 22 16.92z"/>
+    </svg>
+
+    <span *ngIf="agentLoading" class="spinner"></span>
+    {{ agentLoading ? 'Agent en cours...' : 'Lancer Agent IA Absences' }}
+  </button>
+
+  <span class="agent-status"
+        [class.success]="!agentError && !!agentStatus"
+        [class.error]="agentError"
+        *ngIf="agentStatus">
+    {{ agentStatus }}
+  </span>
+</div>
+
+<!-- Résultats agent -->
+<div class="agent-resultats" *ngIf="agentResultats.length > 0">
+  <h4>Résultats de l'agent IA</h4>
+  <table class="table-resultats">
+    <thead>
+      <tr>
+        <th>Saisonnier</th>
+        <th>Décision IA</th>
+        <th>Statut</th>
+        <th>Call ID</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let r of agentResultats">
+        <td>{{ r.nom }}</td>
+        <td>
+          <span class="badge" [ngClass]="getActionClass(r.action)">
+            {{ r.action }}
+          </span>
+        </td>
+        <td>{{ r.statut }}</td>
+        <td class="call-id">{{ r.call_id || '—' }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ton <div class="table-card"> existant suit ici -->
+
+
   <!-- ── TABLEAU PRINCIPAL ── -->
   <div class="table-card">
 

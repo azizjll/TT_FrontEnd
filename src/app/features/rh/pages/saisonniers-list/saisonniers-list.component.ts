@@ -85,6 +85,10 @@ structures: StructureDTO[] = [];
   showAffectModal = false;
   selectedStructureId: number | null = null;
 
+  // ── 🆕 Ajouter ces deux lignes ──
+  loading: { [key: number]: boolean } = {};
+  analyses: { [key: number]: any } = {};
+
   get structuresEC(): StructureDTO[] {
   return this.structures.filter(s => s.type === 'ESPACE_COMMERCIAL');
 }
@@ -163,6 +167,71 @@ get toutesCompletes(): boolean {
       error: err => console.error(err)
     });
 }
+
+// ═══ Popup Analyse IA ═══
+popupVisible = false;
+currentAnalyse: any = null;
+currentCandidature: any = null;
+currentYear = new Date().getFullYear();
+
+analyser(cand: any) {
+  this.loading[cand.id] = true;
+  
+  // Fermer le popup existant avant d'en ouvrir un nouveau
+  this.popupVisible = false;
+  this.currentAnalyse = null;
+  this.currentCandidature = null;
+
+  this.candidatureService.analyserCandidature(cand.id).subscribe({
+    next: (res) => {
+      this.analyses[cand.id] = res;
+      this.currentAnalyse = res;
+      this.currentCandidature = cand;
+      this.loading[cand.id] = false;
+
+      if (typeof res.alertes === 'string') {
+        try {
+          this.currentAnalyse.alertes = JSON.parse(res.alertes);
+        } catch {
+          this.currentAnalyse.alertes = [res.alertes];
+        }
+      }
+
+      if (typeof res.verifications === 'string') {
+        try {
+          this.currentAnalyse.verifications = JSON.parse(res.verifications);
+        } catch {}
+      }
+
+      // Petit délai pour laisser Angular détecter la fermeture avant la réouverture
+      setTimeout(() => {
+        this.popupVisible = true;
+      }, 50);
+    },
+    error: () => {
+      this.loading[cand.id] = false;
+    }
+  });
+}
+closePopup() {
+  this.popupVisible = false;
+  this.currentAnalyse = null;
+  this.currentCandidature = null;
+}
+
+getExtrait(champ: string): string {
+  if (!this.currentAnalyse) return '—';
+  const ok = this.currentAnalyse?.verifications?.[champ];
+  switch (champ) {
+    case 'cin_numero':         return ok ? String(this.currentCandidature?.saisonnier?.cin) : 'Non correspondant';
+    case 'cin_nom':            return ok ? this.currentCandidature?.saisonnier?.nom : 'Non correspondant';
+    case 'rib':                return ok ? this.currentCandidature?.saisonnier?.rib : 'Non correspondant';
+    case 'diplome_annee':      return ok ? String(this.currentYear) : 'Année incorrecte';
+    case 'diplome_specialite': return ok ? (this.currentCandidature?.saisonnier?.specialiteDiplome || '—') : 'Non trouvée';
+    default:                   return '—';
+  }
+}
+
 
 // ── getter filteredCandidatures mis à jour ──
 get filteredCandidatures() {

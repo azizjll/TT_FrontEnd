@@ -9,11 +9,27 @@ export interface SaisonnierDTO {
   prenom: string;
   cin: number;
   rib: string;
+  telephone?: string; 
+}
+
+export interface AgentResultat {
+  nom:     string;
+  action:  'APPELER' | 'AVERTIR' | 'REJETER';
+  statut:  string;
+  call_id: string;
+}
+
+export interface AgentResponse {
+  status:    string;
+  message:   string;
+  resultats: AgentResultat[];
 }
 
 @Injectable({ providedIn: 'root' })
 export class SaisonnierService {
   private readonly API = 'http://localhost:8080/api/saisonniers';
+    private readonly AGENT_URL = 'http://localhost:5003';   // ← ajouter
+
 
   constructor(private http: HttpClient) {}
 
@@ -36,5 +52,19 @@ getByCampagneAndStructure(campagneId: number, structureId: number): Observable<S
         `${this.API}/by-campagne-structure?campagneId=${campagneId}&structureId=${structureId}`
     );
 }
+
+ lancerAgent(
+    campagneId:   number,
+    regionId:     number,
+    seuil:        number,
+    absencesData: Record<string, number>   // { "0612345678": 5, ... }
+  ): Observable<AgentResponse> {
+    return this.http.post<AgentResponse>(`${this.AGENT_URL}/lancer`, {
+      campagne_id:   campagneId,
+      region_id:     regionId,
+      seuil:         seuil,
+      absences_data: absencesData
+    });
+  }
 
 }

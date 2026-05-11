@@ -128,21 +128,143 @@
             {{ statusLabel(cand.statut) }}
           </span>
         </td>
+
+        <!-- Dans le tableau des candidatures -->
+
         <td>
-          <div class="btn-row">
-            <button class="btn-tbl" (click)="openDossier(cand)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
-              Dossier
-            </button>
-            
-          </div>
-        </td>
+  <div class="btn-row">
+    <button class="btn-tbl btn-analyze" (click)="analyser(cand)" [disabled]="loading[cand.id]">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      {{ loading[cand.id] ? 'Analyse...' : 'Analyser' }}
+    </button>
+    <button class="btn-tbl" (click)="openDossier(cand)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+      Dossier
+    </button>
+  </div>
+</td>
       </tr>
     </tbody>
   </table>
+</div>
+
+
+
+
+<!-- ═══════════════ POPUP ANALYSE IA ═══════════════ -->
+<div class="popup-overlay" *ngIf="popupVisible" (click)="closePopup()">
+  <div class="popup-card" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="popup-header">
+      <div class="popup-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        Résultat Analyse IA
+      </div>
+      <button class="popup-close" (click)="closePopup()">✕</button>
+    </div>
+
+    <!-- Score + Decision -->
+    <div class="popup-score-row" *ngIf="currentAnalyse">
+      <div class="score-circle" [ngClass]="{
+        'score-green':  currentAnalyse.score >= 80,
+        'score-orange': currentAnalyse.score >= 50 && currentAnalyse.score < 80,
+        'score-red':    currentAnalyse.score < 50
+      }">
+        <span class="score-num">{{ currentAnalyse.score }}</span>
+        <span class="score-label">/ 100</span>
+      </div>
+      <div class="decision-block">
+        <span class="decision-badge" [ngClass]="{
+          'badge-vert':   currentAnalyse.decision === 'ACCEPTE',
+          'badge-rouge':  currentAnalyse.decision === 'REJETE',
+          'badge-orange': currentAnalyse.decision === 'VERIFICATION_MANUELLE'
+        }">
+          {{ currentAnalyse.decision === 'ACCEPTE' ? '✅ Accepté' :
+             currentAnalyse.decision === 'REJETE'  ? '❌ Rejeté' : '⚠️ Vérification manuelle' }}
+        </span>
+        <p class="decision-resume">{{ currentAnalyse.resume }}</p>
+      </div>
+    </div>
+
+    <!-- Comparaison données -->
+    <div class="popup-section">
+      <h4 class="section-title">Comparaison des données</h4>
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Champ</th>
+            <th>Saisi par le candidat</th>
+            <th>Extrait du document</th>
+            <th>Résultat</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Numéro CIN</td>
+            <td class="val-saisie">{{ currentCandidature?.saisonnier?.cin }}</td>
+            <td class="val-extraite">{{ getExtrait('cin_numero') }}</td>
+            <td><span class="check" [ngClass]="currentAnalyse?.verifications?.cin_numero ? 'ok' : 'ko'">
+              {{ currentAnalyse?.verifications?.cin_numero ? '✅' : '❌' }}
+            </span></td>
+          </tr>
+          <tr>
+            <td>Nom</td>
+            <td class="val-saisie">{{ currentCandidature?.saisonnier?.nom }}</td>
+            <td class="val-extraite">{{ getExtrait('cin_nom') }}</td>
+            <td><span class="check" [ngClass]="currentAnalyse?.verifications?.cin_nom ? 'ok' : 'ko'">
+              {{ currentAnalyse?.verifications?.cin_nom ? '✅' : '❌' }}
+            </span></td>
+          </tr>
+          <tr>
+            <td>RIB</td>
+            <td class="val-saisie">{{ currentCandidature?.saisonnier?.rib }}</td>
+            <td class="val-extraite">{{ getExtrait('rib') }}</td>
+            <td><span class="check" [ngClass]="currentAnalyse?.verifications?.rib ? 'ok' : 'ko'">
+              {{ currentAnalyse?.verifications?.rib ? '✅' : '❌' }}
+            </span></td>
+          </tr>
+          <tr>
+            <td>Année diplôme</td>
+            <td class="val-saisie">{{ currentYear }}</td>
+            <td class="val-extraite">{{ getExtrait('diplome_annee') }}</td>
+            <td><span class="check" [ngClass]="currentAnalyse?.verifications?.diplome_annee ? 'ok' : 'ko'">
+              {{ currentAnalyse?.verifications?.diplome_annee ? '✅' : '❌' }}
+            </span></td>
+          </tr>
+          <tr>
+            <td>Spécialité</td>
+            <td class="val-saisie">{{ currentCandidature?.saisonnier?.specialiteDiplome }}</td>
+            <td class="val-extraite">{{ getExtrait('diplome_specialite') }}</td>
+            <td><span class="check" [ngClass]="currentAnalyse?.verifications?.diplome_specialite ? 'ok' : 'ko'">
+              {{ currentAnalyse?.verifications?.diplome_specialite ? '✅' : '❌' }}
+            </span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Alertes -->
+    <div class="popup-section" *ngIf="currentAnalyse?.alertes?.length > 0">
+      <h4 class="section-title">⚠️ Alertes détectées</h4>
+      <ul class="alertes-list">
+        <li *ngFor="let alerte of currentAnalyse.alertes">{{ alerte }}</li>
+      </ul>
+    </div>
+
+    <!-- Footer -->
+    <div class="popup-footer">
+      <button class="btn-close-popup" (click)="closePopup()">Fermer</button>
+    </div>
+
+  </div>
 </div>
 
   <!-- EMPTY STATE -->
