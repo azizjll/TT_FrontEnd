@@ -25,6 +25,9 @@ import { StructuresComponent } from './features/admin/pages/structures/structure
 import { CampagneGuard } from './guards/campagne.guard';
 import { CampagneExpireeComponent } from './pages/campagne-expiree/campagne-expiree.component';
 import { IltizamComponent } from './pages/iltizam/iltizam.component';
+import { RoleGuard } from './guards/role.guard';
+import { LayoutSuperadminComponent } from './features/superadmin/layout-superadmin/layout-superadmin.component';
+import { UsersListComponent } from './features/superadmin/users-list/users-list.component';
 
 const routes: Routes = [
 
@@ -34,7 +37,7 @@ const routes: Routes = [
 
 
   {
-    path: 'entreprise',
+    path: 'rhregioanl',
     component: RhLayoutComponent,canActivate: [RhGuard],
     children: [
       { path: 'saisonniers', component: SaisonniersListComponent },
@@ -43,6 +46,12 @@ const routes: Routes = [
       { path: 'documents', component: DocumentsComponent },
       {path: 'Presence&paiement', component: PresencePaiementComponent},
       { path: '', redirectTo: 'saisonniers', pathMatch: 'full' }
+    ]
+  },
+  {
+    path: 'superadmin', component:LayoutSuperadminComponent,
+    children: [
+      {path: 'user_list', component: UsersListComponent}
     ]
   },
   {path: 'home-ge', component: HomeGeneralComponent},
@@ -59,8 +68,8 @@ const routes: Routes = [
   component: IltizamComponent,
  
 },
-{ 
-  path: 'espace-saisonnier', 
+{
+  path: 'espace-saisonnier',
   component: EspacesaisonnierComponent,
   canActivate: [CampagneGuard]
 }, 

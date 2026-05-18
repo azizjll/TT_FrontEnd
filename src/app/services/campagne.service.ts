@@ -87,6 +87,8 @@ creerCampagneAvecExcel(dto: CampagneRequestDTO, fichierExcel: File): Observable<
   getMesCampagnes(): Observable<Campagne[]> {
   return this.http.get<Campagne[]>(`${this.baseUrl}/mes-campagnes`, this.getAuthHeaders());
 }
-
+getAllCampagnes(): Observable<any[]> {
+  return this.http.get<any[]>(`${this.baseUrl}`);
+}
 
 }

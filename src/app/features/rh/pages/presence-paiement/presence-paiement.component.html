@@ -57,14 +57,10 @@
 
   <!-- ── PARAMETRES ── -->
   <div class="params-bar">
-    <div class="param-group">
-      <label>Taux journalier (DT)</label>
-      <input type="number" [(ngModel)]="tauxJourDT" min="1" (change)="recalcAll()">
-    </div>
+    
     <div class="param-group">
   <label>Durée contrat (jours)</label>
-  <input type="number" [(ngModel)]="dureeContrat" min="1" 
-         (change)="onDureeContratChange()">
+  <input type="number" [(ngModel)]="dureeContrat" min="1" disabled>
 </div>
     
     

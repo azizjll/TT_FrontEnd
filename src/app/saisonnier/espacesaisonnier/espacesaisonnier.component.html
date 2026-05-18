@@ -74,13 +74,7 @@
         <span>Mes Documents</span>
       </button>
 
-      <button class="nav-item" [class.active]="activeTab === 'notifications'" (click)="setTab('notifications')">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
-        </svg>
-        <span>Notifications</span>
-        <span class="nav-badge alert" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
-      </button>
+      
 
       <button class="nav-item" [class.active]="activeTab === 'profil'" (click)="setTab('profil')">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -320,30 +314,7 @@
 </section>
 
     <!-- ===== NOTIFICATIONS ===== -->
-    <section *ngIf="activeTab === 'notifications'" @fadeInUp>
-      <div class="page-header">
-        <div>
-          <h1 class="page-title">Notifications</h1>
-          <p class="page-subtitle">Restez informé de l'évolution de vos dossiers</p>
-        </div>
-        <button class="btn-outline" (click)="markAllRead()">Tout marquer comme lu</button>
-      </div>
-
-      <div class="notif-list" [@listStagger]="notifications.length">
-        <div class="notif-item" *ngFor="let notif of notifications" [class.unread]="!notif.lu">
-          <div class="notif-dot" [class]="'dot-' + notif.type"></div>
-          <div class="notif-content">
-            <p class="notif-message">{{ notif.message }}</p>
-            <span class="notif-date">{{ notif.date }}</span>
-          </div>
-          <div class="notif-icon" [class]="'icon-' + notif.type">
-            <svg *ngIf="notif.type === 'success'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            <svg *ngIf="notif.type === 'warning'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            <svg *ngIf="notif.type === 'info'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          </div>
-        </div>
-      </div>
-    </section>
+    
 
     <!-- ===== PROFIL ===== -->
     <section *ngIf="activeTab === 'profil'" @fadeInUp>
@@ -370,20 +341,40 @@
 
       <!-- Stats rapides -->
       <div class="profil-stats-card" style="margin-top:24px">
-        <h3 class="info-card-title">Statistiques</h3>
-        <div class="profil-stat-row">
-          <span>Candidatures envoyées</span>
-          <strong>{{ statsData.total }}</strong>
-        </div>
-        <div class="profil-stat-row">
-          <span>Acceptées</span>
-          <strong class="green">{{ statsData.acceptees }}</strong>
-        </div>
-        <div class="profil-stat-row">
-          <span>En attente</span>
-          <strong>{{ statsData.enAttente }}</strong>
-        </div>
-      </div>
+  <h3 class="info-card-title">Statistiques</h3>
+
+  <div class="profil-stat-row">
+    <span>Candidatures envoyées</span>
+    <span style="background:rgba(99,102,241,0.12); color:#6366f1; 
+                 padding:3px 12px; border-radius:20px; font-weight:600; font-size:13px">
+      {{ statsData.total }} candidature{{ statsData.total > 1 ? 's' : '' }}
+    </span>
+  </div>
+
+  <div class="profil-stat-row">
+    <span>Acceptées</span>
+    <span style="background:rgba(34,197,94,0.12); color:#22c55e; 
+                 padding:3px 12px; border-radius:20px; font-weight:600; font-size:13px">
+      {{ statsData.acceptees > 0 ? '✔ ' + statsData.acceptees + ' acceptée' + (statsData.acceptees > 1 ? 's' : '') : 'Aucune' }}
+    </span>
+  </div>
+
+  <div class="profil-stat-row">
+    <span>En attente</span>
+    <span style="background:rgba(234,179,8,0.12); color:#eab308; 
+                 padding:3px 12px; border-radius:20px; font-weight:600; font-size:13px">
+      {{ statsData.enAttente > 0 ? '⏳ ' + statsData.enAttente + ' en attente' : 'Aucune' }}
+    </span>
+  </div>
+
+  <div class="profil-stat-row">
+    <span>Refusées</span>
+    <span style="background:rgba(239,68,68,0.12); color:#ef4444; 
+                 padding:3px 12px; border-radius:20px; font-weight:600; font-size:13px">
+      {{ statsData.refusees > 0 ? '✖ ' + statsData.refusees + ' refusée' + (statsData.refusees > 1 ? 's' : '') : 'Aucune' }}
+    </span>
+  </div>
+</div>
     </div>
 
     <!-- Colonne détails -->
@@ -508,272 +499,6 @@
 </div>
 
 <!-- ===== MODAL DETAIL ===== -->
-<div class="modal-backdrop" *ngIf="showDetailModal" (click)="closeDetail()" @fadeInUp>
-  <div class="modal-box" (click)="$event.stopPropagation()" *ngIf="selectedCandidature">
-
-    <div class="modal-header">
-      <div>
-        <h2 class="modal-title">{{ selectedCandidature.campagne }}</h2>
-        <span class="statut-badge" [ngClass]="getStatutClass(selectedCandidature.statut)">
-          {{ getStatutLabel(selectedCandidature.statut) }}
-        </span>
-      </div>
-      <button class="modal-close" (click)="closeDetail()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
-
-    <!-- Bannière lecture seule -->
-    <div *ngIf="!canEditCandidature"
-         style="background:rgba(34,197,94,0.1); border-left:3px solid #22c55e;
-                padding:10px 16px; margin:0 24px 12px; border-radius:6px;
-                font-size:13px; color:#16a34a; display:flex; align-items:center; gap:8px;">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" stroke-width="2">
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-        <polyline points="22 4 12 14.01 9 11.01"/>
-      </svg>
-      Candidature acceptée — modification désactivée
-    </div>
-
-    <div class="modal-body">
-
-      <!-- ── Informations personnelles ── -->
-      <h4 class="section-title">Informations personnelles</h4>
-      <div class="modal-grid">
-
-        
-
-        <div class="modal-field">
-          <label>Prénom *</label>
-          <input *ngIf="canEditCandidature"
-                 type="text" [(ngModel)]="selectedCandidature['prenom']"
-                 placeholder="Prénom">
-          <span *ngIf="!canEditCandidature">{{ selectedCandidature['prenom'] }}</span>
-        </div>
-
-        <div class="modal-field">
-          <label>Nom *</label>
-          <input *ngIf="canEditCandidature"
-                 type="text" [(ngModel)]="selectedCandidature['nom']"
-                 placeholder="Nom">
-          <span *ngIf="!canEditCandidature">{{ selectedCandidature['nom'] }}</span>
-        </div>
-
-        <div class="modal-field">
-          <label>Email *</label>
-          <input *ngIf="canEditCandidature"
-                 type="email" [(ngModel)]="selectedCandidature['email']"
-                 placeholder="email@exemple.com">
-          <span *ngIf="!canEditCandidature">{{ selectedCandidature['email'] }}</span>
-        </div>
-
-        <div class="modal-field">
-          <label>Téléphone *</label>
-          <input *ngIf="canEditCandidature"
-                 type="text" [(ngModel)]="selectedCandidature['telephone']"
-                 placeholder="XX XXX XXX">
-          <span *ngIf="!canEditCandidature">{{ selectedCandidature['telephone'] }}</span>
-        </div>
-
-        <div class="modal-field">
-          <label>CIN *</label>
-          <input *ngIf="canEditCandidature"
-                 type="text" [(ngModel)]="selectedCandidature['cin']"
-                 placeholder="Numéro CIN">
-          <span *ngIf="!canEditCandidature">{{ selectedCandidature['cin'] }}</span>
-        </div>
-
-        <div class="modal-field">
-          <label>RIB *</label>
-          <input *ngIf="canEditCandidature"
-                 type="text" [(ngModel)]="selectedCandidature['rib']"
-                 placeholder="RIB bancaire">
-          <span *ngIf="!canEditCandidature">{{ selectedCandidature['rib'] }}</span>
-        </div>
-
-      </div>
-
-      <!-- ── Informations du parent ── -->
-      <h4 class="section-title">Informations du parent</h4>
-      <div class="modal-grid">
-
-        <div class="modal-field">
-          <label>Nom & Prénom du parent</label>
-          <input *ngIf="canEditCandidature"
-                 type="text" [(ngModel)]="selectedCandidature['nomPrenomParent']"
-                 placeholder="Nom et prénom du parent">
-          <span *ngIf="!canEditCandidature">{{ selectedCandidature['nomPrenomParent'] || '—' }}</span>
-        </div>
-
-        <div class="modal-field">
-          <label>Matricule du parent</label>
-          <input *ngIf="canEditCandidature"
-                 type="text" [(ngModel)]="selectedCandidature['matriculeParent']"
-                 placeholder="Matricule du parent">
-          <span *ngIf="!canEditCandidature">{{ selectedCandidature['matriculeParent'] || '—' }}</span>
-        </div>
-
-      </div>
-
-      <!-- ── Formation ── -->
-      <h4 class="section-title">Formation</h4>
-      <div class="modal-grid">
-
-        <div class="modal-field">
-          <label>Niveau d'étude</label>
-          <select *ngIf="canEditCandidature" [(ngModel)]="selectedCandidature['niveauEtude']">
-            <option value="">— Choisir —</option>
-            <option value="BAC">Bac</option>
-            <option value="BAC+1">Bac+1</option>
-            <option value="BAC+2">Bac+2</option>
-            <option value="BAC+3">Bac+3</option>
-            <option value="BAC+4">Bac+4</option>
-            <option value="BAC+5">Bac+5</option>
-            <option value="BAC+6">Bac+6</option>
-          </select>
-          <span *ngIf="!canEditCandidature">{{ selectedCandidature['niveauEtude'] || '—' }}</span>
-        </div>
-
-        <div class="modal-field">
-          <label>Diplôme</label>
-          <select *ngIf="canEditCandidature" [(ngModel)]="selectedCandidature['diplomeNom']">
-            <option value="">— Choisir —</option>
-            <option value="BTP">BTP</option>
-            <option value="BTS">BTS</option>
-            <option value="LICENCE">Licence</option>
-            <option value="MASTER">Master</option>
-            <option value="Ingenierie">Ingénierie</option>
-            <option value="DOCTORAT">Doctorat</option>
-          </select>
-          <span *ngIf="!canEditCandidature">{{ selectedCandidature['diplomeNom'] || '—' }}</span>
-        </div>
-
-        <div class="modal-field">
-          <label>Spécialité</label>
-          <input *ngIf="canEditCandidature"
-                 type="text" [(ngModel)]="selectedCandidature['specialite']"
-                 placeholder="Votre spécialité">
-          <span *ngIf="!canEditCandidature">{{ selectedCandidature['specialite'] || '—' }}</span>
-        </div>
-
-        <div class="modal-field">
-          <label>Mois de travail</label>
-          <select *ngIf="canEditCandidature" [(ngModel)]="selectedCandidature['moisTravail']">
-            <option value="JUILLET">Juillet</option>
-            <option value="AOUT">Août</option>
-          </select>
-          <span *ngIf="!canEditCandidature">{{ selectedCandidature['moisTravail'] || '—' }}</span>
-        </div>
-
-      </div>
-
-      <!-- ── Infos lecture seule ── -->
-      <h4 class="section-title">Candidature</h4>
-      <div class="modal-grid">
-
-        <div class="modal-field">
-          <label>Date de postulation</label>
-          <span>{{ selectedCandidature.datePostulation }}</span>
-        </div>
-
-        <div class="modal-field">
-          <label>Direction de rattachement</label>
-          <span>{{ selectedCandidature.localisation || '—' }}</span>
-        </div>
-
-        <div class="modal-field">
-  <label>Structure</label>
-
-  
-
-  <select
-  [(ngModel)]="selectedCandidature['structureId']"
-  [compareWith]="compareStructures">
-    <option [ngValue]="null">— Choisir —</option>
-    <optgroup label="🏪 Espaces Commerciaux" *ngIf="structuresEC.length > 0">
-      <option *ngFor="let s of structuresEC"
-              [ngValue]="s.id"
-              [disabled]="!s.disponible">
-        {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
-        {{ s.disponible ? '' : '⛔ COMPLET' }}
-      </option>
-    </optgroup>
-    <optgroup label="💻 Centres Technologiques" *ngIf="structuresCT.length > 0">
-      <option *ngFor="let s of structuresCT"
-              [ngValue]="s.id"
-              [disabled]="!s.disponible">
-        {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
-        {{ s.disponible ? '' : '⛔ COMPLET' }}
-      </option>
-    </optgroup>
-  </select>
-
-  <div *ngIf="selectedCandidature?.structureNom && canEditCandidature"
-     style="margin-bottom:10px; font-size:13px; color:#666">
-
-  Structure actuelle :
-  <strong>{{ selectedCandidature.structureNom }}</strong>
-
-  <span style="font-size:11px; padding:2px 8px; border-radius:20px; font-weight:600;"
-          [style.background]="saisonnier.structure.type === 'ESPACE_COMMERCIAL' 
-                              ? 'rgba(74,158,255,0.12)' : 'rgba(168,85,247,0.12)'"
-          [style.color]="saisonnier.structure.type === 'ESPACE_COMMERCIAL' 
-                         ? '#4A9EFF' : '#a855f7'">
-      {{ saisonnier.structure.type === 'ESPACE_COMMERCIAL' ? 'EC' : 'CT' }}
-    </span>
-
-    {{ saisonnier.structure.nom }}
-
-</div>
-
-  <!-- Lecture seule : affiche le nom exact -->
-  <span *ngIf="!canEditCandidature">
-    {{ selectedCandidature['structureNom'] || '—' }}
-  </span>
-</div>
-
-
-
-        
-
-      </div>
-
-      <!-- Message employeur -->
-      <div class="modal-message" *ngIf="selectedCandidature.message" style="margin-top:12px">
-        <label>Message</label>
-        <p>{{ selectedCandidature.message }}</p>
-      </div>
-
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn-outline" (click)="closeDetail()">Fermer</button>
-
-      <button class="btn-primary"
-              *ngIf="canEditCandidature"
-              (click)="saveCandidatureDetail()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2">
-          <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
-          <polyline points="17 21 17 13 7 13 7 21"/>
-          <polyline points="7 3 7 8 15 8"/>
-        </svg>
-        Enregistrer les modifications
-      </button>
-
-      <button class="btn-primary"
-              *ngIf="selectedCandidature.statut === 'ACCEPTEE'">
-        ✓ Confirmer ma disponibilité
-      </button>
-    </div>
-
-  </div>
-</div>
 
 <!-- ===================== MODAL ===================== -->
 <div class="modal-overlay" *ngIf="showCandidatureModal" (click)="closeModal()">
@@ -800,6 +525,65 @@
     </div>
 
     <form #candidatureForm="ngForm" (ngSubmit)="submitCandidature(candidatureForm)" class="modal-form">
+
+      <!-- ====== Informations du parent ====== -->
+      <h4 class="section-title">Informations du parent</h4>
+<div class="form-grid">
+
+  <!-- Matricule avec recherche auto -->
+  <div class="field">
+    <label>Matricule du parent</label>
+    <div style="position:relative">
+      <input type="text"
+             [(ngModel)]="form.matriculeParent"
+             name="matriculeParent"
+             placeholder="Matricule du parent"
+             (blur)="onMatriculeParentChange(form.matriculeParent)">
+
+      <!-- Spinner chargement -->
+      <svg *ngIf="isLoadingParent"
+           width="16" height="16" viewBox="0 0 24 24" fill="none"
+           stroke="#3b82f6" stroke-width="2"
+           style="position:absolute; right:12px; top:50%;
+                  transform:translateY(-50%);
+                  animation:spin 1s linear infinite">
+        <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" opacity=".2"/>
+        <path d="M21 12a9 9 0 00-9-9"/>
+      </svg>
+    </div>
+
+    <!-- Matricule non trouvé -->
+    <small style="color:#e74c3c; margin-top:4px; display:block"
+           *ngIf="parentNonTrouve">
+      ⚠️ Matricule non trouvé ou parent non autorisé.
+    </small>
+  </div>
+
+  <!-- Nom & Prénom — auto-rempli en lecture seule -->
+  <div class="field">
+    <label>Nom & Prénom du parent</label>
+    <input type="text"
+           [(ngModel)]="form.nomPrenomParent"
+           name="nomPrenomParent"
+           placeholder="Rempli automatiquement"
+           [readonly]="!!form.nomPrenomParent"
+           [style.background]="form.nomPrenomParent 
+                               ? 'rgba(34,197,94,0.07)' : ''"
+           [style.color]="form.nomPrenomParent ? '#16a34a' : ''">
+
+    <!-- Confirmation trouvé -->
+    <small *ngIf="form.nomPrenomParent && !isLoadingParent"
+           style="color:#16a34a; display:flex; align-items:center;
+                  gap:4px; margin-top:4px; font-size:12px">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      Parent autorisé ✓
+    </small>
+  </div>
+
+</div>
 <h4 class="section-title">Informations de saisonnier</h4>
       <div class="form-grid">
 
@@ -883,25 +667,7 @@
 
       </div>
 
-      <!-- ====== Informations du parent ====== -->
-      <h4 class="section-title">Informations du parent</h4>
-      <div class="form-grid">
-
-        <div class="field">
-          <label>Matricule du parent</label>
-          <input type="text" [(ngModel)]="form.matriculeParent" name="matriculeParent"
-                 placeholder="Matricule du parent">
-        </div>
-
-        <div class="field">
-          <label>Nom & Prénom du parent</label>
-          <input type="text" [(ngModel)]="form.nomPrenomParent" name="nomPrenomParent"
-                 placeholder="Nom et prénom du parent">
-        </div>
-
-        
-
-      </div>
+      
 
       <!-- ====== Formation ====== -->
       <h4 class="section-title">Formation</h4>
@@ -994,8 +760,16 @@
               </option>
             </optgroup>
 
-            <optgroup label="💻 Centres Technologiques" *ngIf="structuresCT.length > 0">
+            <optgroup label="💻 Centres Techniques" *ngIf="structuresCT.length > 0">
               <option *ngFor="let s of structuresCT"
+                      [value]="s.id"
+                      [disabled]="!s.disponible">
+                {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+                {{ s.disponible ? '' : '⛔ COMPLET' }}
+              </option>
+            </optgroup>
+            <optgroup label="💻 Structures Centrales" *ngIf="structuresSC.length > 0">
+              <option *ngFor="let s of structuresSC"
                       [value]="s.id"
                       [disabled]="!s.disponible">
                 {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
@@ -1051,7 +825,7 @@
               <rect x="2" y="5" width="20" height="14" rx="2"/>
               <line x1="2" y1="10" x2="22" y2="10"/>
             </svg>
-            <span>RIB Bancaire</span>
+            <span>RIB</span>
             <small *ngIf="ribFileName" class="file-name">{{ ribFileName }}</small>
             <small class="error-msg" *ngIf="formSubmitted && !ribFile">⚠️ Fichier RIB obligatoire.</small>
             <input type="file"  (change)="onFileChange($event,'rib')">

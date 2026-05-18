@@ -11,7 +11,7 @@ import Swal from 'sweetalert2';
 export interface Structure {
   id: number;
   nom: string;
-  type: 'ESPACE_COMMERCIAL' | 'CENTRE_TECHNOLOGIQUE';
+  type: 'ESPACE_COMMERCIAL' | 'CENTRE_TECHNIQUE';
    regionId: number;
   adresse?: string;
   affectations?: any[];
@@ -64,12 +64,16 @@ activeStructureFilter: string = 'ALL';
     rib: '',
     telephone: '',
     email: '',
+    niveauEtude: '',
+    diplomeNom: '',
+    moisTravail: '',
     regionId: ''
   };
 
   cinFile!: File;
   diplome!: File;
   contrat!: File;
+  
 
   regions: Region[] = []; // toutes les régions
   myRegion!: Region;      // région du RH connecté
@@ -90,7 +94,7 @@ structures: StructureDTO[] = [];
 }
 
 get structuresCT(): StructureDTO[] {
-  return this.structures.filter(s => s.type === 'CENTRE_TECHNOLOGIQUE');
+  return this.structures.filter(s => s.type === 'CENTRE_TECHNIQUE');
 }
 
 // ← getter pour éviter arrow function dans le template
@@ -568,7 +572,7 @@ envoyerDemandeAutorisation(): void {
 this.affectationService.getStructuresByRegion(this.myRegion.id).subscribe({
   next: (data: any[]) => {
     this.structuresCommerciaux = data.filter(s => s.type === 'ESPACE_COMMERCIAL');
-    this.structuresTech = data.filter(s => s.type === 'CENTRE_TECHNOLOGIQUE');
+    this.structuresTech = data.filter(s => s.type === 'CENTRE_TECHNIQUE');
     this.structures = [...this.structuresCommerciaux, ...this.structuresTech];
   },
   error: err => console.error(err)

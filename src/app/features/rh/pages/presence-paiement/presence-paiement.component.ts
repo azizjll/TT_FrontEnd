@@ -190,7 +190,7 @@ get structuresEC(): StructureDTO[] {
 }
 
 get structuresCT(): StructureDTO[] {
-    return this.structures.filter(s => s.type === 'CENTRE_TECHNOLOGIQUE');
+    return this.structures.filter(s => s.type === 'CENTRE_TECHNIQUE');
 }
 
   private buildLocalMap(): Record<number, Partial<SaisonnierPaie>> {
@@ -279,7 +279,7 @@ get structuresCT(): StructureDTO[] {
       [`Taux journalier: ${this.tauxJourDT} DT | Durée contrat: ${this.dureeContrat} jours`],
       [],
       ['عدد','الاسم و اللقب','رقم بطاقة التعريف','تاريخ المباشرة','مدة العمل','الغيابات',
-       'المبلغ الصافي (DT)','صاحب الحساب','CIN صاحب الحساب','رقم الحساب','الحالة']
+       'المبلغ الصافي (DT)','رقم الحساب','الحالة']
     ];
 
     this.saisonniers.forEach((s, i) => {
@@ -291,8 +291,6 @@ get structuresCT(): StructureDTO[] {
         s.duree,
         s.absences,
         s.montantNet,
-        s.nomTitulaireCompte || '',
-        s.cinTitulaire || '',
         s.rib || '',
         s.paye ? 'Payé' : 'Impayé'
       ]);
@@ -344,8 +342,6 @@ get structuresCT(): StructureDTO[] {
           <tr><td>الغيابات</td><td>${s.absences} يوم</td></tr>
           <tr><td>أيام العمل الفعلية</td><td>${s.duree - s.absences} يوم</td></tr>
           <tr><td>المبلغ الصافي</td><td class="total"><strong>${s.montantNet.toFixed(3)} DT</strong></td></tr>
-          <tr><td>الاسم و اللقب صاحب الحساب</td><td>${s.nomTitulaireCompte || '—'}</td></tr>
-          <tr><td>رقم بطاقة تعريف صاحب الحساب</td><td>${s.cinTitulaire || '—'}</td></tr>
           <tr><td>رقم الحساب</td><td>${s.rib || '—'}</td></tr>
         </table>
         <br>

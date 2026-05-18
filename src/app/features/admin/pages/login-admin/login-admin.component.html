@@ -34,7 +34,7 @@
       </div>
 
       <p class="visual-desc">
-        Gérez les recrutements saisonniers, suivez les candidatures et pilotez les structures régionales depuis un portail unique.
+        Créer ,suivre et gérer la campagne de recrutement des saisonniers .
       </p>
 
       <!-- Indicateurs de vue -->
@@ -70,13 +70,22 @@
 
     <!-- Top bar -->
     <div class="top-bar">
-      <div class="breadcrumb-nav">
-        <button class="crumb" [class.active]="currentView==='login'"  (click)="switchView('login')">Connexion</button>
-        <span class="crumb-sep">·</span>
-        <button class="crumb" [class.active]="currentView==='signup'" (click)="switchView('signup')">Inscription</button>
-      </div>
-      
-    </div>
+  <!-- Bouton retour -->
+  <button class="back-btn" routerLink="/home-ge">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" 
+         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5"/>
+      <path d="M12 19l-7-7 7-7"/>
+    </svg>
+    Retour
+  </button>
+
+  <div class="breadcrumb-nav">
+    <button class="crumb" [class.active]="currentView==='login'" (click)="switchView('login')">Connexion</button>
+    <span class="crumb-sep">·</span>
+    <button class="crumb" [class.active]="currentView==='signup'" (click)="switchView('signup')">Inscription</button>
+  </div>
+</div>
 
     <!-- Conteneur de toutes les vues -->
     <div class="form-center">
@@ -397,7 +406,7 @@
         <label class="field-label"
                style="transform:translateY(-22px) scale(.82);
                       color:var(--color-primary);">
-          Rôle
+          
         </label>
       </div>
     </div>
@@ -421,12 +430,7 @@
     </span>
   </button>
 
-  <div class="form-switch">
-    J'ai déjà un compte ?
-    <button type="button" class="link-btn strong" (click)="switchView('login')">
-      Se connecter
-    </button>
-  </div>
+  
 
 </form>
 

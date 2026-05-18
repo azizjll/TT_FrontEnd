@@ -33,6 +33,9 @@ import { MemoComponent } from './features/admin/pages/memo/memo.component';
 import { StructuresComponent } from './features/admin/pages/structures/structures.component';
 import { CampagneExpireeComponent } from './pages/campagne-expiree/campagne-expiree.component';
 import { IltizamComponent } from './pages/iltizam/iltizam.component';
+import { LayoutSuperadminComponent } from './features/superadmin/layout-superadmin/layout-superadmin.component';
+import { DashboardSuperadminComponent } from './features/superadmin/dashboard-superadmin/dashboard-superadmin.component';
+import { UsersListComponent } from './features/superadmin/users-list/users-list.component';
 
 @NgModule({
   declarations: [
@@ -60,6 +63,8 @@ import { IltizamComponent } from './pages/iltizam/iltizam.component';
     StructuresComponent,
     CampagneExpireeComponent,
     IltizamComponent,
+    DashboardSuperadminComponent,
+    
     
     
   ],

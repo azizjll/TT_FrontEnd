@@ -216,36 +216,281 @@
   }
 }
 /* ===== LOGO CENTRAL ===== */
-.center-logo {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -80%);
-  z-index: 5;
-  animation: pulse 3s ease-in-out infinite;
-
-  img {
-    border-radius: 50%;          /* cache les coins blancs */
-    mix-blend-mode: screen;      /* fond blanc devient transparent sur le dégradé bleu */
-    filter: drop-shadow(0 8px 28px rgba(0,0,0,0.35));
-  }
-}
-
-/* ===== SIGLES DÉCORATIFS ===== */
 .tt-deco {
   position: absolute;
   z-index: 1;
   pointer-events: none;
-  animation: float 9s ease-in-out infinite;
+}
 
-  img {
-    mix-blend-mode: screen;      /* fond blanc → transparent sur le bleu */
-    opacity: 0.7;
-    border-radius: 50%;
+.tt-deco img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+
+  /* Supprimer effets */
+  animation: none;
+  mix-blend-mode: normal;
+  opacity: 1;
+  border-radius: 0;
+  filter: none;
+}
+
+/* Position */
+.tt-deco-4 {
+  top: 20px;
+  left: 70px;
+}
+
+.login-form {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 16px;
+  padding: 2rem;
+  margin: 2rem auto;
+  max-width: 380px;
+  text-align: center;
+
+  h3 {
+    color: white;
+    font-size: 1.1rem;
+    margin-bottom: 1.2rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border 0.2s;
+    box-sizing: border-box;
+
+    &::placeholder { color: rgba(255, 255, 255, 0.6); }
+    &:focus { border-color: white; background: rgba(255,255,255,0.22); }
+  }
+
+  .error-msg {
+    color: #ffcdd2;
+    font-size: 0.85rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .btn-login {
+    width: 100%;
+    padding: 0.8rem;
+    background: white;
+    color: #1a237e;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: opacity 0.2s, transform 0.1s;
+
+    &:hover:not(:disabled) { opacity: 0.92; transform: translateY(-1px); }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
   }
 }
 
-.tt-deco-1 { bottom: 20%; left: 8%;  animation-delay: 0.8s; }
-.tt-deco-2 { top: 28%;   right: 8%; animation-delay: 2.5s; }
-.tt-deco-3 { bottom: 28%; right: 20%; animation-delay: 1.5s; }
-.tt-deco-4 { bottom: 84%; right: 90%; animation-delay: 0.1s; }
+// ===== MODAL RESET PASSWORD =====
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 40, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-card {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem 1.75rem;
+  width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: slideUp 0.25s ease;
+
+  h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #111;
+    text-align: center;
+    margin: 0;
+  }
+
+  .modal-desc {
+    font-size: 13px;
+    color: #666;
+    text-align: center;
+    line-height: 1.55;
+    margin: 0;
+  }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// Indicateur d'étapes
+.modal-steps {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 4px;
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    transition: all 0.3s;
+
+    &.active {
+      width: 22px;
+      border-radius: 4px;
+      background: #2b1de8;
+    }
+  }
+}
+
+// Icône centrale colorée
+.modal-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  font-size: 24px;
+
+  &.icon-blue   { background: #E6F1FB; color: #185FA5; }
+  &.icon-amber  { background: #FAEEDA; color: #854F0B; }
+  &.icon-green  { background: #EAF3DE; color: #3B6D11; }
+}
+
+// Badge étape
+.modal-step-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 12px;
+  border-radius: 20px;
+  margin: 0 auto;
+  text-align: center;
+
+  &.badge-blue   { background: #E6F1FB; color: #185FA5; }
+  &.badge-amber  { background: #FAEEDA; color: #854F0B; }
+  &.badge-green  { background: #EAF3DE; color: #3B6D11; }
+}
+
+.modal-divider {
+  border: none;
+  border-top: 1px solid #f0f0f0;
+  margin: 0;
+}
+
+// Inputs dans le modal
+.modal-card .form-input {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 9px;
+  border: 1px solid #e0e0e0;
+  background: #f9f9fb;
+  color: #222;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border 0.2s, background 0.2s;
+
+  &::placeholder { color: #bbb; }
+  &:focus { border-color: #2b1de8; background: white; }
+}
+
+.code-input {
+  letter-spacing: 0.55em;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+}
+
+// Bouton principal (couleur change selon étape)
+.btn-modal-primary {
+  width: 100%;
+  padding: 12px;
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+
+  &:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  &.blue  { background: linear-gradient(135deg, #1a1de8, #2b6bff); }
+  &.amber { background: linear-gradient(135deg, #854F0B, #EF9F27); }
+  &.green { background: linear-gradient(135deg, #3B6D11, #639922); }
+}
+
+.btn-modal-back {
+  width: 100%;
+  padding: 9px;
+  background: transparent;
+  color: #999;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  transition: color 0.2s;
+
+  &:hover { color: #333; }
+}
+
+.modal-resend {
+  font-size: 12px;
+  color: #aaa;
+  text-align: center;
+
+  span {
+    color: #2b1de8;
+    cursor: pointer;
+    font-weight: 600;
+    &:hover { text-decoration: underline; }
+  }
+}
+
+.error-msg {
+  color: #c0392b;
+  font-size: 13px;
+  text-align: center;
+  background: #FCEBEB;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.success-msg {
+  color: #3B6D11;
+  font-size: 13px;
+  text-align: center;
+  background: #EAF3DE;
+  padding: 8px 12px;
+  border-radius: 8px;
+}

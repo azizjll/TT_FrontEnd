@@ -320,7 +320,7 @@ private redirectByRole(token: string): void {
   }
   get viewSubtitle(): string {
     return {
-      login:  'Accès réservé aux administrateurs autorisés',
+      login:  'Accès réservé aux administrateurs RH autorisés',
       signup: 'Remplissez le formulaire pour créer votre accès',
       forgot: 'Recevez un lien de réinitialisation par e-mail',
       reset:  'Choisissez un nouveau mot de passe sécurisé',

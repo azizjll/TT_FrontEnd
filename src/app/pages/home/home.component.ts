@@ -70,7 +70,7 @@ export class HomeComponent implements OnInit {
   }
 
   get structuresCT(): StructureDTO[] {
-    return this.structures.filter(s => s.type === 'CENTRE_TECHNOLOGIQUE');
+    return this.structures.filter(s => s.type === 'CENTRE_TECHNIQUE');
   }
 
   get toutesCompletes(): boolean {

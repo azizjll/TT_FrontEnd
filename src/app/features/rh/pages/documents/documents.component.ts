@@ -12,8 +12,10 @@ import { EtatRHService } from 'src/app/service/etat-rh.service';
 
 export interface Structure {
   name: string;
-  type: 'ESPACE_COMMERCIAL' | 'CENTRE_TECHNOLOGIQUE';
+  type: 'ESPACE_COMMERCIAL' | 'CENTRE_TECHNIQUE'| 'STRUCTURE_CENTRALE';
   adresse: string;
+  autorises: number;   
+  recrutes: number;
 }
 
 export interface Region {
@@ -35,7 +37,7 @@ activeTab: 'campagne' | 'excel' | 'etat' = 'campagne';
 circulairePdfUrl: string = '';
   zoomLevel = 100;
   selectedRegion = '';
-  filterType: 'ALL' | 'ESPACE_COMMERCIAL' | 'CENTRE_TECHNOLOGIQUE' = 'ALL';
+  filterType: 'ALL' | 'ESPACE_COMMERCIAL' | 'CENTRE_TECHNIQUE' | 'STRUCTURE_CENTRALE' = 'ALL';
   structureData: Record<string, any> = {};
 
   safePdfUrl: SafeResourceUrl | null = null;
@@ -126,7 +128,9 @@ uploadEtat(file: File): void {
         regionMap.get(s.region)!.push({
           name: s.nom,
           type: s.type,
-          adresse: s.adresse
+          adresse: s.adresse,
+          autorises:s.autorises??0,
+          recrutes:s.recrutes??0
         });
       });
 
@@ -254,7 +258,7 @@ private handlePdfUpload(file: File): void {
   get totalRegions():    number { return this.regions.length; }
   get totalStructures(): number { return this.regions.reduce((s, r) => s + r.structures.length, 0); }
   get totalEC(): number { return this.regions.reduce((s, r) => s + r.structures.filter(st => st.type === 'ESPACE_COMMERCIAL').length, 0); }
-  get totalCT(): number { return this.regions.reduce((s, r) => s + r.structures.filter(st => st.type === 'CENTRE_TECHNOLOGIQUE').length, 0); }
+  get totalCT(): number { return this.regions.reduce((s, r) => s + r.structures.filter(st => st.type === 'CENTRE_TECHNIQUE').length, 0); }
 
   // ══════════════════════════════════════════════════════
   //  Tableau / LocalStorage
@@ -290,20 +294,27 @@ private handlePdfUpload(file: File): void {
     return this.filterType === 'ALL' ? all : all.filter(s => s.type === this.filterType);
   }
 
-  getRest(region: string, struct: string): number {
-    const auth = +this.structureData[`${region}|${struct}|auth`] || 0;
-    const rec  = +this.structureData[`${region}|${struct}|rec`]  || 0;
-    return Math.max(0, auth - rec);
-  }
+  getRest(region: string, structName: string): number {
+  const s = this.regions.find(r => r.name === region)
+                         ?.structures.find(st => st.name === structName);
+  if (!s) return 0;
+  return Math.max(0, s.autorises - s.recrutes);
+}
 
-  getRegionTotal(region: string, type: 'auth' | 'rec'): number {
-    return (this.regions.find(r => r.name === region)?.structures ?? [])
-      .reduce((sum, s) => sum + (+this.structureData[`${region}|${s.name}|${type}`] || 0), 0);
-  }
+getRegionTotal(region: string, type: 'auth' | 'rec'): number {
+  return (this.regions.find(r => r.name === region)?.structures ?? [])
+    .reduce((sum, s) => sum + (type === 'auth' ? s.autorises : s.recrutes), 0);
+}
 
-  getTotalAuth(): number { return this.regions.reduce((s, r) => s + this.getRegionTotal(r.name, 'auth'), 0); }
-  getTotalRec():  number { return this.regions.reduce((s, r) => s + this.getRegionTotal(r.name, 'rec'),  0); }
+getTotalAuth(): number {
+  return this.regions.reduce((s, r) =>
+    s + r.structures.reduce((acc, st) => acc + st.autorises, 0), 0);
+}
 
+getTotalRec(): number {
+  return this.regions.reduce((s, r) =>
+    s + r.structures.reduce((acc, st) => acc + st.recrutes, 0), 0);
+}
   getGlobalIndex(ri: number, si: number): number {
     let idx = 1;
     for (let i = 0; i < ri; i++) idx += this.regions[i].structures.length;

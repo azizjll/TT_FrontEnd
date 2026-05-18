@@ -171,8 +171,51 @@ iltizamAcceptedForm = false;
 
   // ── ✅ NOUVEAU : est-ce que l'utilisateur est connecté ? ──
   get isLoggedIn(): boolean {
-    return !!this.authService.getToken();
+  return !!this.authService.getToken() 
+      && this.authService.getRole() === 'SAISONNIER';
+}
+
+// ── Nouvelles propriétés ──
+isLoadingParent = false;
+parentNonTrouve = false;
+
+// ── Nouvelle méthode ──
+onMatriculeParentChange(matricule: string): void {
+  this.parentNonTrouve = false;
+  this.form.nomPrenomParent = '';
+
+  if (!matricule || matricule.trim() === '') return;
+
+  this.isLoadingParent = true;
+
+  this.candidatureService.getParentByMatricule(matricule.trim()).subscribe({
+    next: (parent) => {
+  console.log('Parent reçu:', parent);
+  
+  // Vérifier si le parent est dépassé (quota atteint)
+  if (parent.depasse) {
+    this.form.nomPrenomParent = '';
+    this.isLoadingParent = false;
+    this.parentNonTrouve = true;
+    return;
   }
+
+  this.form.nomPrenomParent = parent.nomPrenom; // ← était `${parent.prenom} ${parent.nom}`
+  this.isLoadingParent = false;
+  this.parentNonTrouve = false;
+},
+    error: () => {
+      this.form.nomPrenomParent = '';
+      this.isLoadingParent = false;
+      this.parentNonTrouve = true;
+    }
+  });
+}
+
+
+
+
+  
 
   // ─────────────────────────────────────────────────────────
   // Données mock (inchangées)
@@ -464,7 +507,11 @@ openCandidatureFromGuide(): void {
   }
 
   get structuresCT(): StructureDTO[] {
-    return this.structures.filter(s => s.type === 'CENTRE_TECHNOLOGIQUE');
+    return this.structures.filter(s => s.type === 'CENTRE_TECHNIQUE');
+  }
+
+  get structuresSC(): StructureDTO[] {
+    return this.structures.filter(s => s.type === 'STRUCTURE_CENTRALE');
   }
 
   get toutesCompletes(): boolean {
@@ -493,6 +540,7 @@ openCandidatureFromGuide(): void {
   };
 
   this.showDetailModal = true;
+  this.setTab('profil');
 
   // ✅ 2. Charger structures après
   if (candidature.regionId) {
@@ -607,7 +655,11 @@ openCandidatureFromGuide(): void {
   }
 
   const formData = new FormData();
-  Object.entries(this.form).forEach(([k, v]) => formData.append(k, v as string));
+  Object.entries(this.form).forEach(([k, v]) => {
+  if (v !== null && v !== undefined) {
+    formData.append(k, String(v)); // String() préserve le 0 de tête
+  }
+});
   formData.append('campagneId', this.campagneIdSelectionnee.toString());
   formData.append('cinFile', this.cinFile);
   formData.append('diplome', this.diplome);

@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
 export interface StructureDTO {
   id: number;
   nom: string;
-  type: 'ESPACE_COMMERCIAL' | 'CENTRE_TECHNOLOGIQUE';
+  type: 'ESPACE_COMMERCIAL' | 'CENTRE_TECHNIQUE' | 'STRUCTURE_CENTRALE';
   region: string;
   adresse: string;
   autorises: number;

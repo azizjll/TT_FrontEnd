@@ -33,6 +33,11 @@ export interface Region {
   nom: string;
 }
 
+export interface SigninAdminRequest {
+  matricule: string;
+  password: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -52,6 +57,10 @@ export class AuthService {
 
   signin(request: SigninRequest): Observable<{ token: string }> {
   return this.http.post<{ token: string }>(`${this.baseUrl}/signin`, request);
+}
+
+signinAdmin(request: SigninAdminRequest): Observable<{ token: string }> {
+  return this.http.post<{ token: string }>(`${this.baseUrl}/signin-admin`, request);
 }
 
   forgotPassword(request: PasswordResetRequest): Observable<any> {

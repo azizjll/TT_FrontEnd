@@ -151,6 +151,25 @@
   padding: 16px 40px; border-bottom: 1px solid var(--border);
 }
 
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #555;
+  font-size: 14px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.back-btn:hover {
+  background: #f0f0f0;
+  color: #111;
+}
+
 .breadcrumb-nav { display: flex; align-items: center; gap: 8px; }
 .crumb {
   background: none; border: none; cursor: pointer;

@@ -89,7 +89,7 @@ interface Utilisateur {
 interface Structure {
   id: number;
   nom: string;
-  type: 'ESPACE_COMMERCIAL' | 'CENTRE_TECHNOLOGIQUE';
+  type: 'ESPACE_COMMERCIAL' | 'CENTRE_TECHNIQUE'|'STRUCTURE_CENTRALE';
   region: string;
   adresse: string;
   autorises: number;
@@ -129,7 +129,6 @@ export interface PresenceRow {
   id: number;
   nom: string;
   cin: string;
-  dateMbacharaa: string;
   dureeContrat: number;
   absences: number;
   montantNet: number;
@@ -141,7 +140,6 @@ export interface PresenceRow {
 interface PresenceConfig {
   tauxJournalier: number;
   dureeContrat: number;
-  datePriseFonction: string;
   campagneId: number | null;
 }
 
@@ -222,6 +220,8 @@ campagneExcelDragOver = false;
 regionsDetectees: string[] = [];
 isSavingCampagne = false;
 isLoading = false;
+
+parentSearch = '';
 
 // ── Documents à uploader lors de la création ──────────────────
 documentsPendants: Array<{ file: File; nom: string; type: string }> = [];
@@ -330,7 +330,7 @@ get structuresEC(): StructureDTO[] {
 }
 
 get structuresCT(): StructureDTO[] {
-  return this.structures.filter(s => s.type === 'CENTRE_TECHNOLOGIQUE');
+  return this.structures.filter(s => s.type === 'CENTRE_TECHNIQUE');
 }
 
 onStructureChange(): void {
@@ -389,9 +389,8 @@ isLoadingViewerDoc = false;
   editingPresenceRow: PresenceRow | null = null;
 
   presenceConfig: PresenceConfig = {
-    tauxJournalier: 8,
+    tauxJournalier: 0,
     dureeContrat: 30,
-    datePriseFonction: '2025-07-01',
     campagneId: null
   };
 
@@ -399,7 +398,7 @@ isLoadingViewerDoc = false;
     totalSaisonniers: 0,
     masseSalariale: 0,
     joursAbsence: 0,
-    tauxJournalier: 8
+    tauxJournalier: 0
   };
 
   presenceTotals: PresenceTotals = {
@@ -454,21 +453,72 @@ roleUtilisateur = '';
   ngOnInit(): void {
     this.updatePageMeta();
     this.loadRegions();
-    this.loadCampagnes();
-    this.loadCandidatures();
+   ;
     this.buildGouvernorats();
     this.applyStructureFilter();
     this.loadCirculaireFromServer();
     this.loadStructures();
-    this.loadPresenceRows();
       this.loadParents();
         this.loadEtatsRH();
 
+         this.loadCampagnesPuisCandidatures();
 
     this.nomUtilisateur = this.authService.getNomComplet();
   this.roleUtilisateur = this.authService.getRole();
   }
 
+
+  loadCampagnesPuisCandidatures(): void {
+  this.campagneService.getAllCampagnes().subscribe({
+    next: (data) => {
+            console.log('🔍 Réponse brute backend:', JSON.stringify(data));
+
+      const statutMap: Record<string, { statut: Campagne['statut'], label: string }> = {
+        'BROUILLON': { statut: 'brouillon', label: 'Brouillon' },
+        'ACTIVE':    { statut: 'active',    label: 'Active'    },
+        'CLOTUREE':  { statut: 'termine',   label: 'Clôturée'  },
+      };
+
+      this.campagnes = (data as any[]).map(c => {
+        const statutKey = (c.statut || 'BROUILLON').toUpperCase();
+        const statutInfo = statutMap[statutKey] ?? { statut: 'brouillon', label: 'Brouillon' };
+        return {
+          id: c.id,
+          nom: c.libelle,
+          code: c.code,
+          dateDebut: c.dateDebut,
+          dateFin: c.dateFin,
+          statut: statutInfo.statut,
+          statutLabel: statutInfo.label,
+          candidatures: c.candidatures || 0,
+          affectations: c.affectations || 0,
+          verrouille: c.verrouille || false,
+          description: c.description || '',
+          budget: c.budget || '',
+          regionIds: c.regionIds || []
+        };
+      });
+
+      // ✅ appliquerBudget ICI — campagnes[] est chargé et dureeContrat = 30
+      this.appliquerBudgetCampagne();
+      this.updateStats();
+
+      // ✅ PUIS candidatures
+      this.loadCandidatures();
+    },
+    error: err => console.error('Erreur chargement campagnes', err)
+  });
+}
+
+
+  get filteredParents() {
+  const q = this.parentSearch.toLowerCase().trim();
+  if (!q) return this.parents;
+  return this.parents.filter(p =>
+    p.nomPrenom?.toLowerCase().includes(q) ||
+    p.matricule?.toLowerCase().includes(q)
+  );
+}
 
   loadEtatsRH(): void {
   this.etatRHService.getAllEtats().subscribe({
@@ -636,15 +686,15 @@ ouvrirLienDoc(url: string): void {
       },
       memo: {
         title: 'مذكرة الإنتداب 2025',
-        subtitle: 'Mذكرة حول انتداب أعوان متعاقدين لعمل موسمي'
+        subtitle: 'ذكرة حول انتداب أعوان متعاقدين لعمل موسمي'
       },
       structures: {
         title: 'Structures par Région',
-        subtitle: '17 gouvernorats — 87 structures — Campagne 2025'
+        subtitle: ''
       },
       presence: {
         title: 'Présence & Paiement',
-        subtitle: 'Suivi des absences et calcul automatique des salaires — Campagne 2025'
+        subtitle: ''
       }
     };
     this.pageTitle = meta[this.activeSection].title;
@@ -667,7 +717,7 @@ ouvrirLienDoc(url: string): void {
   }
 
 loadCampagnes(): void {
-  this.campagneService.getMesCampagnes().subscribe({   // ← changement ici
+  this.campagneService.getAllCampagnes().subscribe({   // ← changement ici
     next: (data) => {
       this.campagnes = (data as any[]).map(c => {
 
@@ -696,6 +746,7 @@ loadCampagnes(): void {
           regionIds: c.regionIds || []
         };
       });
+      
       
 
       if (this.campagnes.length > 0 && !this.presenceConfig.campagneId) {
@@ -1021,7 +1072,7 @@ get structuresCTDisponibles(): StructureDTO[] {
   if (!this.candidatureFilterRegion) return [];
   return this.structures.filter(s =>
     s.region === this.candidatureFilterRegion &&
-    s.type === 'CENTRE_TECHNOLOGIQUE'
+    s.type === 'CENTRE_TECHNIQUE'
   );
 }
 
@@ -1500,7 +1551,8 @@ loadStructures(): void {
     this.structureService.updateStructure(this.editingStructure.id, {
       nom: this.editingStructure.nom,
       adresse: this.editingStructure.adresse,
-      autorises: this.editingStructure.autorises
+      autorises: this.editingStructure.autorises,
+      type: this.editingStructure.type
     }).subscribe({
       next: () => {
         const idx = this.structures.findIndex(s => s.id === this.editingStructure!.id);
@@ -1526,7 +1578,7 @@ loadStructures(): void {
   private updateStructuresStats(): void {
     this.structuresStats.total = this.structures.length;
     this.structuresStats.espacesCommerciaux = this.structures.filter(s => s.type === 'ESPACE_COMMERCIAL').length;
-    this.structuresStats.centresTechnologiques = this.structures.filter(s => s.type === 'CENTRE_TECHNOLOGIQUE').length;
+    this.structuresStats.centresTechnologiques = this.structures.filter(s => s.type === 'CENTRE_TECHNIQUE').length;
     this.structuresStats.saisonnersAutorises = this.structures.reduce((sum, s) => sum + s.autorises, 0);
     this.structuresStats.saisonnersRecrutes = this.structures.reduce((sum, s) => sum + s.recrutes, 0);
   }
@@ -1549,7 +1601,6 @@ loadStructures(): void {
     id: c.id,
     nom: `${c.saisonnier.nom} ${c.saisonnier.prenom}`,
     cin: String(c.saisonnier.cin),
-    dateMbacharaa: this.presenceConfig.datePriseFonction,
     dureeContrat: this.presenceConfig.dureeContrat,
     absences: 0,
     montantNet: 0,
@@ -1558,15 +1609,16 @@ loadStructures(): void {
     campagneId: c.campagne.id
   }));
 
-  // ✅ Appliquer budget APRÈS avoir construit les rows
-  this.appliquerBudgetCampagne();
+  // ✅ PAS d'appliquerBudgetCampagne() ici — déjà fait dans loadCampagnesPuisCandidatures
+  // Le tauxJournalier est déjà calculé correctement avant d'arriver ici
 
-  // ✅ Recalculer avec le bon taux
   this.recalculerPresence();
   this.filterPresence();
 }
 getCampagneBudget(): number {
-  const campagne = this.campagnes.find(c => c.id === this.presenceConfig.campagneId);
+  // Priorité : campagne active, sinon campagne sélectionnée
+  const campagneActive = this.campagnes.find(c => c.statut === 'active');
+  const campagne = campagneActive ?? this.campagnes.find(c => c.id === this.presenceConfig.campagneId);
   return campagne?.budget ? Number(campagne.budget) : 0;
 }
 
@@ -1662,20 +1714,46 @@ getCampagneBudget(): number {
 
 
 private appliquerBudgetCampagne(): void {
-  const campagneActive = this.campagnes.find(
-    c => c.id === this.presenceConfig.campagneId && c.statut === 'active'
+  // Debug : voir ce qu'on a réellement
+  console.log('📋 Campagnes disponibles:', 
+    this.campagnes.map(c => ({ 
+      id: c.id, 
+      nom: c.nom,
+      statut: c.statut, 
+      budget: c.budget 
+    }))
   );
 
-  if (campagneActive?.budget) {
-    const budgetParSaisonnier = Number(campagneActive.budget);
-    if (budgetParSaisonnier > 0 && this.presenceConfig.dureeContrat > 0) {
-      this.presenceConfig.tauxJournalier = 
-        Math.round((budgetParSaisonnier / this.presenceConfig.dureeContrat) * 1000) / 1000;
-      console.log('✅ Taux calculé:', this.presenceConfig.tauxJournalier); // debug
+  // Chercher par statut local 'active' (mappé depuis ACTIVE backend)
+  let campagneActive = this.campagnes.find(c => c.statut === 'active');
+
+  // Fallback : si aucune trouvée, prendre la première avec un budget
+  if (!campagneActive) {
+    campagneActive = this.campagnes.find(c => c.budget && Number(c.budget) > 0);
+    if (campagneActive) {
+      console.log('⚠️ Fallback : utilisation de la campagne avec budget:', campagneActive.nom);
     }
   }
-}
 
+  if (!campagneActive) {
+    console.warn('⚠️ Aucune campagne active ni avec budget trouvée');
+    // Fallback final : première campagne disponible
+    campagneActive = this.campagnes[0];
+    if (!campagneActive) return;
+  }
+
+  this.presenceConfig.campagneId = campagneActive.id;
+
+  const budgetMensuel = Number(campagneActive.budget);
+  console.log('🎯 Campagne utilisée:', campagneActive.nom, '| statut:', campagneActive.statut);
+  console.log('💰 Budget mensuel:', budgetMensuel);
+
+  if (budgetMensuel > 0 && this.presenceConfig.dureeContrat > 0) {
+    this.presenceConfig.tauxJournalier =
+      Math.round((budgetMensuel / this.presenceConfig.dureeContrat) * 1000) / 1000;
+    console.log('✅ Taux journalier calculé:', this.presenceConfig.tauxJournalier);
+  }
+}
   onPresenceRowChange(row: PresenceRow): void {
     row.montantNet = (row.dureeContrat - row.absences) * this.presenceConfig.tauxJournalier;
     this.updatePresenceStats();
@@ -1777,7 +1855,6 @@ private appliquerBudgetCampagne(): void {
   'الأيام المشغولة': row.dureeContrat - row.absences,
   'الغيابات': row.absences,
   'مدة العمل (أيام)': row.dureeContrat,
-  'تاريخ المباشرة': row.dateMbacharaa,
   'رقم بطاقة التعريف': row.cin,
   'الاسم واللقب': row.nom,
   'عد': index + 1,
@@ -2062,7 +2139,7 @@ showToast(msg: string): void {
 
 logout(): void {
   this.authService.logout();
-  this.router.navigate(['/admin/login']);
+  this.router.navigate(['/home-ge']);
 
 
 }

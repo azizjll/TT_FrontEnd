@@ -451,91 +451,7 @@
     <div class="modal-content">
       <form #saisonnierForm="ngForm" (ngSubmit)="submit(saisonnierForm)">
 
-        <div class="form-grid-2">
-
-          <!-- Prénom -->
-          <div class="field-group">
-            <label>Prénom *</label>
-            <input type="text" [(ngModel)]="form.prenom" name="prenom"
-                   #prenom="ngModel" required placeholder="Prénom"
-                   [class.input-error]="prenom.invalid && prenom.touched">
-            <small class="error-msg" *ngIf="prenom.touched && prenom.errors?.['required']">
-              ⚠️ Le prénom est obligatoire.
-            </small>
-          </div>
-
-          <!-- Nom -->
-          <div class="field-group">
-            <label>Nom *</label>
-            <input type="text" [(ngModel)]="form.nom" name="nom"
-                   #nom="ngModel" required placeholder="Nom"
-                   [class.input-error]="nom.invalid && nom.touched">
-            <small class="error-msg" *ngIf="nom.touched && nom.errors?.['required']">
-              ⚠️ Le nom est obligatoire.
-            </small>
-          </div>
-
-          <!-- Email -->
-          <div class="field-group">
-            <label>Email *</label>
-            <input type="email" [(ngModel)]="form.email" name="email"
-                   #email="ngModel" required email placeholder="email@exemple.com"
-                   [class.input-error]="email.invalid && email.touched">
-            <small class="error-msg" *ngIf="email.touched && email.errors?.['required']">
-              ⚠️ L'email est obligatoire.
-            </small>
-            <small class="error-msg" *ngIf="email.touched && email.errors?.['email']">
-              ⚠️ Format d'email invalide.
-            </small>
-          </div>
-
-          <!-- Téléphone -->
-          <div class="field-group">
-            <label>Téléphone *</label>
-            <input type="text" [(ngModel)]="form.telephone" name="telephone"
-                   #telephone="ngModel" required pattern="^\d{8}$" placeholder="XX XXX XXX"
-                   [class.input-error]="telephone.invalid && telephone.touched">
-            <small class="error-msg" *ngIf="telephone.touched && telephone.errors?.['required']">
-              ⚠️ Le téléphone est obligatoire.
-            </small>
-            <small class="error-msg" *ngIf="telephone.touched && telephone.errors?.['pattern']">
-              ⚠️ Le téléphone doit contenir exactement 8 chiffres.
-            </small>
-          </div>
-
-          <!-- CIN -->
-          <div class="field-group">
-            <label>CIN *</label>
-            <input type="text" [(ngModel)]="form.cin" name="cin"
-                   #cin="ngModel" required pattern="^\d{8}$" placeholder="Numéro CIN"
-                   [class.input-error]="cin.invalid && cin.touched">
-            <small class="error-msg" *ngIf="cin.touched && cin.errors?.['required']">
-              ⚠️ Le CIN est obligatoire.
-            </small>
-            <small class="error-msg" *ngIf="cin.touched && cin.errors?.['pattern']">
-              ⚠️ Le CIN doit contenir exactement 8 chiffres.
-            </small>
-          </div>
-
-          <!-- RIB -->
-          <div class="field-group">
-            <label>RIB *</label>
-            <input type="text" [(ngModel)]="form.rib" name="rib"
-                   #rib="ngModel" required pattern="^\d{20}$" placeholder="RIB bancaire"
-                   [class.input-error]="rib.invalid && rib.touched">
-            <small class="error-msg" *ngIf="rib.touched && rib.errors?.['required']">
-              ⚠️ Le RIB est obligatoire.
-            </small>
-            <small class="error-msg" *ngIf="rib.touched && rib.errors?.['pattern']">
-              ⚠️ Le RIB doit contenir exactement 20 chiffres.
-            </small>
-          </div>
-
-        </div>
-
-        <!-- ====== Informations du parent ====== -->
-        <!-- ====== Informations du parent ====== -->
-<h4 class="section-title">Informations du parent</h4>
+        <h4 class="section-title">Informations du parent</h4>
 
 <div class="form-grid-2">
 
@@ -622,22 +538,126 @@
 </div>
 
 </div>
+            <h4 class="section-title">Informations de saisonniers</h4>
+
+
+        <div class="form-grid-2">
+
+          
+          <!-- Prénom -->
+          <div class="field-group">
+            <label>Prénom *</label>
+            <input type="text" [(ngModel)]="form.prenom" name="prenom"
+                   #prenom="ngModel" required placeholder="Prénom"
+                   [class.input-error]="prenom.invalid && prenom.touched">
+            <small class="error-msg" *ngIf="prenom.touched && prenom.errors?.['required']">
+              ⚠️ Le prénom est obligatoire.
+            </small>
+          </div>
+
+          <!-- Nom -->
+          <div class="field-group">
+            <label>Nom *</label>
+            <input type="text" [(ngModel)]="form.nom" name="nom"
+                   #nom="ngModel" required placeholder="Nom"
+                   [class.input-error]="nom.invalid && nom.touched">
+            <small class="error-msg" *ngIf="nom.touched && nom.errors?.['required']">
+              ⚠️ Le nom est obligatoire.
+            </small>
+          </div>
+
+          <!-- Email -->
+          <div class="field-group">
+            <label>Email *</label>
+            <input type="email" [(ngModel)]="form.email" name="email"
+                   #email="ngModel" required email placeholder="email@exemple.com"
+                   [class.input-error]="email.invalid && email.touched">
+            <small class="error-msg" *ngIf="email.touched && email.errors?.['required']">
+              ⚠️ L'email est obligatoire.
+            </small>
+            <small class="error-msg" *ngIf="email.touched && email.errors?.['email']">
+              ⚠️ Format d'email invalide.
+            </small>
+          </div>
+
+          <!-- Téléphone -->
+          <div class="field-group">
+            <label>Téléphone *</label>
+            <input type="text" [(ngModel)]="form.telephone" name="telephone"
+                   #telephone="ngModel" required pattern="^\d{8}$" placeholder="XX XXX XXX"
+                   [class.input-error]="telephone.invalid && telephone.touched">
+            <small class="error-msg" *ngIf="telephone.touched && telephone.errors?.['required']">
+              ⚠️ Le téléphone est obligatoire.
+            </small>
+            <small class="error-msg" *ngIf="telephone.touched && telephone.errors?.['pattern']">
+              ⚠️ Le téléphone doit contenir exactement 8 chiffres.
+            </small>
+          </div>
+
+          <!-- CIN -->
+          <div class="field-group">
+            <label>CIN *</label>
+            <input type="text" [(ngModel)]="form.cin" name="cin"
+                   #cin="ngModel" required pattern="^\d{8}$" placeholder="Numéro CIN"
+                   [class.input-error]="cin.invalid && cin.touched">
+            <small class="error-msg" *ngIf="cin.touched && cin.errors?.['required']">
+              ⚠️ Le CIN est obligatoire.
+            </small>
+            <small class="error-msg" *ngIf="cin.touched && cin.errors?.['pattern']">
+              ⚠️ Le CIN doit contenir exactement 8 chiffres.
+            </small>
+          </div>
+
+          <!-- RIB -->
+          <div class="field-group">
+            <label>RIB *</label>
+            <input type="text" [(ngModel)]="form.rib" name="rib"
+                   #rib="ngModel" required pattern="^\d{20}$" placeholder="RIB "
+                   [class.input-error]="rib.invalid && rib.touched">
+            <small class="error-msg" *ngIf="rib.touched && rib.errors?.['required']">
+              ⚠️ Le RIB est obligatoire.
+            </small>
+            <small class="error-msg" *ngIf="rib.touched && rib.errors?.['pattern']">
+              ⚠️ Le RIB doit contenir exactement 20 chiffres.
+            </small>
+          </div>
+
+        </div>
+
+        <!-- ====== Informations du parent ====== -->
+        <!-- ====== Informations du parent ====== -->
+
 
         <!-- ====== Formation ====== -->
         <h4 class="section-title">Formation</h4>
         <div class="form-grid-2">
 
           <div class="field-group">
-            <label>Niveau d'étude</label>
-            <input type="text" [(ngModel)]="form.niveauEtude" name="niveauEtude"
-                   placeholder="Ex: BAC+2">
-          </div>
+  <label>Niveau d'étude</label>
+  <select [(ngModel)]="form.niveauEtude" name="niveauEtude">
+    <option value="" disabled selected hidden>Choisir le niveau d'étude</option>
+    <option value="BAC">Bac</option>
+    <option value="BAC+1">Bac+1</option>
+    <option value="BAC+2">Bac+2</option>
+    <option value="BAC+3">Bac+3</option>
+    <option value="BAC+4">Bac+4</option>
+    <option value="BAC+5">Bac+5</option>
+    <option value="BAC+6">Bac+6</option>
+  </select>
+</div>
 
-          <div class="field-group">
-            <label>Diplôme</label>
-            <input type="text" [(ngModel)]="form.diplomeNom" name="diplomeNom"
-                   placeholder="Ex: BTS, Licence...">
-          </div>
+<div class="field-group">
+  <label>Diplôme</label>
+  <select [(ngModel)]="form.diplomeNom" name="diplomeNom">
+    <option value="" disabled selected hidden>Choisir le diplôme</option>
+    <option value="BTP">BTP</option>
+    <option value="BTS">BTS</option>
+    <option value="LICENCE">Licence</option>
+    <option value="MASTER">Master</option>
+    <option value="Ingenierie">Ingénierie</option>
+    <option value="DOCTORAT">Doctorat</option>
+  </select>
+</div>
 
           <div class="field-group">
             <label>Spécialité Diplôme</label>
@@ -667,18 +687,9 @@
 
           <!-- Direction -->
           <div class="field-group">
-            <label>Direction de rattachement *</label>
-            <select [(ngModel)]="form.regionId" name="regionId"
-                    #regionId="ngModel" required
-                    (ngModelChange)="loadStructuresByRegion($event)"
-                    [class.input-error]="regionId.invalid && regionId.touched">
-              <option value="" disabled selected>Choisir une région</option>
-              <option *ngFor="let region of regions" [value]="region.id">{{ region.nom }}</option>
-            </select>
-            <small class="error-msg" *ngIf="regionId.touched && regionId.errors?.['required']">
-              ⚠️ La direction est obligatoire.
-            </small>
-          </div>
+  <label>Direction de rattachement *</label>
+  <input type="text" [value]="myRegion.nom" disabled>
+</div>
 
           <!-- Structure -->
           <div class="field-group">
@@ -746,23 +757,14 @@
               <input type="file"  (change)="onFileChange($event,'diplome')">
             </label>
 
-            <label class="file-zone" [class.file-error]="formSubmitted && !contrat">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M9 11l3 3L22 4"/>
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-              </svg>
-              <span>Contrat </span>
-              <small *ngIf="contratFileName" class="file-name">{{ contratFileName }}</small>
-              <small class="error-msg" *ngIf="formSubmitted && !contrat">⚠️ Fichier Contrat obligatoire.</small>
-              <input type="file"  (change)="onFileChange($event,'contrat')">
-            </label>
+            
 
             <label class="file-zone" [class.file-error]="formSubmitted && !ribFile">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <rect x="2" y="5" width="20" height="14" rx="2"/>
                 <line x1="2" y1="10" x2="22" y2="10"/>
               </svg>
-              <span>RIB Bancaire </span>
+              <span>RIB</span>
               <small *ngIf="ribFileName" class="file-name">{{ ribFileName }}</small>
               <small class="error-msg" *ngIf="formSubmitted && !ribFile">⚠️ Fichier RIB obligatoire.</small>
               <input type="file"  (change)="onFileChange($event,'rib')">
