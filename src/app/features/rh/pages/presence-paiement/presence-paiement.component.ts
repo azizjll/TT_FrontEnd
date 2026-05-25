@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx-js-style';  // remplace 'xlsx'
 import { SaisonnierDTO, SaisonnierService } from 'src/app/services/saisonnier.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { CampagneService } from 'src/app/services/campagne.service';
 import { StructureDTO, StructureService } from 'src/app/structure.service';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export interface SaisonnierPaie {
   id: number;
@@ -14,6 +16,7 @@ export interface SaisonnierPaie {
   prenom: string;
   cin: number;
   rib: string;
+  moisTravail: string;
   // ← gérés localement
   dateMbacharah: string;
   duree: number;
@@ -44,6 +47,15 @@ export class PresencePaiementComponent implements OnInit {
 
   structures: StructureDTO[] = [];
 selectedStructureId: number | null = null;
+
+selectedMois = 'ALL';
+moisOptions = [
+  { value: 'ALL', label: 'Tous les mois' },
+  { value: 'JUILLET', label: 'Juillet' },
+  { value: 'AOUT', label: 'Août' },
+  { value: 'JUILLET_AOUT', label: 'Juillet & Août' }
+];
+
 
 budgetCampagne = 0;      // salaire mensuel par saisonnier
 campagneNom   = '';      // nom de la campagne active
@@ -113,75 +125,76 @@ onDureeContratChange(): void {
 
 
 onStructureChange(): void {
-    if (!this.campagneId) return;
+  if (!this.campagneId) return;
 
-    if (!this.selectedStructureId) {
-        // Pas de structure sélectionnée → charger tous les saisonniers de la région
-        this.loadSaisonniers();
-        return;
-    }
+  if (!this.selectedStructureId) {
+    this.loadSaisonniers();
+    return;
+  }
 
-    this.saisonnierService.getByCampagneAndStructure(
-        this.campagneId,
-        this.selectedStructureId
-    ).subscribe({
-        next: (dtos) => {
-            const localMap = this.buildLocalMap();
-            this.saisonniers = dtos.map(dto => {
-                const saved = localMap[dto.id] ?? {};
-                return {
-                    id:                 dto.id,
-                    nom:                dto.nom,
-                    prenom:             dto.prenom,
-                    cin:                dto.cin,
-                    rib:                saved.rib ?? dto.rib ?? '',
-                    dateMbacharah:      saved.dateMbacharah ?? this.dateMbacharah,
-                    duree:              saved.duree ?? this.dureeContrat,
-                    absences:           saved.absences ?? 0,
-                    montantNet:         0,
-                    nomTitulaireCompte: saved.nomTitulaireCompte ?? '',
-                    cinTitulaire:       saved.cinTitulaire ?? '',
-                    paye:               saved.paye ?? false,
-                };
-            });
-            this.recalcAll();
-        },
-        error: (err) => console.error('Erreur filtre structure:', err)
-    });
+  this.saisonnierService.getByCampagneAndStructure(
+    this.campagneId,
+    this.selectedStructureId
+  ).subscribe({
+    next: (dtos) => {
+      const localMap = this.buildLocalMap();
+      const acceptes = dtos.filter((dto: any) => dto.statut === 'ACCEPTEE'); // ✅ filtrer
+
+      this.saisonniers = acceptes.map(dto => {  // 🔴 acceptes et non dtos
+        const saved = localMap[dto.id] ?? {};
+        return {
+          id:                 dto.id,
+          nom:                dto.nom,
+          prenom:             dto.prenom,
+          cin:                dto.cin,
+          rib:                saved.rib ?? dto.rib ?? '',
+          dateMbacharah:      saved.dateMbacharah ?? this.dateMbacharah,
+          duree:              saved.duree ?? this.dureeContrat,
+          absences:           saved.absences ?? 0,
+          montantNet:         0,
+          nomTitulaireCompte: saved.nomTitulaireCompte ?? '',
+          cinTitulaire:       saved.cinTitulaire ?? '',
+          paye:               saved.paye ?? false,
+          moisTravail:        dto.moisTravail ?? saved.moisTravail ?? 'JUILLET',
+        };
+      });
+      this.recalcAll();
+    },
+    error: (err) => console.error('Erreur filtre structure:', err)
+  });
 }
 
 
   // ── Chargement depuis le backend (ou mock) ────────
   loadSaisonniers(): void {
-    if (!this.campagneId || !this.regionId) return;
+  if (!this.campagneId || !this.regionId) return;
 
-    this.saisonnierService.getByCampagneAndRegion(this.campagneId, this.regionId).subscribe({
-        next: (dtos: SaisonnierDTO[]) => {
-            const localMap = this.buildLocalMap();
-            this.saisonniers = dtos.map(dto => {
-                const saved = localMap[dto.id] ?? {};
-                return {
-                    id:                 dto.id,
-                    nom:                dto.nom,
-                    prenom:             dto.prenom,
-                    cin:                dto.cin,
-                    rib:                saved.rib ?? dto.rib ?? '',
-                    dateMbacharah:      saved.dateMbacharah ?? this.dateMbacharah,
-                    duree:              saved.duree ?? this.dureeContrat,
-                    absences:           saved.absences ?? 0,
-                    montantNet:         0,
-                    nomTitulaireCompte: saved.nomTitulaireCompte ?? '',
-                    cinTitulaire:       saved.cinTitulaire ?? '',
-                    paye:               saved.paye ?? false,
-                };
-            });
-            this.recalcAll();
-        },
-        error: (err) => {
-            console.error('Erreur chargement saisonniers:', err);
-            if (this.saisonniers.length === 0) this.loadFromStorage();
-        }
-    });
+  this.saisonnierService.getByCampagneAndRegion(this.campagneId, this.regionId).subscribe({
+    next: (dtos: SaisonnierDTO[]) => {
+      const localMap = this.buildLocalMap();
+
+      // ✅ plus besoin de filtrer, le backend retourne déjà uniquement les ACCEPTEE
+      this.saisonniers = dtos.map(dto => {
+        const saved = localMap[dto.id] ?? {};
+        return {
+          id:                 dto.id,
+          nom:                dto.nom,
+          prenom:             dto.prenom,
+          cin:                dto.cin as any,
+          rib:                saved.rib ?? dto.rib ?? '',
+          dateMbacharah:      saved.dateMbacharah ?? this.dateMbacharah,
+          duree:              saved.duree ?? this.dureeContrat,
+          absences:           saved.absences ?? 0,
+          montantNet:         0,
+          nomTitulaireCompte: saved.nomTitulaireCompte ?? '',
+          cinTitulaire:       saved.cinTitulaire ?? '',
+          paye:               saved.paye ?? false,
+          moisTravail:        dto.moisTravail ?? saved.moisTravail ?? 'JUILLET',
+        };
+      });
+      this.recalcAll();
+    }
+  });
 }
 
 
@@ -204,8 +217,14 @@ get structuresCT(): StructureDTO[] {
 
   // ── Calculs ───────────────────────────────────────
   recalcRow(s: SaisonnierPaie): void {
-  s.duree = Math.max(0, this.dureeContrat - s.absences);
+  s.duree      = Math.max(0, this.dureeContrat - s.absences);
   s.montantNet = s.duree * this.tauxJourDT;
+
+  this.saisonnierService.updateAbsences(s.id, s.absences).subscribe({
+    error: (err) => console.error('Erreur mise à jour absences:', err)
+  });
+
+  this.save();
 }
   recalcAll(): void {
     for (const s of this.saisonniers) {
@@ -223,19 +242,39 @@ get structuresCT(): StructureDTO[] {
 
   // ── Filtre / recherche ────────────────────────────
   get filteredSaisonniers(): SaisonnierPaie[] {
-    const q = this.searchQ.toLowerCase().trim();
-    return this.saisonniers.filter(s => {
-      const matchSearch = !q ||
-        s.nom.toLowerCase().includes(q) ||
-        s.prenom.toLowerCase().includes(q) ||
-        s.cin.toString().includes(q);
-      const matchFilter =
-        this.filterPaye === 'ALL' ||
-        (this.filterPaye === 'PAYE'   &&  s.paye) ||
-        (this.filterPaye === 'IMPAYE' && !s.paye);
-      return matchSearch && matchFilter;
-    });
-  }
+
+  const q = this.searchQ.toLowerCase().trim();
+
+  return this.saisonniers.filter(s => {
+
+    const matchSearch =
+      !q ||
+      s.nom.toLowerCase().includes(q) ||
+      s.prenom.toLowerCase().includes(q) ||
+      s.cin.toString().includes(q);
+
+    const matchFilter =
+      this.filterPaye === 'ALL' ||
+      (this.filterPaye === 'PAYE' && s.paye) ||
+      (this.filterPaye === 'IMPAYE' && !s.paye);
+
+    let matchMonth = true;
+
+    if (this.selectedMois !== 'ALL') {
+
+      if (this.selectedMois === 'JUILLET_AOUT') {
+        matchMonth =
+          s.moisTravail === 'JUILLET' ||
+          s.moisTravail === 'AOUT';
+      } else {
+        matchMonth =
+          s.moisTravail === this.selectedMois;
+      }
+    }
+
+    return matchSearch && matchFilter && matchMonth;
+  });
+}
 
   // ── Actions ───────────────────────────────────────
   togglePaye(s: SaisonnierPaie): void {
@@ -274,45 +313,374 @@ get structuresCT(): StructureDTO[] {
 
   // ── Export Excel ─────────────────────────────────
   exportExcel(): void {
-    const rows: any[][] = [
-      ['Tunisie Telecom — Présence & Paiement — Campagne 2025'],
-      [`Taux journalier: ${this.tauxJourDT} DT | Durée contrat: ${this.dureeContrat} jours`],
-      [],
-      ['عدد','الاسم و اللقب','رقم بطاقة التعريف','تاريخ المباشرة','مدة العمل','الغيابات',
-       'المبلغ الصافي (DT)','رقم الحساب','الحالة']
-    ];
+  const wb = XLSX.utils.book_new();
 
-    this.saisonniers.forEach((s, i) => {
-      rows.push([
-        i + 1,
-        `${s.prenom} ${s.nom}`,
-        s.cin,
-        s.dateMbacharah,
-        s.duree,
-        s.absences,
-        s.montantNet,
-        s.rib || '',
-        s.paye ? 'Payé' : 'Impayé'
-      ]);
+  // ── Styles réutilisables ──────────────────────────────────────────────
+  const BLUE_DARK  = '1E3A5F';
+  const BLUE_MED   = '2563EB';
+  const BLUE_LIGHT = 'DBEAFE';
+  const GREEN_BG   = 'D1FAE5';
+  const GREEN_FG   = '065F46';
+  const RED_BG     = 'FEE2E2';
+  const RED_FG     = '991B1B';
+  const GREY_BG    = 'F1F5F9';
+  const YELLOW_BG  = 'FEF9C3';
+  const WHITE      = 'FFFFFF';
+
+  const fontBase   = { name: 'Arial', sz: 10 };
+  const fontWhite  = { ...fontBase, bold: true, color: { rgb: WHITE } };
+  const fontTitle  = { name: 'Arial', sz: 14, bold: true, color: { rgb: WHITE } };
+  const fontSub    = { name: 'Arial', sz: 10, italic: true, color: { rgb: WHITE } };
+  const fontHeader = { name: 'Arial', sz: 10, bold: true, color: { rgb: WHITE } };
+  const fontTotal  = { name: 'Arial', sz: 10, bold: true, color: { rgb: WHITE } };
+
+  const borderThin = {
+    top:    { style: 'thin', color: { rgb: 'CBD5E1' } },
+    bottom: { style: 'thin', color: { rgb: 'CBD5E1' } },
+    left:   { style: 'thin', color: { rgb: 'CBD5E1' } },
+    right:  { style: 'thin', color: { rgb: 'CBD5E1' } },
+  };
+
+  const cellTitle: any = {
+    font: fontTitle,
+    fill: { fgColor: { rgb: BLUE_DARK } },
+    alignment: { horizontal: 'center', vertical: 'center' },
+  };
+
+  const cellSub: any = {
+    font: fontSub,
+    fill: { fgColor: { rgb: BLUE_MED } },
+    alignment: { horizontal: 'center', vertical: 'center' },
+  };
+
+  const cellHeader: any = {
+    font: fontHeader,
+    fill: { fgColor: { rgb: BLUE_MED } },
+    alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+    border: borderThin,
+  };
+
+  const cellTotalLabel: any = {
+    font: fontTotal,
+    fill: { fgColor: { rgb: BLUE_DARK } },
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border: borderThin,
+  };
+
+  const cellTotalVal: any = {
+    font: fontTotal,
+    fill: { fgColor: { rgb: BLUE_DARK } },
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border: borderThin,
+  };
+
+  // ── Construction de la feuille cellule par cellule ────────────────────
+  const ws: any = {};
+  const COLS = 7;         // A→G
+  const dataStartRow = 5; // ligne Excel où commence les données (1-indexed)
+
+  // Ligne 1 : titre principal
+  ws['A1'] = { v: 'Tunisie Telecom — Présence & Paiement', s: cellTitle };
+  for (let c = 1; c < COLS; c++) {
+    ws[XLSX.utils.encode_cell({ r: 0, c })] = { v: '', s: cellTitle };
+  }
+
+  // Ligne 2 : sous-titre paramètres
+  const subLabel = `Taux journalier : ${this.tauxJourDT} DT  |  Durée contrat : ${this.dureeContrat} jours  |  Campagne ${this.currentYear}`;
+  ws['A2'] = { v: subLabel, s: cellSub };
+  for (let c = 1; c < COLS; c++) {
+    ws[XLSX.utils.encode_cell({ r: 1, c })] = { v: '', s: cellSub };
+  }
+
+  // Ligne 3 : vide (espacement)
+  ws['A3'] = { v: '', s: { fill: { fgColor: { rgb: WHITE } } } };
+
+  // Ligne 4 : en-têtes colonnes
+  const headers = ['N°', 'Nom et Prénom', 'N° CIN', 'Durée (Jours)', 'Absences (Jours)', 'Montant net (DT)', 'N° Compte'];
+  headers.forEach((h, c) => {
+    ws[XLSX.utils.encode_cell({ r: 3, c })] = { v: h, s: cellHeader };
+  });
+
+  // Lignes de données
+  const saisonniers = this.filteredSaisonniers;
+  saisonniers.forEach((s, i) => {
+    const r = dataStartRow - 1 + i;  // 0-indexed row
+    const isAlt = i % 2 === 0;
+    const bgColor = isAlt ? GREY_BG : WHITE;
+
+    const cellData = (v: any, center = false, bold = false): any => ({
+      v,
+      s: {
+        font: { name: 'Arial', sz: 10, bold, color: { rgb: '1E293B' } },
+        fill: { fgColor: { rgb: bgColor } },
+        alignment: { horizontal: center ? 'center' : 'left', vertical: 'center' },
+        border: borderThin,
+      },
     });
 
-    rows.push([]);
-    rows.push(['', '', '', '', this.getTotalJours(), this.getTotalAbsences(),
-               this.getTotalMontant(), '', '', '', '']);
+    ws[XLSX.utils.encode_cell({ r, c: 0 })] = cellData(i + 1, true, true);
+    ws[XLSX.utils.encode_cell({ r, c: 1 })] = cellData(`${s.prenom} ${s.nom}`);
+    ws[XLSX.utils.encode_cell({ r, c: 2 })] = cellData(s.cin, true);
+    ws[XLSX.utils.encode_cell({ r, c: 3 })] = cellData(s.duree, true);
 
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-    ws['!cols'] = [
-      {wch:6},{wch:25},{wch:14},{wch:14},{wch:10},{wch:10},{wch:16},{wch:25},{wch:14},{wch:22},{wch:10}
-    ];
-    XLSX.utils.book_append_sheet(wb, ws, 'Paiement 2025');
-    XLSX.writeFile(wb, `paie_saisonniers_${new Date().getFullYear()}.xlsx`);
-  }
+    // Absences : colorée selon valeur
+    const absColor = s.absences > 0
+      ? { bg: RED_BG,   fg: RED_FG }
+      : { bg: GREEN_BG, fg: GREEN_FG };
+    ws[XLSX.utils.encode_cell({ r, c: 4 })] = {
+      v: s.absences,
+      s: {
+        font: { name: 'Arial', sz: 10, bold: true, color: { rgb: absColor.fg } },
+        fill: { fgColor: { rgb: absColor.bg } },
+        alignment: { horizontal: 'center', vertical: 'center' },
+        border: borderThin,
+      },
+    };
+
+    // Montant net : formaté
+    ws[XLSX.utils.encode_cell({ r, c: 5 })] = {
+      v: s.montantNet,
+      t: 'n',
+      z: '#,##0.000 "DT"',
+      s: {
+        font: { name: 'Arial', sz: 10, bold: true, color: { rgb: BLUE_DARK } },
+        fill: { fgColor: { rgb: BLUE_LIGHT } },
+        alignment: { horizontal: 'center', vertical: 'center' },
+        border: borderThin,
+      },
+    };
+
+    // Statut payé
+    ws[XLSX.utils.encode_cell({ r, c: 6 })] = cellData(s.rib || '—', true);
+  });
+
+  // Ligne Total
+  const totalRow = dataStartRow - 1 + saisonniers.length;
+  ws[XLSX.utils.encode_cell({ r: totalRow, c: 0 })] = { v: 'TOTAL',                         s: cellTotalLabel };
+  ws[XLSX.utils.encode_cell({ r: totalRow, c: 1 })] = { v: `${saisonniers.length} agents`,   s: cellTotalLabel };
+  ws[XLSX.utils.encode_cell({ r: totalRow, c: 2 })] = { v: '',                               s: cellTotalVal };
+  ws[XLSX.utils.encode_cell({ r: totalRow, c: 3 })] = { v: this.getTotalJours(),             s: cellTotalVal };
+  ws[XLSX.utils.encode_cell({ r: totalRow, c: 4 })] = { v: this.getTotalAbsences(),          s: cellTotalVal };
+  ws[XLSX.utils.encode_cell({ r: totalRow, c: 5 })] = {
+    v: this.getTotalMontant(),
+    t: 'n',
+    z: '#,##0.000 "DT"',
+    s: {
+      ...cellTotalVal,
+      font: { name: 'Arial', sz: 11, bold: true, color: { rgb: YELLOW_BG } },
+    },
+  };
+  ws[XLSX.utils.encode_cell({ r: totalRow, c: 6 })] = { v: '', s: cellTotalVal };
+
+  // ── Fusions (merge) ───────────────────────────────────────────────────
+  ws['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: COLS - 1 } },   // titre
+    { s: { r: 1, c: 0 }, e: { r: 1, c: COLS - 1 } },   // sous-titre
+    { s: { r: totalRow, c: 0 }, e: { r: totalRow, c: 1 } }, // "TOTAL" + nb agents
+  ];
+
+  // ── Largeurs colonnes ─────────────────────────────────────────────────
+  ws['!cols'] = [
+    { wch: 5  },   // N°
+    { wch: 28 },   // Nom
+    { wch: 14 },   // CIN
+    { wch: 14 },   // Durée
+    { wch: 14 },   // Absences
+    { wch: 18 },   // Montant
+    { wch: 26 },   // N° Compte
+  ];
+
+  // ── Hauteurs lignes ───────────────────────────────────────────────────
+  ws['!rows'] = [
+    { hpt: 30 },  // titre
+    { hpt: 22 },  // sous-titre
+    { hpt: 8  },  // vide
+    { hpt: 36 },  // en-têtes
+  ];
+
+  // ── Plage de la feuille ───────────────────────────────────────────────
+  ws['!ref'] = XLSX.utils.encode_range({
+    s: { r: 0, c: 0 },
+    e: { r: totalRow, c: COLS - 1 },
+  });
+
+  XLSX.utils.book_append_sheet(wb, ws, `Paiement ${this.currentYear}`);
+  XLSX.writeFile(wb, `paie_saisonniers_${this.currentYear}.xlsx`);
+}
 
   // ── Export PDF (print) ────────────────────────────
-  exportPdf(): void {
-    window.print();
-  }
+ exportPdf(): void {
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+  const PAGE_W = doc.internal.pageSize.getWidth();
+
+  // ── Logo / En-tête ────────────────────────────────────────────────────
+  // Bande bleue foncée en haut
+  doc.setFillColor(30, 58, 95);          // #1E3A5F
+  doc.rect(0, 0, PAGE_W, 22, 'F');
+
+  // Titre
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(255, 255, 255);
+  doc.text('Tunisie Telecom', 14, 10);
+
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Présence & Paiement — Saisonniers', 14, 17);
+
+  // Infos campagne à droite
+  doc.setFontSize(9);
+  doc.text(`Campagne ${this.currentYear}`, PAGE_W - 14, 10, { align: 'right' });
+  doc.text(
+    `Taux journalier : ${this.tauxJourDT} DT  |  Durée : ${this.dureeContrat} jours`,
+    PAGE_W - 14, 17, { align: 'right' }
+  );
+
+  // ── Bande info sous l'en-tête ─────────────────────────────────────────
+  doc.setFillColor(37, 99, 235);         // #2563EB
+  doc.rect(0, 22, PAGE_W, 8, 'F');
+  doc.setFontSize(8);
+  doc.setTextColor(219, 234, 254);       // bleu très clair
+  doc.text(
+    `Total agents : ${this.filteredSaisonniers.length}  |  ` +
+    `Total jours travaillés : ${this.getTotalJours()}  |  ` +
+    `Total absences : ${this.getTotalAbsences()}  |  ` +
+    `Montant total : ${this.getTotalMontant().toFixed(3)} DT`,
+    PAGE_W / 2, 27, { align: 'center' }
+  );
+
+  // ── Tableau ───────────────────────────────────────────────────────────
+  const headers = [['N°', 'Nom et Prénom', 'N° CIN', 'Durée (J)', 'Absences (J)', 'Montant net (DT)', 'N° Compte', 'Statut']];
+
+  const bodyData = this.filteredSaisonniers.map((s, i) => [
+    (i + 1).toString(),
+    `${s.prenom} ${s.nom}`,
+    s.cin.toString(),
+    s.duree.toString(),
+    s.absences.toString(),
+    `${s.montantNet.toFixed(3)} DT`,
+    s.rib || '—',
+    s.paye ? 'Payé' : 'Impayé',
+  ]);
+
+  autoTable(doc, {
+    head: headers,
+    body: bodyData,
+    startY: 34,
+    margin: { left: 14, right: 14 },
+    tableWidth: 'auto',
+
+    styles: {
+      font: 'helvetica',
+      fontSize: 8,
+      cellPadding: 3,
+      valign: 'middle',
+      lineColor: [203, 213, 225],
+      lineWidth: 0.2,
+    },
+
+    headStyles: {
+      fillColor: [37, 99, 235],          // #2563EB
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+      halign: 'center',
+      fontSize: 8.5,
+    },
+
+    columnStyles: {
+      0: { halign: 'center', cellWidth: 10  },   // N°
+      1: { halign: 'left',   cellWidth: 50  },   // Nom
+      2: { halign: 'center', cellWidth: 25  },   // CIN
+      3: { halign: 'center', cellWidth: 20  },   // Durée
+      4: { halign: 'center', cellWidth: 22  },   // Absences
+      5: { halign: 'center', cellWidth: 32  },   // Montant
+      6: { halign: 'center', cellWidth: 50  },   // RIB
+      7: { halign: 'center', cellWidth: 20  },   // Statut
+    },
+
+    // Lignes alternées + coloration conditionnelle
+    didParseCell: (data) => {
+      if (data.section === 'body') {
+        const rowIndex = data.row.index;
+        const colIndex = data.column.index;
+        const s = this.filteredSaisonniers[rowIndex];
+
+        // Alternance de lignes
+        if (rowIndex % 2 === 0) {
+          data.cell.styles.fillColor = [241, 245, 249];  // gris clair
+        } else {
+          data.cell.styles.fillColor = [255, 255, 255];  // blanc
+        }
+
+        // Colonne Absences : rouge si > 0, vert si 0
+        if (colIndex === 4) {
+          if (s.absences > 0) {
+            data.cell.styles.fillColor  = [254, 226, 226]; // rouge clair
+            data.cell.styles.textColor  = [153, 27,  27 ]; // rouge foncé
+            data.cell.styles.fontStyle  = 'bold';
+          } else {
+            data.cell.styles.fillColor  = [209, 250, 229]; // vert clair
+            data.cell.styles.textColor  = [6,   95,  70 ]; // vert foncé
+            data.cell.styles.fontStyle  = 'bold';
+          }
+        }
+
+        // Colonne Montant : bleu
+        if (colIndex === 5) {
+          data.cell.styles.textColor = [30, 58, 95];
+          data.cell.styles.fontStyle = 'bold';
+        }
+
+        // Colonne Statut : vert/rouge
+        if (colIndex === 7) {
+          if (s.paye) {
+            data.cell.styles.textColor = [6,  95, 70];
+            data.cell.styles.fontStyle = 'bold';
+          } else {
+            data.cell.styles.textColor = [153, 27, 27];
+            data.cell.styles.fontStyle = 'bold';
+          }
+        }
+      }
+    },
+
+    // Ligne de total en bas du tableau
+    foot: [[
+      '',
+      `${this.filteredSaisonniers.length} agents`,
+      '',
+      this.getTotalJours().toString(),
+      this.getTotalAbsences().toString(),
+      `${this.getTotalMontant().toFixed(3)} DT`,
+      '', ''
+    ]],
+
+    footStyles: {
+      fillColor:  [30, 58, 95],
+      textColor:  [255, 255, 255],
+      fontStyle:  'bold',
+      halign:     'center',
+      fontSize:   8.5,
+    },
+
+    // Numérotation des pages
+    didDrawPage: (data) => {
+      const pageCount = (doc.internal as any).getNumberOfPages();
+      const pageNum   = (doc as any).internal.getCurrentPageInfo().pageNumber;
+      doc.setFontSize(7);
+      doc.setTextColor(148, 163, 184);
+      doc.text(
+        `Page ${pageNum} / ${pageCount}  —  Exporté le ${new Date().toLocaleDateString('fr-TN')}`,
+        PAGE_W / 2,
+        doc.internal.pageSize.getHeight() - 5,
+        { align: 'center' }
+      );
+    },
+  });
+
+  doc.save(`paie_saisonniers_${this.currentYear}.pdf`);
+}
 
   // ── Imprimer fiche individuelle ───────────────────
   printFiche(s: SaisonnierPaie): void {
@@ -335,14 +703,13 @@ get structuresCT(): StructureDTO[] {
           <h2>بطاقة أجرة عون متعاقد موسمي — ${this.currentYear}</h2>
         </div>
         <table>
-          <tr><td>الاسم و اللقب</td><td>${s.prenom} ${s.nom}</td></tr>
-          <tr><td>رقم بطاقة التعريف</td><td>${s.cin}</td></tr>
-          <tr><td>تاريخ المباشرة</td><td>${s.dateMbacharah}</td></tr>
-          <tr><td>مدة العمل</td><td>${s.duree} يوم</td></tr>
-          <tr><td>الغيابات</td><td>${s.absences} يوم</td></tr>
+          <tr><td>Nom et Prénom</td><td>${s.prenom} ${s.nom}</td></tr>
+          <tr><td>N° CIN</td><td>${s.cin}</td></tr>
+          <tr><td>Durée de travail(Jours)</td><td>${s.duree} يوم</td></tr>
+          <tr><td>Absences(Jours)</td><td>${s.absences} يوم</td></tr>
           <tr><td>أيام العمل الفعلية</td><td>${s.duree - s.absences} يوم</td></tr>
           <tr><td>المبلغ الصافي</td><td class="total"><strong>${s.montantNet.toFixed(3)} DT</strong></td></tr>
-          <tr><td>رقم الحساب</td><td>${s.rib || '—'}</td></tr>
+          <tr><td>N° Compte</td><td>${s.rib || '—'}</td></tr>
         </table>
         <br>
         <table>

@@ -1,3 +1,32 @@
+.required {
+  color: #e53e3e;
+  margin-left: 2px;
+}
+
+.field-error {
+  display: block;
+  font-size: 11px;
+  color: #e53e3e;
+  margin-top: 4px;
+  padding-left: 2px;
+}
+
+.field-group.has-error input,
+.field-group.has-error select,
+.field-group.has-error textarea {
+  border-color: #e53e3e;
+  background-color: #fff5f5;
+}
+
+.btn-save-modal:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.table-row.selected {
+  background: var(--primary-light, #EFF6FF);
+  border-left: 3px solid var(--primary, #2563EB);
+}
 .search-bar {
   position: relative;
   display: flex;

@@ -93,6 +93,22 @@
 
   </select>
 </div>
+
+  <div class="param-group">
+  <label>Mois de travail</label>
+
+  <select [(ngModel)]="selectedMois">
+
+  <option *ngFor="let m of moisOptions"
+          [value]="m.value">
+    {{ m.label }}
+  </option>
+
+</select>
+</div>
+
+
+
    
   </div>
 
@@ -117,6 +133,7 @@
     <th>Nom et Prénom</th>
     <th>N° CIN</th>
     <th>N° Compte</th>
+    <th>Mois de travail</th> 
     <th>Absences(Jours)</th>
     <th>Durée de travail(Jours)</th>
     <th>Montant net (DT)</th>
@@ -149,12 +166,18 @@
             <!-- CIN -->
             <td class="td-center td-mono">{{ s.cin }}</td>
 
+            
+
             <td>
               <input type="text" class="input-rib text-center"
                      [(ngModel)]="s.rib"
                      placeholder="RIB / N° compte..."
                      (change)="save()">
             </td>
+
+            <td class="td-center">
+  <span class="mois-pill">{{ s.moisTravail || '—' }}</span>
+</td>
 
             <!-- Date début -->
             
@@ -213,9 +236,10 @@
         <!-- TOTAL ROW -->
         <tfoot *ngIf="filteredSaisonniers.length > 0">
           <tr class="total-row">
-            <td colspan="4">Total général</td>
-            <td class="td-center">{{ getTotalJours() }}</td>
+            <td colspan="5">Total général</td>
             <td class="td-center">{{ getTotalAbsences() }}</td>
+            <td class="td-center">{{ getTotalJours() }}</td>
+            
             <td class="td-center"><strong>{{ getTotalMontant() | number:'1.3-3' }} DT</strong></td>
             <td colspan="5"></td>
           </tr>

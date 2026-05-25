@@ -678,6 +678,7 @@
           <select [(ngModel)]="form.niveauEtude" name="niveauEtude" [style.color]="form.niveauEtude ? 'inherit' : '#999'">
   <option [ngValue]="null" disabled style="color:#999">Choisir le niveau d'étude</option>
             
+            <option value="BAC">BAC</option>
             <option value="BAC+1">Bac+1</option>
             <option value="BAC+2">Bac+2</option>
             <option value="BAC+3">Bac+3</option>
@@ -745,7 +746,7 @@
 
         <!-- Structure -->
         <div class="field">
-          <label>Structure *</label>
+          <label>Structure d'affectation *</label>
           <select [(ngModel)]="form.structureId" name="structureId"
                   #structureId="ngModel" required
                   [class.input-error]="structureId.invalid && structureId.touched" [style.color]="form.structureId ? 'inherit' : '#999'">

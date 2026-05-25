@@ -173,20 +173,7 @@
       </div>
     </div>
  
-    <div class="topbar-right">
-      <div class="search-box">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-        </svg>
-        <input type="text" placeholder="Rechercher..." [(ngModel)]="searchQuery" />
-      </div>
-      <div class="notification-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/>
-        </svg>
-        <span class="notif-dot"></span>
-      </div>
-    </div>
+    
   </header>
 
 
@@ -355,7 +342,11 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let campagne of campagnes" class="table-row">
+            <tr *ngFor="let campagne of campagnes" 
+    class="table-row"
+    [class.selected]="selectedCampagne?.id === campagne.id"
+    (click)="voirParentsCampagne(campagne)"
+    style="cursor:pointer">
               <td>
                 <div class="campagne-name">
                   <div class="campagne-dot" [ngClass]="campagne.statut"></div>
@@ -441,32 +432,39 @@
         </table>
       </div>
 
-<div class="table-card" style="margin-top:20px;">
+<div class="table-card" style="margin-top:20px;" *ngIf="selectedCampagne">
+
   <div class="section-header">
-    <h3>Parents Autorisés</h3>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <h3>Parents Autorisés</h3>
+      <!-- badge nom campagne -->
+      <span class="status-badge active">{{ selectedCampagne.nom }}</span>
+    </div>
+
     <div style="display:flex; gap:10px; align-items:center;">
-
-  <div class="search-bar">
-    <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24"
-         fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="11" cy="11" r="8"/>
-      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-    </svg>
-    <input
-      type="text"
-      [(ngModel)]="parentSearch"
-      placeholder="Rechercher par nom ou matricule..."
-    />
+      <div class="search-bar">
+        <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text"
+               [(ngModel)]="parentSearch"
+               placeholder="Rechercher par nom ou matricule..."/>
+      </div>
+      <button class="btn btn-primary btn-sm" (click)="openAddParentModal()">
+        + Ajouter Parent
+      </button>
+    </div>
   </div>
 
-  <button class="btn btn-primary btn-sm" (click)="openAddParentModal()">
-    + Ajouter Parent
-  </button>
-
-</div>
+  <!-- état vide : campagne sélectionnée mais chargement -->
+  <div *ngIf="parents.length === 0 && !parentSearch" 
+       style="text-align:center; color:var(--text-muted); padding:2rem;">
+    Aucun parent autorisé pour cette campagne
   </div>
 
-  <table class="data-table">
+  <table class="data-table" *ngIf="parents.length > 0 || parentSearch">
     <thead>
       <tr>
         <th>Nom & Prénom</th>
@@ -482,25 +480,36 @@
         <td>{{ p.matricule }}</td>
         <td>{{ p.utilise }} / {{ p.autorises }}</td>
         <td>
-          <span *ngIf="p.utilise < p.autorises" class="status-badge success">Disponible</span>
-          <span *ngIf="p.utilise >= p.autorises" class="status-badge danger">Quota atteint</span>
+          <span [class]="p.utilise < p.autorises ? 'status-badge success' : 'status-badge danger'">
+            {{ p.utilise < p.autorises ? 'Disponible' : 'Quota atteint' }}
+          </span>
         </td>
         <td>
           <div class="row-actions">
-            <button class="action-icon" (click)="editParent(p)">✏️</button>
-            <button class="action-icon danger" (click)="deleteParent(p.id)">🗑️</button>
+            <button class="action-icon" (click)="editParent(p); $event.stopPropagation()">✏️</button>
+            <button class="action-icon danger" (click)="deleteParent(p.id); $event.stopPropagation()">🗑️</button>
           </div>
         </td>
       </tr>
 
-      <!-- Message si aucun résultat -->
       <tr *ngIf="filteredParents.length === 0">
-        <td colspan="5" style="text-align:center; color: var(--text-muted); padding: 2rem;">
+        <td colspan="5" style="text-align:center; color:var(--text-muted); padding:2rem;">
           Aucun parent trouvé pour "{{ parentSearch }}"
         </td>
       </tr>
     </tbody>
   </table>
+</div>
+
+<!-- Message initial : aucune campagne sélectionnée -->
+<div class="table-card" style="margin-top:20px; text-align:center; 
+     color:var(--text-muted); padding:2rem;" *ngIf="!selectedCampagne">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+       style="width:32px; height:32px; margin-bottom:8px; opacity:0.4">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+    <circle cx="9" cy="7" r="4"/>
+  </svg>
+  <p>Cliquez sur une campagne pour voir ses parents autorisés</p>
 </div>
 
     </section>
@@ -592,6 +601,12 @@
         {{ s.disponible ? '' : '⛔' }}
       </option>
     </optgroup>
+    <optgroup label="🏢 Structures Centrales" *ngIf="structuresSCDisponibles.length > 0">
+      <option *ngFor="let s of structuresSCDisponibles" [value]="s.nom">
+        {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+        {{ s.disponible ? '' : '⛔' }}
+      </option>
+    </optgroup>
 
   </select>
 </div>
@@ -615,6 +630,26 @@
           <option value="EN_ATTENTE_VALIDATION_ADMIN">En attente de validation</option>
         </select>
       </div>
+
+      <!-- Filtre Mois de travail -->
+<div style="display: flex; flex-direction: column; gap: 4px; min-width: 160px;">
+  <label style="font-size: 11px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         style="width:11px;height:11px; margin-right:4px; vertical-align:middle">
+      <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+      <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+    Mois de travail
+  </label>
+  <select [(ngModel)]="candidatureFilterMois"
+          (ngModelChange)="filterCandidatures()"
+          style="background: var(--surface-2); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 6px; padding: 6px 10px; font-size: 13px; color: var(--text-primary); cursor: pointer;">
+    <option value="">Tous les mois</option>
+    <option value="JUILLET">Juillet</option>
+    <option value="AOUT">Août</option>
+    <option value="JUILLET_AOUT">Juillet & Août</option>
+  </select>
+</div>
 
       <!-- Bouton Reset -->
       <button class="btn btn-ghost"
@@ -642,9 +677,10 @@
       <thead>
         <tr>
           <th>Candidat</th>
-          <th>Campagne</th>
           <th>CIN</th>
-          <th>Région</th>
+          <th>Direction d'affectation</th>
+          <th>Structure d'affectation</th>
+          <th>Mois</th>
           <th>Date Dépôt</th>
           <th>Statut</th>
           <th>Documents</th>
@@ -664,7 +700,7 @@
               </div>
             </div>
           </td>
-          <td>{{ cand.campagne.libelle }}</td>
+          
           <td>{{ cand.saisonnier.cin }}</td>
           <td>
             <span style="display:inline-flex; align-items:center; gap:4px; font-size:12px;">
@@ -672,10 +708,59 @@
               {{ cand.saisonnier.region.nom }}
             </span>
           </td>
+          <td>
+            <span style="display:inline-flex; align-items:center; gap:4px; font-size:12px;">
+              <span style="width:6px;height:6px;border-radius:50%;background:var(--green-400);flex-shrink:0;"></span>
+              {{ candidatureStructureMap.get(cand.id)?.nom ?? '—' }}
+
+            </span>
+          <td>
+            <span style="display:inline-flex; align-items:center; gap:4px; font-size:12px; 
+                        background: var(--surface-2); padding: 2px 8px; border-radius: 4px;">
+              {{ cand.saisonnier.moisTravail | titlecase }}
+            </span>
+          </td>
           <td>{{ cand.dateDepot }}</td>
           <td>
-            <span class="status-badge">{{ cand.statut }}</span>
-          </td>
+  <span [ngStyle]="{
+      'display':          'inline-flex',
+      'align-items':      'center',
+      'gap':              '6px',
+      'padding':          '4px 10px',
+      'border-radius':    '20px',
+      'font-size':        '12px',
+      'font-weight':      '600',
+      'white-space':      'nowrap',
+      'background':       cand.statut === 'ACCEPTEE'                    ? 'rgba(34,197,94,0.15)'
+                        : cand.statut === 'REFUSEE'                     ? 'rgba(239,68,68,0.15)'
+                        : cand.statut === 'EN_ATTENTE_VALIDATION_ADMIN' ? 'rgba(99,102,241,0.15)'
+                        :                                                 'rgba(234,179,8,0.15)',
+      'color':            cand.statut === 'ACCEPTEE'                    ? '#16a34a'
+                        : cand.statut === 'REFUSEE'                     ? '#dc2626'
+                        : cand.statut === 'EN_ATTENTE_VALIDATION_ADMIN' ? '#4f46e5'
+                        :                                                 '#ca8a04'
+    }">
+
+    <!-- point coloré -->
+    <span [ngStyle]="{
+        'width':        '6px',
+        'height':       '6px',
+        'border-radius':'50%',
+        'flex-shrink':  '0',
+        'background':   cand.statut === 'ACCEPTEE'                    ? '#16a34a'
+                      : cand.statut === 'REFUSEE'                     ? '#dc2626'
+                      : cand.statut === 'EN_ATTENTE_VALIDATION_ADMIN' ? '#4f46e5'
+                      :                                                 '#ca8a04'
+      }">
+    </span>
+
+    {{ cand.statut === 'EN_ATTENTE'                  ? 'En attente'
+     : cand.statut === 'ACCEPTEE'                    ? 'Acceptée'
+     : cand.statut === 'REFUSEE'                     ? 'Refusée'
+     : cand.statut === 'EN_ATTENTE_VALIDATION_ADMIN' ? 'En validation'
+     : cand.statut }}
+  </span>
+</td>
           <td>
             <div *ngFor="let doc of cand.documents">
               <a [href]="doc.url" target="_blank">{{ doc.type }}</a>
@@ -996,8 +1081,9 @@
       <tr class="presence-totals-row">
         <td colspan="3" class="totals-label">Total général</td>
         <td></td>
-        <td><strong>{{ presenceTotals.totalJours }}</strong></td>
         <td><strong>{{ presenceTotals.totalAbsences }}</strong></td>
+        <td><strong>{{ presenceTotals.totalJours }}</strong></td>
+        
         <td><strong class="total-montant">{{ presenceTotals.totalMontant | number:'1.3-3' }} DT</strong></td>
         <td colspan="3"></td>
       </tr>
@@ -1586,18 +1672,22 @@
       
 
       <div class="form-row">
-        <div class="form-group">
-        <label>Date début Candidature *</label>
-        <input type="date" 
-              [(ngModel)]="newCampagne.dateDebut"
-              [min]="today" />
-      </div>
-        <div class="form-group">
-          <label>Date fin Candidature *</label>
-          <input type="date" [(ngModel)]="newCampagne.dateFin"
-                 [min]="newCampagne.dateDebut" />
-        </div>
-      </div>
+  <div class="form-group">
+    <label>Date début Candidature *</label>
+    <input type="date" 
+           [(ngModel)]="newCampagne.dateDebut"
+           [min]="today"
+           (ngModelChange)="onDateDebutChange()" />
+  </div>
+
+  <div class="form-group">
+    <label>Date fin Candidature *</label>
+    <input type="date" 
+           [(ngModel)]="newCampagne.dateFin"
+           [min]="newCampagne.dateDebut"
+           [disabled]="!newCampagne.dateDebut" />
+  </div>
+</div>
 
       <div class="form-group">
         <label>Prime mensuelle (dt) *</label>
@@ -2397,80 +2487,185 @@
     <div class="modal-content">
       <div class="dossier-grid">
 
+
+        
+
         <!-- Colonne infos saisonnier -->
         <div class="dossier-col">
+
+           <h4 class="col-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            Informations du parent
+          </h4>
+
+
+          <div class="field-group">
+            <label>Parent (nom & prénom)</label>
+            <input [(ngModel)]="selectedCandidature.saisonnier.nomPrenomParent"
+                   [class.has-error]="errors['nomPrenomParent']"
+                   placeholder="Nom du parent">
+            <span class="field-error" *ngIf="errors['nomPrenomParent']">{{ errors['nomPrenomParent'] }}</span>
+          </div>
+
+          <div class="field-group">
+            <label>Matricule parent</label>
+            <input [(ngModel)]="selectedCandidature.saisonnier.matriculeParent"
+                   [class.has-error]="errors['matriculeParent']"
+                   placeholder="Matricule">
+            <span class="field-error" *ngIf="errors['matriculeParent']">{{ errors['matriculeParent'] }}</span>
+          </div>
           <h4 class="col-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
               <circle cx="12" cy="7" r="4"/>
             </svg>
-            Informations personnelles
+            Informations du saisonnier
           </h4>
+
           <div class="field-group">
             <label>Prénom</label>
-            <input [(ngModel)]="selectedCandidature.saisonnier.prenom" placeholder="Prénom">
+            <input [(ngModel)]="selectedCandidature.saisonnier.prenom"
+                   [class.has-error]="errors['prenom']"
+                   placeholder="Prénom">
+            <span class="field-error" *ngIf="errors['prenom']">{{ errors['prenom'] }}</span>
           </div>
+
           <div class="field-group">
             <label>Nom</label>
-            <input [(ngModel)]="selectedCandidature.saisonnier.nom" placeholder="Nom">
+            <input [(ngModel)]="selectedCandidature.saisonnier.nom"
+                   [class.has-error]="errors['nom']"
+                   placeholder="Nom">
+            <span class="field-error" *ngIf="errors['nom']">{{ errors['nom'] }}</span>
           </div>
+
           <div class="field-group">
             <label>Email</label>
-            <input [(ngModel)]="selectedCandidature.saisonnier.email" placeholder="Email">
+            <input [(ngModel)]="selectedCandidature.saisonnier.email"
+                   [class.has-error]="errors['email']"
+                   placeholder="Email">
+            <span class="field-error" *ngIf="errors['email']">{{ errors['email'] }}</span>
           </div>
+
           <div class="field-group">
-  <label>CIN</label>
-  <input [(ngModel)]="selectedCandidature.saisonnier.cin" 
-         placeholder="CIN"
-         type="text"
-         maxlength="8"/>
-</div>
+            <label>CIN</label>
+            <input [(ngModel)]="selectedCandidature.saisonnier.cin"
+                   [class.has-error]="errors['cin']"
+                   placeholder="CIN"
+                   type="text"
+                   maxlength="8"
+                   (keypress)="onlyDigits($event)"/>
+            <span class="field-error" *ngIf="errors['cin']">{{ errors['cin'] }}</span>
+          </div>
+
           <div class="field-group">
             <label>Téléphone</label>
-            <input [(ngModel)]="selectedCandidature.saisonnier.telephone" placeholder="Téléphone">
+            <input [(ngModel)]="selectedCandidature.saisonnier.telephone"
+                   [class.has-error]="errors['telephone']"
+                   placeholder="Téléphone"
+                   type="text"
+                   maxlength="8"
+                   (keypress)="onlyDigits($event)">
+            <span class="field-error" *ngIf="errors['telephone']">{{ errors['telephone'] }}</span>
           </div>
+
           <div class="field-group">
             <label>RIB</label>
-            <input [(ngModel)]="selectedCandidature.saisonnier.rib" placeholder="RIB">
+            <input [(ngModel)]="selectedCandidature.saisonnier.rib"
+                   [class.has-error]="errors['rib']"
+                   placeholder="RIB">
+            <span class="field-error" *ngIf="errors['rib']">{{ errors['rib'] }}</span>
           </div>
+
           <div class="field-group">
             <label>Direction d'affectation</label>
-            <select [(ngModel)]="selectedCandidature.saisonnier.region.id">
+            <select [(ngModel)]="selectedCandidature.saisonnier.region.id"
+                    [class.has-error]="errors['region']">
               <option *ngFor="let r of regions" [value]="r.id">{{ r.nom }}</option>
+            </select>
+            <span class="field-error" *ngIf="errors['region']">{{ errors['region'] }}</span>
+          </div>
+
+          <div class="field-group">
+            <label>Structure</label>
+            <select [(ngModel)]="selectedStructureId"
+                    (ngModelChange)="onStructureChange()">
+              <option [ngValue]="null">— Toutes les structures —</option>
+              <optgroup label="🏪 Espaces Commerciaux" *ngIf="structuresEC.length > 0">
+                <option *ngFor="let s of structuresEC"
+                        [ngValue]="s.id"
+                        [disabled]="!s.disponible">
+                  {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+                  {{ s.disponible ? '' : '⛔ COMPLET' }}
+                </option>
+              </optgroup>
+              <optgroup label="💻 Centres Technologiques" *ngIf="structuresCT.length > 0">
+                <option *ngFor="let s of structuresCT"
+                        [ngValue]="s.id"
+                        [disabled]="!s.disponible">
+                  {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+                  {{ s.disponible ? '' : '⛔ COMPLET' }}
+                </option>
+              </optgroup>
+              <optgroup label="🏢 Structures Centrales" *ngIf="structuresSC.length > 0">
+                <option *ngFor="let s of structuresSC"
+                        [ngValue]="s.id"
+                        [disabled]="!s.disponible">
+                  {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+                  {{ s.disponible ? '' : '⛔ COMPLET' }}
+                </option>
             </select>
           </div>
 
           <div class="field-group">
-  <label>Structure</label>
-  <select [(ngModel)]="selectedStructureId"
-          (ngModelChange)="onStructureChange()"
-          >
+            <label>Niveau d'étude</label>
+            <select [(ngModel)]="selectedCandidature.saisonnier.niveauEtude"
+                    [class.has-error]="errors['niveauEtude']">
+              <option value="">— Choisir —</option>
+              <option value="BAC">BAC</option>
+              <option value="BAC+1">Bac+1</option>
+            <option value="BAC+2">Bac+2</option>
+            <option value="BAC+3">Bac+3</option>
+            <option value="BAC+4">Bac+4</option>
+            <option value="BAC+5">Bac+5</option>
+            <option value="BAC+6">Bac+6</option>
+            </select>
+            <span class="field-error" *ngIf="errors['niveauEtude']">{{ errors['niveauEtude'] }}</span>
+          </div>
 
-    <option [ngValue]="null">— Toutes les structures —</option>
+          <div class="field-group">
+            <label>Diplôme</label>
+            <input [(ngModel)]="selectedCandidature.saisonnier.diplome"
+                   [class.has-error]="errors['diplome']"
+                   placeholder="Diplôme">
+            <span class="field-error" *ngIf="errors['diplome']">{{ errors['diplome'] }}</span>
+          </div>
 
-    <optgroup label="🏪 Espaces Commerciaux" *ngIf="structuresEC.length > 0">
-      <option *ngFor="let s of structuresEC"
-              [ngValue]="s.id"
-              [disabled]="!s.disponible">
-        {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
-        {{ s.disponible ? '' : '⛔ COMPLET' }}
-      </option>
-    </optgroup>
+          <div class="field-group">
+            <label>Spécialité</label>
+            <input [(ngModel)]="selectedCandidature.saisonnier.specialiteDiplome"
+                   [class.has-error]="errors['specialiteDiplome']"
+                   placeholder="Spécialité">
+            <span class="field-error" *ngIf="errors['specialiteDiplome']">{{ errors['specialiteDiplome'] }}</span>
+          </div>
 
-    <optgroup label="💻 Centres Technologiques" *ngIf="structuresCT.length > 0">
-      <option *ngFor="let s of structuresCT"
-              [ngValue]="s.id"
-              [disabled]="!s.disponible">
-        {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
-        {{ s.disponible ? '' : '⛔ COMPLET' }}
-      </option>
-    </optgroup>
+          <div class="field-group">
+            <label>Parent (nom & prénom)</label>
+            <input [(ngModel)]="selectedCandidature.saisonnier.nomPrenomParent"
+                   [class.has-error]="errors['nomPrenomParent']"
+                   placeholder="Nom du parent">
+            <span class="field-error" *ngIf="errors['nomPrenomParent']">{{ errors['nomPrenomParent'] }}</span>
+          </div>
 
-  </select>
-</div>
-
-          
-
+          <div class="field-group">
+            <label>Matricule parent</label>
+            <input [(ngModel)]="selectedCandidature.saisonnier.matriculeParent"
+                   [class.has-error]="errors['matriculeParent']"
+                   placeholder="Matricule">
+            <span class="field-error" *ngIf="errors['matriculeParent']">{{ errors['matriculeParent'] }}</span>
+          </div>
 
         </div>
 
@@ -2483,29 +2678,41 @@
             </svg>
             Candidature
           </h4>
+
           <div class="field-group readonly">
             <label>Date de dépôt</label>
             <div class="readonly-val">{{ selectedCandidature?.dateDepot | date:'dd/MM/yyyy' }}</div>
           </div>
+
           <div class="field-group">
             <label>Statut</label>
-            <select [(ngModel)]="selectedCandidature.statut">
+            <select [(ngModel)]="selectedCandidature.statut"
+                    [class.has-error]="errors['statut']">
+              <option value="">— Choisir —</option>
               <option value="EN_ATTENTE">En attente</option>
               <option value="ACCEPTEE">Acceptée</option>
               <option value="REFUSEE">Refusée</option>
             </select>
+            <span class="field-error" *ngIf="errors['statut']">{{ errors['statut'] }}</span>
           </div>
+
           <div class="field-group">
             <label>Mois de travail</label>
-            <select [(ngModel)]="selectedCandidature.saisonnier.moisTravail">
+            <select [(ngModel)]="selectedCandidature.saisonnier.moisTravail"
+                    [class.has-error]="errors['moisTravail']">
+              <option value="">— Choisir —</option>
               <option value="JUILLET">Juillet</option>
               <option value="AOUT">Août</option>
               <option value="JUILLET_AOUT">Juillet + Août</option>
             </select>
+            <span class="field-error" *ngIf="errors['moisTravail']">{{ errors['moisTravail'] }}</span>
           </div>
+
           <div class="field-group">
             <label>Commentaire RH</label>
-            <textarea [(ngModel)]="selectedCandidature.commentaire" rows="4" placeholder="Ajouter un commentaire..."></textarea>
+            <textarea [(ngModel)]="selectedCandidature.commentaire"
+                      rows="4"
+                      placeholder="Ajouter un commentaire..."></textarea>
           </div>
 
           <!-- Documents -->
@@ -2528,6 +2735,7 @@
             </a>
             <p class="no-docs" *ngIf="!selectedCandidature?.documents?.length">Aucun document joint.</p>
           </div>
+
         </div>
 
       </div>

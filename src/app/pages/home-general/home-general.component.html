@@ -21,9 +21,7 @@
         />
       </div>
 
-      <div class="forgot-link">
-  <a (click)="openForgotPassword()">Mot de passe oublié ?</a>
-</div>
+      
 
       <div class="form-group">
         <input
@@ -35,14 +33,20 @@
         />
       </div>
 
-      <div class="error-msg" *ngIf="errorMessage">
-        ⚠️ {{ errorMessage }}
-      </div>
+      
+
+       <div class="error-banner" *ngIf="errorMessage">
+      <span class="error-icon">⚠️</span>
+      <span class="error-text">{{ errorMessage }}</span>
+    </div>
 
       <button class="btn-login" (click)="login()" [disabled]="isLoading">
         <span *ngIf="!isLoading">Se connecter</span>
         <span *ngIf="isLoading">Connexion...</span>
       </button>
+      <div class="forgot-link">
+  <a (click)="openForgotPassword()">Mot de passe oublié ?</a>
+</div>
     </div>
     <!-- ===== FIN FORMULAIRE ===== -->
 

@@ -19,6 +19,13 @@ export class ParentAutoriseService {
 
   constructor(private http: HttpClient) {}
 
+
+  getParentsByCampagne(campagneId: number): Observable<ParentAutorise[]> {
+  return this.http.get<ParentAutorise[]>(
+    `${this.apiUrl}/by-campagne/${campagneId}`
+  );
+}
+
   // 📋 GET ALL
   getAllParents(): Observable<ParentAutorise[]> {
     return this.http.get<ParentAutorise[]>(this.apiUrl);

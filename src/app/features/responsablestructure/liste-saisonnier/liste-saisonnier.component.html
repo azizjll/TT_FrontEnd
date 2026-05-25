@@ -1,0 +1,78 @@
+<div class="ls-page">
+  <div class="ls-topbar">
+    <div>
+      <h1 class="ls-topbar__title">Gestion de présence</h1>
+      <p class="ls-topbar__sub">Campagne active · Ma direction</p>
+    </div>
+  </div>
+
+  <div class="ls-content">
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="ls-loading">
+      <i class="ti ti-loader-2"></i> Chargement...
+    </div>
+
+    <!-- Tableau -->
+    <div *ngIf="!loading" class="ls-table-wrap">
+
+      <div *ngIf="filtered.length === 0" class="ls-empty">
+        <i class="ti ti-inbox"></i>
+        <p>Aucune candidature pour ce filtre.</p>
+      </div>
+
+      <table *ngIf="filtered.length > 0" class="ls-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nom et Prénom</th>          <!-- ← une seule colonne -->
+            <th class="th-jours">Nb jours d'absence</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of filtered; let i = index">
+            <td class="td-index">{{ i + 1 }}</td>
+
+            <!-- Nom + Prénom sur la même ligne -->
+            <td>
+              <div class="td-avatar-row">
+               
+                <span class="td-fullname">
+                  {{ c.saisonnier?.nom ?? '—' }} {{ c.saisonnier?.prenom ?? '' }}
+                </span>
+              </div>
+            </td>
+
+            <td class="td-jours">
+  <div class="jours-input-wrap">
+    <button class="jours-btn"
+      (click)="onJoursChange(c.id, joursDemandes[c.id] - 1)"
+      [disabled]="joursDemandes[c.id] <= 0">
+      <i class="ti ti-minus"></i>
+    </button>
+
+    <input type="number" class="jours-input" min="0"
+      [value]="joursDemandes[c.id]"
+      (change)="onJoursChange(c.id, +$any($event.target).value)" />
+
+    <button class="jours-btn"
+      (click)="onJoursChange(c.id, joursDemandes[c.id] + 1)">
+      <i class="ti ti-plus"></i>
+    </button>
+
+    <!-- ✅ Bouton sauvegarder -->
+    <button class="jours-btn save-btn"
+      (click)="sauvegarderAbsences(c)"
+      [disabled]="saveLoading[c.id]"
+      [title]="saveSuccess[c.id] ? 'Sauvegardé !' : 'Sauvegarder'">
+      <i class="ti" [class.ti-check]="saveSuccess[c.id]"
+                    [class.ti-device-floppy]="!saveSuccess[c.id]"></i>
+    </button>
+  </div>
+</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

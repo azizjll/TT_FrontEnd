@@ -28,8 +28,22 @@ import { IltizamComponent } from './pages/iltizam/iltizam.component';
 import { RoleGuard } from './guards/role.guard';
 import { LayoutSuperadminComponent } from './features/superadmin/layout-superadmin/layout-superadmin.component';
 import { UsersListComponent } from './features/superadmin/users-list/users-list.component';
+import { LayoutComponent } from './features/responsablestructure/layout/layout.component';
+import { ListeSaisonnierComponent } from './features/responsablestructure/liste-saisonnier/liste-saisonnier.component';
+import { DashboardSuperadminComponent } from './features/superadmin/dashboard-superadmin/dashboard-superadmin.component';
 
 const routes: Routes = [
+
+ {
+  path: 'responsable',
+  component: LayoutComponent,
+  canActivate: [RoleGuard],
+  data: { roles: ['RESPONSABLE_STRUCTURE'] },  // ✅ ajouter
+  children: [
+    { path: 'candidatures', component: ListeSaisonnierComponent },
+    { path: '', redirectTo: 'candidatures', pathMatch: 'full' }
+  ]
+},
 
   { path: 'login', component: LoginComponent },
 
@@ -49,11 +63,15 @@ const routes: Routes = [
     ]
   },
   {
-    path: 'superadmin', component:LayoutSuperadminComponent,
-    children: [
-      {path: 'user_list', component: UsersListComponent}
-    ]
-  },
+  path: 'superadmin',
+  component: LayoutSuperadminComponent,
+  canActivate: [RoleGuard],
+  data: { roles: ['SUPERADMIN'] },  // ✅
+  children: [
+    { path: 'user_list', component: UsersListComponent },
+    { path: 'dashboard', component: DashboardSuperadminComponent }
+  ]
+},
   {path: 'home-ge', component: HomeGeneralComponent},
 
   { path: 'saisonnier/login', component: LoginSaisonnierComponent },
@@ -61,7 +79,12 @@ const routes: Routes = [
 
   
   { path: 'saisonniers/validation', component: SaisonniersValidationComponent },
-  {path: 'admin', component: HomeAdminComponent,canActivate: [AuthGuard]},
+  {
+  path: 'admin',
+  component: HomeAdminComponent,
+  canActivate: [RoleGuard],
+  data: { roles: ['ADMIN', 'SUPERADMIN'] }  // ← tableau
+},
 
   {
   path: 'saisonnier/iltizam',
@@ -73,7 +96,6 @@ const routes: Routes = [
   component: EspacesaisonnierComponent,
   canActivate: [CampagneGuard]
 }, 
- { path: 'admin/login', component: LoginAdminComponent },
  { path: 'campagne-expiree', component: CampagneExpireeComponent },
 
   { path: '', redirectTo: '/home-ge', pathMatch: 'full' },

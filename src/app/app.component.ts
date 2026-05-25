@@ -26,7 +26,8 @@ export class AppComponent {
           url.startsWith('/home-ge')||
           url.startsWith('/dash')||
           url.startsWith('/campagne-expiree')||
-          url.startsWith('/superadmin')
+          url.startsWith('/superadmin')||
+          url.startsWith('/responsable')
         );
       });
   }

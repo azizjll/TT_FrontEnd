@@ -51,6 +51,8 @@ structureMap: Record<number, string> = {};
 structuresDisponibles: string[] = [];
 activeStructureFilter: string = 'ALL';
 
+activeMoisFilter: string = 'ALL';
+
 
 
 
@@ -168,18 +170,34 @@ get toutesCompletes(): boolean {
     });
 }
 
+
+
 // ── getter filteredCandidatures mis à jour ──
 get filteredCandidatures() {
   return this.candidatures.filter(c => {
-    const matchStatut    = this.activeFilter === 'ALL' || c.statut === this.activeFilter;
-    const matchStructure = this.activeStructureFilter === 'ALL' ||
-                           this.structureMap[c.id] === this.activeStructureFilter;
+
+    const matchStatut =
+      this.activeFilter === 'ALL' ||
+      c.statut === this.activeFilter;
+
+    const matchStructure =
+      this.activeStructureFilter === 'ALL' ||
+      this.structureMap[c.id] === this.activeStructureFilter;
+
+    // 🆕 filtre mois
+    const matchMois =
+      this.activeMoisFilter === 'ALL' ||
+      c.saisonnier.moisTravail === this.activeMoisFilter;
+
     const q = this.searchQuery.toLowerCase().trim();
-    const matchSearch = !q ||
+
+    const matchSearch =
+      !q ||
       c.saisonnier.nom.toLowerCase().includes(q) ||
       c.saisonnier.prenom.toLowerCase().includes(q) ||
       (c.saisonnier.email || '').toLowerCase().includes(q);
-    return matchStatut && matchStructure && matchSearch;
+
+    return matchStatut && matchStructure && matchMois && matchSearch;
   });
 }
 

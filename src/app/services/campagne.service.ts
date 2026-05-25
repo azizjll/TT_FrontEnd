@@ -58,22 +58,21 @@ creerCampagneAvecExcel(dto: CampagneRequestDTO, fichierExcel: File): Observable<
   }
 
   getCampagneParId(id: number): Observable<Campagne> {
-    return this.http.get<Campagne>(`${this.baseUrl}/${id}`);
-  }
+    return this.http.get<Campagne>(`${this.baseUrl}/${id}`, this.getAuthHeaders());
+}
 
   getCampagnesActives(): Observable<Campagne[]> {
-    return this.http.get<Campagne[]>(`${this.baseUrl}/actives`);
-  }
-
+    return this.http.get<Campagne[]>(`${this.baseUrl}/actives`, this.getAuthHeaders());
+}
   // UPDATE
   updateCampagne(id: number, dto: CampagneRequestDTO): Observable<Campagne> {
-    return this.http.put<Campagne>(`${this.baseUrl}/${id}`, dto);
-  }
+    return this.http.put<Campagne>(`${this.baseUrl}/${id}`, dto, this.getAuthHeaders());
+}
 
   // DELETE
   deleteCampagne(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${id}`);
-  }
+    return this.http.delete<void>(`${this.baseUrl}/${id}`, this.getAuthHeaders());
+}
 
   // BUSINESS
   activerCampagne(id: number): Observable<Campagne> {
@@ -81,14 +80,14 @@ creerCampagneAvecExcel(dto: CampagneRequestDTO, fichierExcel: File): Observable<
 }
 
   cloturerCampagne(id: number): Observable<Campagne> {
-    return this.http.put<Campagne>(`${this.baseUrl}/${id}/cloturer`, {});
-  }
+    return this.http.put<Campagne>(`${this.baseUrl}/${id}/cloturer`, {}, this.getAuthHeaders());
+}
 
   getMesCampagnes(): Observable<Campagne[]> {
   return this.http.get<Campagne[]>(`${this.baseUrl}/mes-campagnes`, this.getAuthHeaders());
 }
 getAllCampagnes(): Observable<any[]> {
-  return this.http.get<any[]>(`${this.baseUrl}`);
+    return this.http.get<any[]>(`${this.baseUrl}`, this.getAuthHeaders());
 }
 
 }

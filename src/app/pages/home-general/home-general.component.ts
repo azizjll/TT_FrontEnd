@@ -61,31 +61,37 @@ export class HomeGeneralComponent {
   }
 
   private redirectByRole(role: string): void {
-    this.isLoading = false;
-    switch (role) {
-      case 'SUPERADMIN':
-      this.showRoleChooser = true; // ← ouvrir le popup au lieu de rediriger
+  this.isLoading = false;
+  switch (role) {
+    case 'SUPERADMIN':
+      this.showRoleChooser = true;
       break;
     case 'ADMIN':
       this.router.navigate(['/admin']);
       break;
-      case 'RH_REGIONAL':
-        this.campagneService.getCampagnesActives().subscribe({
-          next: (campagnes) => {
-            if (campagnes?.length > 0) {
-              this.router.navigate(['/rhregioanl/saisonniers'], { queryParams: { campagneId: campagnes[0].id } });
-            } else {
-              this.errorMessage = "Aucune campagne active. Contactez l'administrateur.";
-            }
-          },
-          error: () => { this.errorMessage = 'Impossible de vérifier les campagnes.'; }
-        });
-        break;
-      default:
-        this.errorMessage = 'Rôle non autorisé.';
-        this.authService.logout();
-    }
+    case 'RH_REGIONAL':
+      this.campagneService.getCampagnesActives().subscribe({
+        next: (campagnes) => {
+          if (campagnes?.length > 0) {
+            this.router.navigate(['/rhregioanl/saisonniers'], { queryParams: { campagneId: campagnes[0].id } });
+          } else {
+            this.errorMessage = "Aucune campagne active. Contactez l'administrateur.";
+          }
+        },
+        error: () => { this.errorMessage = 'Impossible de vérifier les campagnes.'; }
+      });
+      break;
+
+    // ✅ Nouveau rôle ajouté ici
+    case 'RESPONSABLE_STRUCTURE':
+      this.router.navigate(['/responsable/candidatures']);
+      break;
+
+    default:
+      this.errorMessage = 'Rôle non autorisé.';
+      this.authService.logout();
   }
+}
 
 
   goToAdminRH(): void {

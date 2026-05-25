@@ -436,7 +436,7 @@ export class CampagnesComponent {
  
     // Upload parents avant la création si un fichier est fourni
     if (this.parentsExcelFile) {
-      this.candidatureService.uploadParentsExcel(this.parentsExcelFile).subscribe({
+      this.candidatureService.uploadParentsExcel(this.parentsExcelFile, this.newCampagne.id).subscribe({
         next : () => { this.showToast('✅ Parents importés avec succès'); creerCampagne$(); },
         error: (err) => {
           console.error(err);

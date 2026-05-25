@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface Candidature {
   id: number;
-  campagne: any;      // Tu peux créer un interface Campagne plus tard
+  campagne: any;
   commentaire: string | null;
   dateDepot: string;
-  documents: any[];   // idem, tu peux typer Document
-  saisonnier: any;    // idem pour Saisonier
+  documents: any[];
+  saisonnier: any;
   statut: string;
 }
 
@@ -22,85 +22,174 @@ export class CandidatureService {
   constructor(private http: HttpClient) {}
 
   /**
-   * Dépose une candidature sans JWT
+   * Headers avec JWT
+   */
+  private getAuthHeaders() {
+    const token = localStorage.getItem('token');
+
+    return {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    };
+  }
+
+  /**
+   * Déposer une candidature
    */
   deposerCandidature(formData: FormData): Observable<any> {
-  const token = localStorage.getItem('token');
-  return this.http.post<any>(`${this.baseUrl}/depot`, formData, {
-    headers: {
-      Authorization: `Bearer ${token}`   // 🆕
-    }
-  });
-}
-
-  /**
-   * Récupère les candidatures filtrées par campagne et région
-   */
-  getCandidaturesByCampagneAndRegion(campagneId: number, regionId: number): Observable<Candidature[]> {
-    return this.http.get<Candidature[]>(`${this.baseUrl}/filtrer?campagneId=${campagneId}&regionId=${regionId}`);
+    return this.http.post<any>(
+      `${this.baseUrl}/depot`,
+      formData,
+      this.getAuthHeaders()
+    );
   }
 
   /**
-   * Récupère toutes les candidatures
+   * Filtrer candidatures
+   */
+  getCandidaturesByCampagneAndRegion(
+    campagneId: number,
+    regionId: number
+  ): Observable<Candidature[]> {
+
+    return this.http.get<Candidature[]>(
+      `${this.baseUrl}/filtrer?campagneId=${campagneId}&regionId=${regionId}`,
+      this.getAuthHeaders()
+    );
+  }
+
+  /**
+   * Toutes les candidatures
    */
   getAllCandidatures(): Observable<Candidature[]> {
-    return this.http.get<Candidature[]>(`${this.baseUrl}/all`); // ← /all pour correspondre à ton endpoint Spring Boot
+    return this.http.get<Candidature[]>(
+      `${this.baseUrl}/all`,
+      this.getAuthHeaders()
+    );
   }
+
+  /**
+   * Modifier candidature
+   */
   updateCandidature(id: number, formData: FormData) {
-  return this.http.put(`${this.baseUrl}/update/${id}`, formData);
-}
+    return this.http.put(
+      `${this.baseUrl}/update/${id}`,
+      formData,
+      this.getAuthHeaders()
+    );
+  }
 
-envoyerDemandeJuilletAout(payload: {
-  candidatureId: number;
-  commentaire: string;
-  directionNom: string;
-}): Observable<any> {
-  return this.http.post(`${this.baseUrl}/demande-autorisation`, payload);
-}
+  /**
+   * Envoyer demande autorisation
+   */
+  envoyerDemandeJuilletAout(payload: {
+    candidatureId: number;
+    commentaire: string;
+    directionNom: string;
+  }): Observable<any> {
 
-getParentByMatricule(matricule: string): Observable<any> {
-  return this.http.get<any>(`${this.baseUrl}/parent-by-matricule?matricule=${matricule}`);
-}
+    return this.http.post(
+      `${this.baseUrl}/demande-autorisation`,
+      payload,
+      this.getAuthHeaders()
+    );
+  }
 
-getDocumentsBySaisonnier(saisonnierId: number) {
-  return this.http.get<any[]>(`${this.baseUrl}/documents?saisonnierId=${saisonnierId}`);
-}
+  /**
+   * Parent par matricule
+   */
+  getParentByMatricule(matricule: string): Observable<any> {
+    return this.http.get<any>(
+      `${this.baseUrl}/parent-by-matricule?matricule=${matricule}`,
+      this.getAuthHeaders()
+    );
+  }
 
-getSaisonnierById(id: number) {
-  return this.http.get<any>(`${this.baseUrl}/saisonnier/${id}`);
-}
-getMonHistorique(): Observable<any[]> {
-  const token = localStorage.getItem('token');
+  /**
+   * Documents saisonnier
+   */
+  getDocumentsBySaisonnier(saisonnierId: number) {
+    return this.http.get<any[]>(
+      `${this.baseUrl}/documents?saisonnierId=${saisonnierId}`,
+      this.getAuthHeaders()
+    );
+  }
 
-  return this.http.get<any[]>(`${this.baseUrl}/mon-historique`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-}
+  /**
+   * Saisonnier par ID
+   */
+  getSaisonnierById(id: number) {
+    return this.http.get<any>(
+      `${this.baseUrl}/saisonnier/${id}`,
+      this.getAuthHeaders()
+    );
+  }
 
-uploadParentsExcel(file: File): Observable<string> {
+  /**
+   * Historique utilisateur
+   */
+  getMonHistorique(): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${this.baseUrl}/mon-historique`,
+      this.getAuthHeaders()
+    );
+  }
+
+  /**
+   * Upload fichier Excel
+   */
+ uploadParentsExcel(file: File, campagneId: number): Observable<string> {
   const formData = new FormData();
-  formData.append('file', file);
-  return this.http.post(`${this.baseUrl}/upload-parents`, formData, { responseType: 'text' });
+  formData.append('fichier', file, file.name);          // ← 'fichier' pas 'file'
+  formData.append('campagneId', campagneId.toString());
+
+  return this.http.post<string>(
+    `${this.baseUrl}/upload-parents`,
+    formData,
+    {
+      ...this.getAuthHeaders(),
+      responseType: 'text' as 'json'
+    }
+  );
 }
 
-getDocumentsByToken(): Observable<any[]> {
-  const token = localStorage.getItem('token');
-  return this.http.get<any[]>(`${this.baseUrl}/mes-documents`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-}
+  /**
+   * Documents utilisateur connecté
+   */
+  getDocumentsByToken(): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${this.baseUrl}/mes-documents`,
+      this.getAuthHeaders()
+    );
+  }
 
-getMonProfil(): Observable<any> {
-  const token = localStorage.getItem('token');
-  return this.http.get<any>(`${this.baseUrl}/mon-profil`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-}
+  /**
+   * Profil utilisateur connecté
+   */
+  getMonProfil(): Observable<any> {
+    return this.http.get<any>(
+      `${this.baseUrl}/mon-profil`,
+      this.getAuthHeaders()
+    );
+  }
 
-getStructureByCandidature(candidatureId: number): Observable<any> {
-  return this.http.get<any>(`${this.baseUrl}/${candidatureId}/structure`);
+  /**
+   * Structure candidature
+   */
+  getStructureByCandidature(candidatureId: number): Observable<any> {
+    return this.http.get<any>(
+      `${this.baseUrl}/${candidatureId}/structure`,
+      this.getAuthHeaders()
+    );
+  }
+
+  // candidature.service.ts
+getCandidaturesParStructure(): Observable<Candidature[]> {
+  return this.http.get<Candidature[]>(
+    `${this.baseUrl}/par-structure`,
+    this.getAuthHeaders()
+  );
 }
 
 }

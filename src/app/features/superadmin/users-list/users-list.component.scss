@@ -1,3 +1,252 @@
+// ════════════════════════════════════════════════════════
+//  Ajouts SCSS — users-list.component.scss
+//  Copier-coller à la fin de votre fichier existant
+// ════════════════════════════════════════════════════════
+
+// ── Sections ─────────────────────────────────────────────
+.ul-section {
+  margin-bottom: 3rem;
+}
+
+.ul-section__label {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  flex-wrap: wrap;
+}
+
+.ul-section__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  background: rgba(16,185,129,.15);
+  border: 1px solid rgba(16,185,129,.3);
+  color: #10b981;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  flex-shrink: 0;
+  margin-top: .15rem;
+}
+
+.ul-section__num--rs {
+  background: rgba(99,102,241,.15);
+  border-color: rgba(99,102,241,.3);
+  color: #818cf8;
+}
+
+.ul-section__title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 .2rem;
+  color: var(--text-primary, #f0f0f0);
+}
+
+.ul-section__desc {
+  font-size: .75rem;
+  color: var(--text-muted, #6b7280);
+  margin: 0;
+}
+
+// Badge campagne requise
+.ul-campagne-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .3rem .7rem;
+  border-radius: 999px;
+  background: rgba(251,191,36,.08);
+  border: 1px solid rgba(251,191,36,.25);
+  color: #fbbf24;
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+// ── Variantes RS (Responsable Structure) ─────────────────
+.ul-section--rs .ul-drop { --drop-accent: #818cf8; }
+
+.ul-drop--rs {
+  &:hover, &.ul-drop--over {
+    border-color: rgba(129,140,248,.4) !important;
+    box-shadow: 0 0 0 1px rgba(129,140,248,.15) inset,
+                0 0 30px rgba(129,140,248,.06) !important;
+  }
+}
+
+.ul-drop__glow--rs {
+  background: radial-gradient(ellipse at 50% 0%, rgba(129,140,248,.12) 0%, transparent 70%);
+}
+
+.ul-drop__icon--rs { color: #818cf8; }
+
+.ul-meta--rs {
+  .ul-meta__icon--rs { color: #818cf8; }
+}
+
+.ul-rule__dot--rs {
+  background: #818cf8;
+  box-shadow: 0 0 6px rgba(129,140,248,.5);
+}
+
+.ul-filechip__ico--rs { color: #818cf8; }
+
+// Bouton RS
+.ul-btn--rs {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .55rem 1.1rem;
+  border-radius: .5rem;
+  background: rgba(99,102,241,.15);
+  border: 1px solid rgba(129,140,248,.35);
+  color: #818cf8;
+  font-size: .78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+
+  &:hover:not(:disabled) {
+    background: rgba(99,102,241,.25);
+    border-color: rgba(129,140,248,.6);
+    color: #a5b4fc;
+  }
+  &:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+  }
+}
+
+// Tableau RS
+.ul-table-card--rs {
+  border-top: 2px solid rgba(129,140,248,.2);
+}
+
+.ul-tc-icon--rs { color: #818cf8; }
+
+.ul-count-pill--rs {
+  background: rgba(99,102,241,.15);
+  color: #818cf8;
+  border-color: rgba(129,140,248,.25);
+}
+
+// Avatar RS
+.uc__av--rs {
+  background: linear-gradient(135deg, rgba(99,102,241,.25), rgba(129,140,248,.1)) !important;
+  color: #818cf8 !important;
+  border-color: rgba(129,140,248,.25) !important;
+}
+
+// Chip structure
+.structure-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .25rem .6rem;
+  border-radius: .4rem;
+  background: rgba(99,102,241,.1);
+  border: 1px solid rgba(129,140,248,.2);
+  color: #a5b4fc;
+  font-size: .72rem;
+  font-weight: 500;
+  white-space: nowrap;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Colonne structure
+.c-s {
+  min-width: 160px;
+  max-width: 220px;
+}
+
+// ── Pagination ────────────────────────────────────────────
+.ul-pagination {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid rgba(255,255,255,.05);
+  flex-wrap: wrap;
+}
+
+.ul-pg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 .5rem;
+  border-radius: .4rem;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+  color: var(--text-muted, #9ca3af);
+  font-size: .75rem;
+  cursor: pointer;
+  transition: all .15s;
+
+  &:hover:not(:disabled) {
+    background: rgba(255,255,255,.07);
+    color: var(--text-primary, #f0f0f0);
+    border-color: rgba(255,255,255,.15);
+  }
+
+  &:disabled {
+    opacity: .35;
+    cursor: not-allowed;
+  }
+}
+
+.ul-pg-btn--num { min-width: 2rem; }
+
+.ul-pg-btn--active {
+  background: rgba(16,185,129,.15) !important;
+  border-color: rgba(16,185,129,.35) !important;
+  color: #10b981 !important;
+  font-weight: 600;
+}
+
+.ul-pg-info {
+  margin-left: auto;
+  font-size: .72rem;
+  color: var(--text-muted, #6b7280);
+  white-space: nowrap;
+}
+
+// Select taille de page
+.ul-select--sm {
+  min-width: 90px;
+  font-size: .72rem;
+}
+
+// ── Alerte générique ──────────────────────────────────────
+.ul-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  padding: .65rem .85rem;
+  border-radius: .5rem;
+  font-size: .75rem;
+  margin-bottom: .75rem;
+  line-height: 1.4;
+}
+
+.ul-alert--warn {
+  background: rgba(251,191,36,.08);
+  border: 1px solid rgba(251,191,36,.25);
+  color: #fbbf24;
+}
+
+
 // ════════════════════════════════════════════════════════════════
 //  users-list.component.scss
 //  Design : Obsidian & Emerald  —  Palette sombre violet/émeraude

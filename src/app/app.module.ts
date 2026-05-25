@@ -36,6 +36,8 @@ import { IltizamComponent } from './pages/iltizam/iltizam.component';
 import { LayoutSuperadminComponent } from './features/superadmin/layout-superadmin/layout-superadmin.component';
 import { DashboardSuperadminComponent } from './features/superadmin/dashboard-superadmin/dashboard-superadmin.component';
 import { UsersListComponent } from './features/superadmin/users-list/users-list.component';
+import { LayoutComponent } from './features/responsablestructure/layout/layout.component';
+import { ListeSaisonnierComponent } from './features/responsablestructure/liste-saisonnier/liste-saisonnier.component';
 
 @NgModule({
   declarations: [
@@ -64,6 +66,7 @@ import { UsersListComponent } from './features/superadmin/users-list/users-list.
     CampagneExpireeComponent,
     IltizamComponent,
     DashboardSuperadminComponent,
+    
     
     
     

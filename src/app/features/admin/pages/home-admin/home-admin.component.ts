@@ -30,6 +30,17 @@ interface Saisonnier {
   telephone: string;
   rib: string;
   region: RegionAPI;
+  
+  moisTravail: string;
+
+  absences?: number;  
+
+   niveauEtude?: string;
+  diplome?: string;
+  specialiteDiplome?: string;
+  nomPrenomParent?: string;
+  matriculeParent?: string | number;
+  
 }
 
 interface CampagneAPI {
@@ -207,6 +218,7 @@ candidatureFilterRegion = '';
 candidatureFilterStructure = '';
 candidatureFilterStatut = '';
 filteredCandidatures: Candidature[] = [];
+candidatureFilterMois = '';
 
   // ── Upload parents Excel ─────────────────────────────────────────
 parentsExcelFile: File | null = null;
@@ -255,6 +267,12 @@ parentForm: Partial<ParentAutorise> = {
   utilise: 0     // valeur par défaut
 };
 
+
+onDateDebutChange() {
+  if (this.newCampagne.dateFin && this.newCampagne.dateFin <= this.newCampagne.dateDebut) {
+    this.newCampagne.dateFin = '';
+  }
+}
 saveParent() {
   if (!this.parentForm.nomPrenom || !this.parentForm.matricule) {
     alert("Champs obligatoires ❌");
@@ -331,6 +349,10 @@ get structuresEC(): StructureDTO[] {
 
 get structuresCT(): StructureDTO[] {
   return this.structures.filter(s => s.type === 'CENTRE_TECHNIQUE');
+}
+
+get structuresSC(): StructureDTO[] {
+  return this.structures.filter(s => s.type === 'STRUCTURE_CENTRALE');
 }
 
 onStructureChange(): void {
@@ -422,6 +444,8 @@ isUploadingDoc = false;
 
 
 parents: any[] = [];
+selectedCampagne: any = null;
+
 
 showParentModal = false;
 isEditParent = false;
@@ -511,14 +535,7 @@ roleUtilisateur = '';
 }
 
 
-  get filteredParents() {
-  const q = this.parentSearch.toLowerCase().trim();
-  if (!q) return this.parents;
-  return this.parents.filter(p =>
-    p.nomPrenom?.toLowerCase().includes(q) ||
-    p.matricule?.toLowerCase().includes(q)
-  );
-}
+  
 
   loadEtatsRH(): void {
   this.etatRHService.getAllEtats().subscribe({
@@ -612,9 +629,21 @@ onDocumentFileSelected(event: Event): void {
 selectionnerDocumentMemo(doc: DocumentCampagneDTO): void {
   this.memoDocumentSelectionne = doc;
   this.isLoadingViewerDoc = true;
-  this.memoViewerUrl = this.sanitizer.bypassSecurityTrustResourceUrl(doc.url);
-  // Simuler un court délai de chargement
-  setTimeout(() => this.isLoadingViewerDoc = false, 600);
+  this.memoViewerUrl = null;
+
+  fetch(doc.url, { headers: { 
+    'Authorization': `Bearer ${localStorage.getItem('token') || ''}` 
+  }})
+    .then(res => res.blob())
+    .then(blob => {
+      const blobUrl = URL.createObjectURL(blob);
+      this.memoViewerUrl = this.sanitizer.bypassSecurityTrustResourceUrl(blobUrl);
+      this.isLoadingViewerDoc = false;
+    })
+    .catch(() => {
+      this.isLoadingViewerDoc = false;
+      this.showToast('❌ Impossible de charger le document');
+    });
 }
 
 fermerViewerDoc(): void {
@@ -790,6 +819,31 @@ voirCandidaturesCampagne(campagne: Campagne): void {
    this.parentsExcelFile = null; 
   }
 
+
+  // Méthode au click sur une campagne
+voirParentsCampagne(campagne: any): void {
+  this.selectedCampagne = campagne;
+
+  this.parentService.getParentsByCampagne(campagne.id).subscribe({
+    next: (data: ParentAutorise[]) => {
+      this.parents = data;
+    },
+    error: (err: any) => {
+      console.error(err);
+    }
+  });
+}
+
+// Filtre recherche
+get filteredParents(): any[] {
+  const q = this.parentSearch.toLowerCase().trim();
+  if (!q) return this.parents;
+  return this.parents.filter(p =>
+    p.nomPrenom.toLowerCase().includes(q) ||
+    p.matricule.toLowerCase().includes(q)
+  );
+}
+
 saveCampagne(activer: boolean): void {
   if (!this.newCampagne.nom || !this.newCampagne.dateDebut || !this.newCampagne.dateFin) {
     alert('Veuillez remplir tous les champs obligatoires');
@@ -812,45 +866,46 @@ saveCampagne(activer: boolean): void {
 
   this.isSavingCampagne = true;
 
-  // ── Étape 0 : upload parents si fichier fourni ─────────────────
-  const creerCampagne$ = () => {
-    const dto: CampagneRequestDTO = {
-      libelle: this.newCampagne.nom,
-      code: this.newCampagne.code,
-      dateDebut: this.newCampagne.dateDebut,
-      dateFin: this.newCampagne.dateFin,
-      description: this.newCampagne.description,
-      budget: this.newCampagne.budget ? Number(this.newCampagne.budget) : undefined,
-      regionIds: []
-    };
-
-    this.campagneService.creerCampagneAvecExcel(dto, this.campagneExcelFile!).subscribe({
-      next: (campagneCreee) => {
-        this.uploaderDocumentsPendants(campagneCreee.id, activer);
-      },
-      error: (err) => {
-        console.error(err);
-        alert('Erreur lors de la création de la campagne');
-        this.isSavingCampagne = false;
-      }
-    });
+  const dto: CampagneRequestDTO = {
+    libelle: this.newCampagne.nom,
+    code: this.newCampagne.code,
+    dateDebut: this.newCampagne.dateDebut,
+    dateFin: this.newCampagne.dateFin,
+    description: this.newCampagne.description,
+    budget: this.newCampagne.budget ? Number(this.newCampagne.budget) : undefined,
+    regionIds: []
   };
 
-  if (this.parentsExcelFile) {
-    this.candidatureService.uploadParentsExcel(this.parentsExcelFile).subscribe({
-      next: () => {
-        this.showToast('✅ Parents importés avec succès');
-        creerCampagne$();
-      },
-      error: (err) => {
-        console.error(err);
-        alert('❌ Erreur lors de l\'import des parents');
-        this.isSavingCampagne = false;
+  // ── Étape 1 : créer la campagne EN PREMIER pour avoir l'id ──
+  this.campagneService.creerCampagneAvecExcel(dto, this.campagneExcelFile!).subscribe({
+    next: (campagneCreee) => {
+
+      // ── Étape 2 : uploader les parents avec l'id de la campagne ──
+      if (this.parentsExcelFile) {
+        this.candidatureService.uploadParentsExcel(this.parentsExcelFile, campagneCreee.id).subscribe({
+          next: () => {
+            this.showToast('✅ Parents importés avec succès');
+            // ── Étape 3 : uploader les documents ──
+            this.uploaderDocumentsPendants(campagneCreee.id, activer);
+          },
+          error: (err) => {
+            console.error(err);
+            alert('❌ Erreur lors de l\'import des parents');
+            this.isSavingCampagne = false;
+          }
+        });
+      } else {
+        // ── Étape 3 directement si pas de fichier parents ──
+        this.uploaderDocumentsPendants(campagneCreee.id, activer);
       }
-    });
-  } else {
-    creerCampagne$();
-  }
+
+    },
+    error: (err) => {
+      console.error(err);
+      alert('Erreur lors de la création de la campagne');
+      this.isSavingCampagne = false;
+    }
+  });
 }
 
 onParentsExcelSelected(event: Event): void {
@@ -1076,6 +1131,14 @@ get structuresCTDisponibles(): StructureDTO[] {
   );
 }
 
+get structuresSCDisponibles(): StructureDTO[] {
+  if (!this.candidatureFilterRegion) return [];
+  return this.structures.filter(s =>
+    s.region === this.candidatureFilterRegion &&
+    s.type === 'STRUCTURE_CENTRALE'
+  );
+}
+
 filterCandidatures(): void {
   let list = [...this.candidatures];
 
@@ -1096,12 +1159,17 @@ filterCandidatures(): void {
     list = list.filter(c => c.statut === this.candidatureFilterStatut);
   }
 
+   if (this.candidatureFilterMois) {
+    list = list.filter(c => c.saisonnier?.moisTravail === this.candidatureFilterMois);
+  }
+
   this.filteredCandidatures = list;
 }
 resetFiltresCandidatures(): void {
   this.candidatureFilterRegion = '';
   this.candidatureFilterStructure = '';
   this.candidatureFilterStatut = '';
+   this.candidatureFilterMois = '';
   this.filterCandidatures();
 }
 
@@ -1153,32 +1221,72 @@ resetFiltresPresence(): void {
 }
 
 
-updateCandidature() {
+errors: { [key: string]: string } = {};
+
+validateForm(): boolean {
+  this.errors = {};
+  const s = this.selectedCandidature.saisonnier;
   const cand = this.selectedCandidature;
 
+  if (!s.prenom?.trim())           this.errors['prenom'] = 'Le prénom est obligatoire.';
+  if (!s.nom?.trim())              this.errors['nom'] = 'Le nom est obligatoire.';
+  if (!s.email?.trim())            this.errors['email'] = 'L\'email est obligatoire.';
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.email))
+                                   this.errors['email'] = 'Email invalide.';
+  if (!s.cin?.trim())              this.errors['cin'] = 'Le CIN est obligatoire.';
+  else if (!/^\d{8}$/.test(s.cin)) this.errors['cin'] = 'Le CIN doit contenir exactement 8 chiffres.';
+  if (!s.telephone?.trim())        this.errors['telephone'] = 'Le téléphone est obligatoire.';
+  else if (!/^\d{8}$/.test(s.telephone))
+                                   this.errors['telephone'] = 'Le téléphone doit contenir exactement 8 chiffres.';
+  if (!s.rib?.trim())              this.errors['rib'] = 'Le RIB est obligatoire.';
+  if (!s.region?.id)               this.errors['region'] = 'La direction est obligatoire.';
+  if (!s.niveauEtude)              this.errors['niveauEtude'] = 'Le niveau d\'étude est obligatoire.';
+  if (!s.diplome?.trim())          this.errors['diplome'] = 'Le diplôme est obligatoire.';
+  if (!s.specialiteDiplome?.trim()) this.errors['specialiteDiplome'] = 'La spécialité est obligatoire.';
+  if (!s.nomPrenomParent?.trim())  this.errors['nomPrenomParent'] = 'Le nom du parent est obligatoire.';
+  if (!s.matriculeParent)          this.errors['matriculeParent'] = 'Le matricule parent est obligatoire.';
+  if (!s.moisTravail)              this.errors['moisTravail'] = 'Le mois de travail est obligatoire.';
+  if (!cand.statut)                this.errors['statut'] = 'Le statut est obligatoire.';
+
+  return Object.keys(this.errors).length === 0;
+}
+
+updateCandidature() {
+  if (!this.validateForm()) return;
+
+  const cand = this.selectedCandidature;
+  const s = cand.saisonnier;
   const formData = new FormData();
 
-  formData.append('nom', cand.saisonnier.nom);
-  formData.append('prenom', cand.saisonnier.prenom);
-  formData.append('cin', cand.saisonnier.cin);
-  formData.append('rib', cand.saisonnier.rib);
-  formData.append('telephone', cand.saisonnier.telephone);
-  formData.append('email', cand.saisonnier.email);
-  formData.append('regionId', cand.saisonnier.region.id);
-
-  formData.append('moisTravail', cand.saisonnier.moisTravail || '');
+  formData.append('nom', s.nom);
+  formData.append('prenom', s.prenom);
+  formData.append('cin', s.cin);
+  formData.append('rib', s.rib);
+  formData.append('telephone', s.telephone);
+  formData.append('email', s.email);
+  formData.append('regionId', s.region.id);
+  formData.append('moisTravail', s.moisTravail || '');
   formData.append('statut', cand.statut);
   formData.append('commentaire', cand.commentaire || '');
+  formData.append('niveauEtude', s.niveauEtude || '');
+  formData.append('diplome', s.diplome || '');
+  formData.append('specialiteDiplome', s.specialiteDiplome || '');
+  formData.append('nomPrenomParent', s.nomPrenomParent || '');
+  formData.append('matriculeParent', String(s.matriculeParent ?? ''));
 
   this.candidatureService.updateCandidature(cand.id, formData)
     .subscribe({
       next: () => {
-        alert("Candidature mise à jour ✅");
+        alert('Candidature mise à jour ✅');
         this.loadCandidatures();
         this.closeDossier();
       },
       error: err => console.error(err)
     });
+}
+
+onlyDigits(event: KeyboardEvent): boolean {
+  return /\d/.test(event.key);
 }
 
 openDossier(cand: any) {
@@ -1597,17 +1705,20 @@ loadStructures(): void {
     candidaturesFiltrees = this.candidatures.filter(c => c.campagne.id === campagneId);
   }
 
+    candidaturesFiltrees = candidaturesFiltrees.filter(c => c.statut === 'ACCEPTEE');
+
+
   this.presenceRows = candidaturesFiltrees.map(c => ({
-    id: c.id,
-    nom: `${c.saisonnier.nom} ${c.saisonnier.prenom}`,
-    cin: String(c.saisonnier.cin),
-    dureeContrat: this.presenceConfig.dureeContrat,
-    absences: 0,
-    montantNet: 0,
-    rib: c.saisonnier.rib ?? '',
-    statut: 'impaye' as 'impaye',
-    campagneId: c.campagne.id
-  }));
+  id: c.id,
+  nom: `${c.saisonnier.nom} ${c.saisonnier.prenom}`,
+  cin: String(c.saisonnier.cin),
+  dureeContrat: this.presenceConfig.dureeContrat,
+  absences: c.saisonnier.absences ?? 0,   // ← lire depuis la BDD
+  montantNet: 0,
+  rib: c.saisonnier.rib ?? '',
+  statut: 'impaye' as 'impaye',
+  campagneId: c.campagne.id
+}));
 
   // ✅ PAS d'appliquerBudgetCampagne() ici — déjà fait dans loadCampagnesPuisCandidatures
   // Le tauxJournalier est déjà calculé correctement avant d'arriver ici

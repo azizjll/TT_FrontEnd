@@ -17,7 +17,7 @@ export class RhGuard implements CanActivate {
   canActivate(): Observable<boolean> {
     const token = localStorage.getItem('token');
     if (!token) {
-      this.router.navigate(['/admin/login']);
+      this.router.navigate(['/home-ge']);
       return of(false);
     }
 
@@ -26,7 +26,7 @@ export class RhGuard implements CanActivate {
       const role: string = payload.role || payload.roles?.[0] || '';
 
       if (role !== 'RH_REGIONAL') {
-        this.router.navigate(['/admin/login']);
+        this.router.navigate(['/home-ge']);
         return of(false);
       }
 
@@ -36,19 +36,19 @@ export class RhGuard implements CanActivate {
           if (campagnes && campagnes.length > 0) {
             return true; // ← laisser passer, sans navigate()
           }
-          this.router.navigate(['/admin/login'], {
+          this.router.navigate(['/home-ge'], {
             queryParams: { error: 'entreprise-inactive' }
           });
           return false;
         }),
         catchError(() => {
-          this.router.navigate(['/admin/login']);
+          this.router.navigate(['/home-ge']);
           return of(false);
         })
       );
 
     } catch {
-      this.router.navigate(['/admin/login']);
+      this.router.navigate(['/home-ge']);
       return of(false);
     }
   }
