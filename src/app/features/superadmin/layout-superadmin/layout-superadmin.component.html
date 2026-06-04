@@ -39,7 +39,7 @@
           <span class="nav-text" *ngIf="!sidebarCollapsed">Dashboard</span>
         </a>
 
-        <a class="nav-item active" routerLink="/superadmin/users" routerLinkActive="active">
+        <a class="nav-item active" routerLink="/superadmin/user_list" routerLinkActive="active">
           <span class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -65,7 +65,7 @@
           <span class="user-name">Super Admin</span>
           <span class="user-role">Administrateur système</span>
         </div>
-        <button class="logout-btn" *ngIf="!sidebarCollapsed" title="Déconnexion">
+        <button class="logout-btn" *ngIf="!sidebarCollapsed" title="Déconnexion" (click)="logout()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
           </svg>

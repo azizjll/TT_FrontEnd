@@ -1,3 +1,29 @@
+.rs-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid #e5e5e0;          // ← bordure visible sur fond blanc
+  border-radius: 8px;
+  color: #888780;                      // ← texte gris visible sur fond blanc
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #ef4444;
+  }
+
+  i {
+    font-size: 1rem;
+  }
+}
+
 .rs-layout {
   display: flex;
   height: 100vh;

@@ -20,35 +20,60 @@ export class StructureService {
 
   constructor(private http: HttpClient) {}
 
-   // ── helper privé ─────────────────────────────────────────────
+  // ── helper privé ─────────────────────────────────────────────
   private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token'); // même clé que authService.setToken()
+    const token = localStorage.getItem('token');
+
     return new HttpHeaders({
-      'Authorization': `Bearer ${token}`
+      Authorization: `Bearer ${token}`
     });
   }
 
-  getStructuresByRegion(regionId: number, campagneId?: number): Observable<StructureDTO[]> {
-    const params = campagneId ? `?campagneId=${campagneId}` : '';
-    return this.http.get<StructureDTO[]>(`${this.baseUrl}/region/${regionId}${params}`);
-}
+  getStructuresByRegion(
+    regionId: number,
+    campagneId?: number
+  ): Observable<StructureDTO[]> {
 
-  updateStructure(id: number, dto: Partial<StructureDTO>): Observable<any> {
-  return this.http.put(`${this.baseUrl}/${id}`, dto, { responseType: 'text' });
-}
- getStructuresCampagneActive(): Observable<StructureDTO[]> {
+    const params = campagneId ? `?campagneId=${campagneId}` : '';
+
     return this.http.get<StructureDTO[]>(
-      `${this.baseUrl}/campagne-active`,
-      { headers: this.getHeaders() }
+      `${this.baseUrl}/region/${regionId}${params}`,
+      {
+        headers: this.getHeaders()
+      }
     );
   }
 
-  // Structures de la campagne active — sans JWT (public)
-getStructuresCampagneActivePublique(): Observable<StructureDTO[]> {
-  return this.http.get<StructureDTO[]>(
-    `${this.baseUrl}/campagne-active/publique`
-  );
-}
+  updateStructure(
+    id: number,
+    dto: Partial<StructureDTO>
+  ): Observable<any> {
 
+    return this.http.put(
+      `${this.baseUrl}/${id}`,
+      dto,
+      {
+        headers: this.getHeaders(),
+        responseType: 'text'
+      }
+    );
+  }
 
+  getStructuresCampagneActive(): Observable<StructureDTO[]> {
+    return this.http.get<StructureDTO[]>(
+      `${this.baseUrl}/campagne-active`,
+      {
+        headers: this.getHeaders()
+      }
+    );
+  }
+
+  getStructuresCampagneActivePublique(): Observable<StructureDTO[]> {
+    return this.http.get<StructureDTO[]>(
+      `${this.baseUrl}/campagne-active/publique`,
+      {
+        headers: this.getHeaders()
+      }
+    );
+  }
 }

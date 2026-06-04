@@ -54,7 +54,6 @@
        (click)="setActive('memo')">
       <span class="nav-sub-dot"></span>
       <span>مذكرة الإنتداب</span>
-      <span class="nav-badge secondary">2025</span>
     </a>
 
     <!-- Structures -->
@@ -121,14 +120,6 @@
 </a>
 
 
-      <a class="nav-item">
-        <span class="nav-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M20 12h-2M4 12H2M17.66 17.66l-1.41-1.41M6.34 17.66l1.41-1.41M12 20v2M12 2v2"/>
-          </svg>
-        </span>
-        <span>Paramètres</span>
-      </a>
     </nav>
 
     <div class="sidebar-user">
@@ -247,30 +238,8 @@
 
       <!-- Stats Cards -->
       <div class="stats-grid">
-        <div class="stat-card primary">
-          <div class="stat-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-            </svg>
-          </div>
-          <div class="stat-data">
-            <span class="stat-value">{{ stats.campagnesCloturee }}</span>
-            <span class="stat-label">Campagnes Cloturées</span>
-          </div>
-          <div class="stat-trend up">+2 ce mois</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-          </div>
-          <div class="stat-data">
-            <span class="stat-value">{{ stats.campagnesTotal }}</span>
-            <span class="stat-label">Total Campagnes</span>
-          </div>
-          <div class="stat-trend">Toutes périodes</div>
-        </div>
+      
+        
         <div class="stat-card">
           <div class="stat-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -419,12 +388,7 @@
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                     </svg>
                   </button>
-                  <button class="action-icon danger" title="Supprimer">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                    </svg>
-                  </button>
+                  
                 </div>
               </td>
             </tr>
@@ -475,7 +439,8 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let p of filteredParents">
+      <!-- ✅ parentsPagines au lieu de filteredParents -->
+      <tr *ngFor="let p of parentsPagines">
         <td>{{ p.nomPrenom }}</td>
         <td>{{ p.matricule }}</td>
         <td>{{ p.utilise }} / {{ p.autorises }}</td>
@@ -492,13 +457,47 @@
         </td>
       </tr>
 
-      <tr *ngIf="filteredParents.length === 0">
+      <tr *ngIf="parentsPagines.length === 0">
         <td colspan="5" style="text-align:center; color:var(--text-muted); padding:2rem;">
           Aucun parent trouvé pour "{{ parentSearch }}"
         </td>
       </tr>
     </tbody>
   </table>
+
+  <!-- ── Pagination ───────────────────────────────────────────── -->
+  <div class="pagination-bar" *ngIf="parentsTotalPages > 1">
+    <span class="pagination-info">
+  {{ (parentPage - 1) * parentPageSize + 1 }}–{{ getParentPageEnd() }}
+  sur {{ filteredParents.length }}
+</span>
+
+    <div class="pagination-controls">
+  <button class="page-btn" [disabled]="parentPage === 1" (click)="goToParentPage(1)">«</button>
+  <button class="page-btn" [disabled]="parentPage === 1" (click)="goToParentPage(parentPage - 1)">‹</button>
+
+  <ng-container *ngFor="let n of parentPageNumbers">
+    <!-- "..." séparateur -->
+    <span *ngIf="n === -1" class="page-dots">…</span>
+    <!-- bouton numéro -->
+    <button
+      *ngIf="n !== -1"
+      class="page-btn"
+      [class.active]="n === parentPage"
+      (click)="goToParentPage(n)">
+      {{ n }}
+    </button>
+  </ng-container>
+
+  <button class="page-btn" [disabled]="parentPage === parentsTotalPages" (click)="goToParentPage(parentPage + 1)">›</button>
+  <button class="page-btn" [disabled]="parentPage === parentsTotalPages" (click)="goToParentPage(parentsTotalPages)">»</button>
+</div>
+    <select class="page-size-select" [(ngModel)]="parentPageSize" (change)="parentPage = 1">
+      <option [value]="5">5 / page</option>
+      <option [value]="10">10 / page</option>
+      <option [value]="25">25 / page</option>
+    </select>
+  </div>
 </div>
 
 <!-- Message initial : aucune campagne sélectionnée -->
@@ -1024,8 +1023,8 @@
         <th class="col-name">Nom et prénom</th>
         <th class="col-cin">Numéro CIN</th>
         <th class="col-rib">Numéro de compte</th>
-        <th class="col-absences">Absences(Jours)</th>
-        <th class="col-duree">Durée de travail(Jours)</th>
+        <th class="col-absences">Nbre de jours d'absences</th>
+        <th class="col-duree">Nbre de jours de travail</th>
         
         <th class="col-montant">Montant net (DT)</th>
         
@@ -1096,7 +1095,7 @@
     <!-- ===== SECTION: MEMO INTIDAB ===== -->
     <section class="content-section" *ngIf="activeSection === 'memo'">
   <div class="section-header">
-    <h2 class="section-title">مذكرة الإنتداب 2025</h2>
+    <h2 class="section-title">مذكرة الإنتداب </h2>
     <div class="action-buttons">
       <button class="btn btn-primary" (click)="openMemoUploadModal()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1147,7 +1146,6 @@
           <line x1="12" y1="32" x2="22" y2="32" stroke="#1E8BD4" stroke-width="1.2" stroke-linecap="round"/>
         </svg>
       </div>
-      <div class="memo-doc-title">مذكرة حول انتداب أعوان متعاقدين لعمل موسمي</div>
       <div class="memo-doc-year">سنة 2025</div>
 
       <!-- Meta infos -->
@@ -1289,16 +1287,7 @@
       <!-- ══ Fin documents ══ -->
 
       <!-- Résumé -->
-      <div class="memo-summary-box">
-        <div class="memo-summary-title">ملخص المذكرة</div>
-        <ul class="memo-summary-list">
-          <li>تحديد عدد الأعوان المسموح بانتدابهم</li>
-          <li>شروط الانتداب وآجاله</li>
-          <li>الوثائق المطلوبة لكل ملف</li>
-          <li>إجراءات التوقيع والمصادقة</li>
-          <li>مراحل المعالجة الإدارية</li>
-        </ul>
-      </div>
+      
     </div>
 
     <!-- ══ VIEWER DROITE ══ -->

@@ -37,18 +37,18 @@ interface ImportResult {
 export class UsersListComponent implements OnInit {
 
   // ── Données ────────────────────────────────────────────────────
-  allUsers:  Utilisateur[] = [];   // tous les utilisateurs (hors RS)
-  rsUsers:   Utilisateur[] = [];   // Responsables Structure
+  allUsers:  Utilisateur[] = [];
+  rsUsers:   Utilisateur[] = [];
 
   roles: string[] = ['SUPERADMIN', 'ADMIN', 'RH_REGIONAL', 'RESPONSABLE_STRUCTURE'];
 
-  // ── Import 1 : utilisateurs généraux ──────────────────────────
+  // ── Import 1 ──────────────────────────────────────────────────
   selectedFile1:   File | null = null;
   isDragging1      = false;
   importing1       = false;
   importResult1:   ImportResult | null = null;
 
-  // ── Import 2 : Responsables Structure ─────────────────────────
+  // ── Import 2 ──────────────────────────────────────────────────
   selectedFile2:   File | null = null;
   isDragging2      = false;
   importing2       = false;
@@ -61,11 +61,11 @@ export class UsersListComponent implements OnInit {
   // ── Recherche / filtre — tableau 2 ────────────────────────────
   searchQuery2 = '';
 
-  // ── Pagination — tableau 1 ─────────────────────────────────────
+  // ── Pagination — tableau 1 ────────────────────────────────────
   page1     = 1;
   pageSize1 = 10;
 
-  // ── Pagination — tableau 2 ─────────────────────────────────────
+  // ── Pagination — tableau 2 ────────────────────────────────────
   page2     = 1;
   pageSize2 = 10;
 
@@ -77,23 +77,23 @@ export class UsersListComponent implements OnInit {
 
   // ── Chargement ─────────────────────────────────────────────────
   loadUsers(): void {
-  // Tableau 1 — tous les utilisateurs sauf RS
-  this.http.get<Utilisateur[]>(`${this.apiBase}/superadmin/users`).subscribe({
-    next: (data) => {
-      this.allUsers = data.filter(u => u.role !== 'RESPONSABLE_STRUCTURE');
-    }
-  });
+    const headers = this.authHeaders();
 
-  // Tableau 2 — RS de la campagne active SEULEMENT
-  this.http.get<Utilisateur[]>(
-    `${this.apiBase}/superadmin/users/responsables-structure-actifs`
-  ).subscribe({
-    next: (data) => { this.rsUsers = data; },
-    error: (err) => console.error('Erreur chargement RS actifs', err)
-  });
-}
+    this.http.get<Utilisateur[]>(`${this.apiBase}/superadmin/users`, { headers }).subscribe({
+      next: (data) => {
+        this.allUsers = data.filter(u => u.role !== 'RESPONSABLE_STRUCTURE');
+      }
+    });
 
-  // ── Drag & Drop — générique ────────────────────────────────────
+    this.http.get<Utilisateur[]>(
+      `${this.apiBase}/superadmin/users/responsables-structure-actifs`, { headers }
+    ).subscribe({
+      next: (data) => { this.rsUsers = data; },
+      error: (err) => console.error('Erreur chargement RS actifs', err)
+    });
+  }
+
+  // ── Drag & Drop ────────────────────────────────────────────────
   onDragOver(e: DragEvent, n: 1|2): void {
     e.preventDefault();
     n === 1 ? (this.isDragging1 = true) : (this.isDragging2 = true);
@@ -208,9 +208,17 @@ export class UsersListComponent implements OnInit {
   onSearch2(): void { this.page2 = 1; }
 
   // ── Helpers ───────────────────────────────────────────────────
-  private authHeaders(): HttpHeaders {
-    return new HttpHeaders({ Authorization: `Bearer ${localStorage.getItem('token') || ''}` });
+  private getToken(): string {
+    return localStorage.getItem('token') || '';
   }
+
+  public authHeaders(): HttpHeaders {
+    const token = this.getToken();
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+  }
+
   formatSize(bytes: number): string {
     if (bytes < 1024) return `${bytes} o`;
     if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} Ko`;

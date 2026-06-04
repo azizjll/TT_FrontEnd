@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-layout-superadmin',
@@ -12,7 +13,14 @@ import { RouterModule } from '@angular/router';
 export class LayoutSuperadminComponent {
   sidebarCollapsed = false;
 
+  constructor(private authService: AuthService, private router: Router) {}
+
   toggleSidebar(): void {
     this.sidebarCollapsed = !this.sidebarCollapsed;
+  }
+
+  logout(): void {
+    this.authService.logout(); // supprime le token
+    this.router.navigate(['/home-ge']);
   }
 }

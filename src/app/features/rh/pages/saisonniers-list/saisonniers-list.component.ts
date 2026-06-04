@@ -146,30 +146,43 @@ get toutesCompletes(): boolean {
 
   // Charger candidatures par campagne et région
   loadCandidatures(regionId: number) {
+  console.log('[loadCandidatures] called with regionId:', regionId, '| campagneId:', this.campagneId);
+
+    console.log('[loadCandidatures] URL appelée: /api/candidatures?campagne=' + this.campagneId + '&region=' + regionId);
+
+
   this.candidatureService.getCandidaturesByCampagneAndRegion(this.campagneId, regionId)
     .subscribe({
       next: (res: any) => {
+        console.log('[loadCandidatures] candidatures received:', res?.length, res);
         this.candidatures = res;
 
-        // 🆕 charger la structure de chaque candidature
         const requests = res.map((c: any) =>
           this.candidatureService.getStructureByCandidature(c.id).toPromise()
-            .then((st: any) => { this.structureMap[c.id] = st?.nom ?? '—'; })
-            .catch(() => { this.structureMap[c.id] = '—'; })
+            .then((st: any) => {
+              console.log(`[loadCandidatures] structure for candidature ${c.id}:`, st);
+              this.structureMap[c.id] = st?.nom ?? '—';
+            })
+            .catch((err) => {
+              console.warn(`[loadCandidatures] failed to load structure for candidature ${c.id}:`, err);
+              this.structureMap[c.id] = '—';
+            })
         );
 
         Promise.all(requests).then(() => {
-          // extraire les structures uniques pour le select filtre
+          console.log('[loadCandidatures] structureMap built:', this.structureMap);
+
           const noms = res
             .map((c: any) => this.structureMap[c.id])
             .filter((n: string) => !!n && n !== '—');
           this.structuresDisponibles = [...new Set<string>(noms)];
+
+          console.log('[loadCandidatures] structuresDisponibles:', this.structuresDisponibles);
         });
       },
-      error: err => console.error(err)
+      error: err => console.error('[loadCandidatures] error fetching candidatures:', err)
     });
 }
-
 
 
 // ── getter filteredCandidatures mis à jour ──
@@ -208,9 +221,10 @@ setStructureFilter(nom: string): void {
   loadStructuresByRegion(regionId: number) {
   if (!regionId) return;
 
-  this.structureService.getStructuresByRegion(regionId).subscribe({
+  this.structureService.getStructuresCampagneActive().subscribe({
     next: (data: StructureDTO[]) => {
-      this.structures = data;
+      // Filtrer par région après réception
+      this.structures = data.filter(s => s.region === this.myRegion.nom);
     },
     error: err => console.error("Erreur chargement structures", err)
   });
@@ -322,7 +336,8 @@ submit(saisonnierForm: NgForm): void {
     return;
   }
 
-  if (!this.cinFile || !this.diplome || !this.contrat || !this.ribFile) {
+  if (!this.cinFile || !this.diplome || !this.ribFile) {
+
     Swal.fire({
       icon: 'warning',
       title: 'Documents manquants',
@@ -348,7 +363,6 @@ submit(saisonnierForm: NgForm): void {
   formData.append('campagneId', this.campagneId.toString());
   formData.append('cinFile', this.cinFile);
   formData.append('diplome', this.diplome);
-  formData.append('contrat', this.contrat);
   formData.append('ribFile', this.ribFile);
   formData.append('moisTravail', this.form.moisTravail);
   formData.append('demandeAdminAutorisee', this.quotaDepasse ? 'true' : 'false');

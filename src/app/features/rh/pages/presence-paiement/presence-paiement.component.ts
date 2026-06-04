@@ -376,27 +376,23 @@ get structuresCT(): StructureDTO[] {
 
   // ── Construction de la feuille cellule par cellule ────────────────────
   const ws: any = {};
-  const COLS = 7;         // A→G
+  const COLS = 6;         // A→G
   const dataStartRow = 5; // ligne Excel où commence les données (1-indexed)
 
   // Ligne 1 : titre principal
-  ws['A1'] = { v: 'Tunisie Telecom — Présence & Paiement', s: cellTitle };
+  ws['A1'] = { v: 'Campagne des saisonniers - Etat de Présence', s: cellTitle };
   for (let c = 1; c < COLS; c++) {
     ws[XLSX.utils.encode_cell({ r: 0, c })] = { v: '', s: cellTitle };
   }
 
   // Ligne 2 : sous-titre paramètres
-  const subLabel = `Taux journalier : ${this.tauxJourDT} DT  |  Durée contrat : ${this.dureeContrat} jours  |  Campagne ${this.currentYear}`;
-  ws['A2'] = { v: subLabel, s: cellSub };
-  for (let c = 1; c < COLS; c++) {
-    ws[XLSX.utils.encode_cell({ r: 1, c })] = { v: '', s: cellSub };
-  }
+  
 
   // Ligne 3 : vide (espacement)
   ws['A3'] = { v: '', s: { fill: { fgColor: { rgb: WHITE } } } };
 
   // Ligne 4 : en-têtes colonnes
-  const headers = ['N°', 'Nom et Prénom', 'N° CIN', 'Durée (Jours)', 'Absences (Jours)', 'Montant net (DT)', 'N° Compte'];
+  const headers = ['N°', 'Nom et Prénom', 'N° CIN', 'Nbre de jours de travail', ' Nbre de jours d\absences',  'N° Compte'];
   headers.forEach((h, c) => {
     ws[XLSX.utils.encode_cell({ r: 3, c })] = { v: h, s: cellHeader };
   });
@@ -438,20 +434,10 @@ get structuresCT(): StructureDTO[] {
     };
 
     // Montant net : formaté
-    ws[XLSX.utils.encode_cell({ r, c: 5 })] = {
-      v: s.montantNet,
-      t: 'n',
-      z: '#,##0.000 "DT"',
-      s: {
-        font: { name: 'Arial', sz: 10, bold: true, color: { rgb: BLUE_DARK } },
-        fill: { fgColor: { rgb: BLUE_LIGHT } },
-        alignment: { horizontal: 'center', vertical: 'center' },
-        border: borderThin,
-      },
-    };
+    
 
     // Statut payé
-    ws[XLSX.utils.encode_cell({ r, c: 6 })] = cellData(s.rib || '—', true);
+    ws[XLSX.utils.encode_cell({ r, c: 5 })] = cellData(s.rib || '—', true);
   });
 
   // Ligne Total
@@ -461,15 +447,7 @@ get structuresCT(): StructureDTO[] {
   ws[XLSX.utils.encode_cell({ r: totalRow, c: 2 })] = { v: '',                               s: cellTotalVal };
   ws[XLSX.utils.encode_cell({ r: totalRow, c: 3 })] = { v: this.getTotalJours(),             s: cellTotalVal };
   ws[XLSX.utils.encode_cell({ r: totalRow, c: 4 })] = { v: this.getTotalAbsences(),          s: cellTotalVal };
-  ws[XLSX.utils.encode_cell({ r: totalRow, c: 5 })] = {
-    v: this.getTotalMontant(),
-    t: 'n',
-    z: '#,##0.000 "DT"',
-    s: {
-      ...cellTotalVal,
-      font: { name: 'Arial', sz: 11, bold: true, color: { rgb: YELLOW_BG } },
-    },
-  };
+  
   ws[XLSX.utils.encode_cell({ r: totalRow, c: 6 })] = { v: '', s: cellTotalVal };
 
   // ── Fusions (merge) ───────────────────────────────────────────────────
@@ -486,7 +464,6 @@ get structuresCT(): StructureDTO[] {
     { wch: 14 },   // CIN
     { wch: 14 },   // Durée
     { wch: 14 },   // Absences
-    { wch: 18 },   // Montant
     { wch: 26 },   // N° Compte
   ];
 

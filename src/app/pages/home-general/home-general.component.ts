@@ -29,6 +29,9 @@ export class HomeGeneralComponent {
 
   showRoleChooser = false;
 
+  showPassword = false;
+
+
 
   constructor(
     private router: Router,
@@ -48,6 +51,8 @@ export class HomeGeneralComponent {
 
     const request: SigninAdminRequest = { matricule: this.matricule, password: this.password };
 
+    
+
     this.authService.signinAdmin(request).subscribe({
       next: (res) => {
         this.authService.setToken(res.token);
@@ -59,6 +64,9 @@ export class HomeGeneralComponent {
       }
     });
   }
+  togglePassword(): void {
+  this.showPassword = !this.showPassword;
+}
 
   private redirectByRole(role: string): void {
   this.isLoading = false;

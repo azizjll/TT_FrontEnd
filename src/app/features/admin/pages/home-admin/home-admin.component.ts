@@ -12,8 +12,7 @@ import { ParentAutorise, ParentAutoriseService } from 'src/app/services/parent-a
 import { PresencePdfExportService } from 'src/app/services/presence-pdf-export.service';
 import {  StructureImportService } from 'src/app/services/structure-import.service';
 import { StructureDTO, StructureService } from 'src/app/structure.service';
-import * as XLSX from 'xlsx';
-
+import * as XLSX from 'xlsx-js-style';
 // ─── Interfaces ───────────────────────────────────────────────────
 
 interface RegionAPI {
@@ -240,6 +239,7 @@ documentsPendants: Array<{ file: File; nom: string; type: string }> = [];
 
 presenceFilterRegion = '';
 presenceFilterStructure = '';
+currentYear: number = new Date().getFullYear();
 
 
 candidatureStructureMap = new Map<number, any>();
@@ -403,6 +403,10 @@ memoDocumentSelectionne: DocumentCampagneDTO | null = null;
 memoViewerUrl: SafeResourceUrl | null = null;
 isLoadingViewerDoc = false;
 
+// ── Pagination Parents ──────────────────────────────────────────
+parentPage = 1;
+parentPageSize = 10;
+
   // ── Présence & Paiement ───────────────────────────────────────────
   presenceRows: PresenceRow[] = [];
   filteredPresenceRows: PresenceRow[] = [];
@@ -450,6 +454,8 @@ selectedCampagne: any = null;
 showParentModal = false;
 isEditParent = false;
 
+private _parentSearch = '';
+
 
 
   // ─── Constructor ──────────────────────────────────────────────────
@@ -490,6 +496,54 @@ roleUtilisateur = '';
     this.nomUtilisateur = this.authService.getNomComplet();
   this.roleUtilisateur = this.authService.getRole();
   }
+
+
+  get parentsTotalPages(): number {
+  return Math.ceil(this.filteredParents.length / this.parentPageSize);
+}
+
+get parentsPagines(): any[] {
+  const start = (this.parentPage - 1) * this.parentPageSize;
+  return this.filteredParents.slice(start, start + this.parentPageSize);
+}
+
+get parentPageNumbers(): number[] {
+  const total = this.parentsTotalPages;
+  const current = this.parentPage;
+  const delta = 2; // pages de chaque côté
+
+  const range: number[] = [];
+  const rangeWithDots: number[] = [];
+
+  for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+    range.push(i);
+  }
+
+  // Toujours inclure la première page
+  if (current - delta > 2) {
+    rangeWithDots.push(1, -1); // -1 = "..."
+  } else {
+    rangeWithDots.push(1);
+  }
+
+  rangeWithDots.push(...range);
+
+  // Toujours inclure la dernière page
+  if (current + delta < total - 1) {
+    rangeWithDots.push(-1, total); // -1 = "..."
+  } else if (total > 1) {
+    rangeWithDots.push(total);
+  }
+
+  return rangeWithDots;
+}
+
+goToParentPage(page: number): void {
+  if (page >= 1 && page <= this.parentsTotalPages) {
+    this.parentPage = page;
+  }
+}
+
 
 
   loadCampagnesPuisCandidatures(): void {
@@ -714,8 +768,8 @@ ouvrirLienDoc(url: string): void {
         subtitle: 'Consultez la liste complète des utilisateurs du système'
       },
       memo: {
-        title: 'مذكرة الإنتداب 2025',
-        subtitle: 'ذكرة حول انتداب أعوان متعاقدين لعمل موسمي'
+        title: 'مذكرة الإنتداب ',
+        subtitle: 'مذكرة حول انتداب أعوان متعاقدين لعمل موسمي'
       },
       structures: {
         title: 'Structures par Région',
@@ -843,6 +897,11 @@ get filteredParents(): any[] {
     p.matricule.toLowerCase().includes(q)
   );
 }
+
+getParentPageEnd(): number {
+  return Math.min(this.parentPage * this.parentPageSize, this.filteredParents.length);
+}
+
 
 saveCampagne(activer: boolean): void {
   if (!this.newCampagne.nom || !this.newCampagne.dateDebut || !this.newCampagne.dateFin) {
@@ -1383,21 +1442,28 @@ loadCandidatures(): void {
 updateStats(): void {
   const candidatures = this.candidatures || [];
 
-  // Candidatures
   this.stats.totalCandidatures = candidatures.length;
-  this.stats.candidaturesAcceptees =
-    candidatures.filter(c => c.statut === 'ACCEPTEE').length;
-  this.stats.candidaturesEnAttente =
-    candidatures.filter(c => c.statut === 'EN_ATTENTE').length;
-  this.stats.candidaturesRefusees =
-    candidatures.filter(c => c.statut === 'REFUSEE').length;
+  this.stats.candidaturesAcceptees = candidatures.filter(c => c.statut === 'ACCEPTEE').length;
+  this.stats.candidaturesEnAttente = candidatures.filter(c => c.statut === 'EN_ATTENTE').length;
+  this.stats.candidaturesRefusees = candidatures.filter(c => c.statut === 'REFUSEE').length;
 
-  // Parents
+  // ✅ Total parents
   this.stats.totalParents = this.parents?.length || 0;
 
-  // Campagnes actives (si tu les as déjà chargées)
-  this.stats.campagnesCloturee =
-    this.campagnes?.filter(c => c.statut === 'cloturee').length || 0;
+  // ✅ Jours restants avant fin de la campagne active
+  const campagneActive = this.campagnes?.find(c => c.statut === 'active');
+  if (campagneActive?.dateFin) {
+    const aujourd = new Date();
+    aujourd.setHours(0, 0, 0, 0);
+    const fin = new Date(campagneActive.dateFin);
+    fin.setHours(0, 0, 0, 0);
+    const diff = fin.getTime() - aujourd.getTime();
+    this.stats.joursRestants = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  } else {
+    this.stats.joursRestants = 0;
+  }
+
+  this.stats.campagnesCloturee = this.campagnes?.filter(c => c.statut === 'termine').length || 0;
 }
 
 private updateCandidaturesParCampagne(): void {
@@ -1958,80 +2024,127 @@ private appliquerBudgetCampagne(): void {
 }
 
   exportPresenceExcel(): void {
-  // 1. Préparer les données
-  const data = this.filteredPresenceRows.map((row, index) => ({
-  'الحالة': row.statut === 'paye' ? 'مدفوع' : 'غير مدفوع',
-  'رقم الحساب (RIB)': row.rib || '',
-  'المبلغ الصافي (DT)': row.montantNet.toFixed(3),
-  'الأيام المشغولة': row.dureeContrat - row.absences,
-  'الغيابات': row.absences,
-  'مدة العمل (أيام)': row.dureeContrat,
-  'رقم بطاقة التعريف': row.cin,
-  'الاسم واللقب': row.nom,
-  'عد': index + 1,
-}));
+  const wb = XLSX.utils.book_new();
 
-  // 2. Ajouter une ligne de totaux
-  data.push({
-    'عد': '',
-    'الاسم واللقب': 'المجموع الإجمالي',
-    'رقم بطاقة التعريف': '',
-    'تاريخ المباشرة': '',
-    'مدة العمل (أيام)': this.presenceTotals.totalJours,
-    'الغيابات': this.presenceTotals.totalAbsences,
-    'الأيام المشغولة': this.presenceTotals.totalJours - this.presenceTotals.totalAbsences,
-    'المبلغ الصافي (DT)': this.presenceTotals.totalMontant.toFixed(3),
-    'رقم الحساب (RIB)': '',
-    'الحالة': '',
-  } as any);
+  const BLUE_DARK = '1E3A5F';
+  const BLUE_MED = '2563EB';
+  const GREY_BG = 'F1F5F9';
+  const WHITE = 'FFFFFF';
 
-  // 3. Créer le workbook
-  const worksheet = XLSX.utils.json_to_sheet(data);
+  const fontBase = { name: 'Arial', sz: 10 };
+  const fontTitle = { name: 'Arial', sz: 14, bold: true, color: { rgb: WHITE } };
 
-worksheet['!rtl'] = true;  // 4. Définir la largeur des colonnes
-  worksheet['!cols'] = [
-    { wch: 5 },   // عد
-    { wch: 25 },  // الاسم
-    { wch: 15 },  // CIN
-    { wch: 15 },  // تاريخ المباشرة
-    { wch: 15 },  // مدة العمل
-    { wch: 10 },  // الغيابات
-    { wch: 15 },  // الأيام المشغولة
-    { wch: 18 },  // المبلغ
-    { wch: 25 },  // RIB
-    { wch: 12 },  // الحالة
+  const borderThin = {
+    top: { style: 'thin', color: { rgb: 'CBD5E1' } },
+    bottom: { style: 'thin', color: { rgb: 'CBD5E1' } },
+    left: { style: 'thin', color: { rgb: 'CBD5E1' } },
+    right: { style: 'thin', color: { rgb: 'CBD5E1' } },
+  };
+
+  const cellTitle = {
+    font: fontTitle,
+    fill: { fgColor: { rgb: BLUE_DARK } },
+    alignment: { horizontal: 'center', vertical: 'center' },
+  };
+
+  const cellHeader = {
+    font: { name: 'Arial', sz: 10, bold: true, color: { rgb: WHITE } },
+    fill: { fgColor: { rgb: BLUE_MED } },
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border: borderThin,
+  };
+
+  const ws: any = {};
+
+  const COLS = 7;
+  const startRow = 5;
+
+  // ── TITLE ──
+  ws['A1'] = {
+    v: 'Campagne saisonnier - Etat de paiement',
+    s: cellTitle
+  };
+
+  for (let c = 1; c < COLS; c++) {
+    ws[XLSX.utils.encode_cell({ r: 0, c })] = { v: '', s: cellTitle };
+  }
+
+  // ── HEADERS ──
+  const headers = [
+    'N°',
+    'Nom et Prénom',
+    'CIN',
+    'Durée contrat',
+    'Nbre de jours d\'absences',
+    'Nbre de jours de travail',
+    'RIB'
   ];
 
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Présence & Paiement');
+  headers.forEach((h, c) => {
+    ws[XLSX.utils.encode_cell({ r: 3, c })] = { v: h, s: cellHeader };
+  });
 
-  // 5. Ajouter une feuille de récapitulatif
-  const recapData = [
-    { 'Paramètre': 'Campagne', 'Valeur': this.getCampagneNom() },
-    { 'Paramètre': 'Taux journalier', 'Valeur': `${this.presenceConfig.tauxJournalier} DT` },
-    { 'Paramètre': 'Durée contrat', 'Valeur': `${this.presenceConfig.dureeContrat} jours` },
-    { 'Paramètre': 'Total saisonniers', 'Valeur': this.presenceStats.totalSaisonniers },
-    { 'Paramètre': 'Masse salariale', 'Valeur': `${this.presenceStats.masseSalariale.toFixed(3)} DT` },
-    { 'Paramètre': 'Total absences', 'Valeur': this.presenceTotals.totalAbsences },
-    { 'Paramètre': 'Date export', 'Valeur': new Date().toLocaleDateString('fr-TN') },
+  // ── DATA ──
+  this.filteredPresenceRows.forEach((row, i) => {
+    const r = startRow - 1 + i;
+
+    const cell = (v: any, center = false) => ({
+      v,
+      s: {
+        font: fontBase,
+        fill: { fgColor: { rgb: i % 2 === 0 ? GREY_BG : WHITE } },
+        alignment: { horizontal: center ? 'center' : 'left', vertical: 'center' },
+        border: borderThin,
+      },
+    });
+
+    const workedDays = (row.dureeContrat || 0) - (row.absences || 0);
+
+    ws[XLSX.utils.encode_cell({ r, c: 0 })] = cell(i + 1, true);
+    ws[XLSX.utils.encode_cell({ r, c: 1 })] = cell(row.nom);
+    ws[XLSX.utils.encode_cell({ r, c: 2 })] = cell(row.cin, true);
+    ws[XLSX.utils.encode_cell({ r, c: 3 })] = cell(row.dureeContrat, true);
+    ws[XLSX.utils.encode_cell({ r, c: 4 })] = cell(row.absences, true);
+    ws[XLSX.utils.encode_cell({ r, c: 5 })] = cell(workedDays, true);
+    ws[XLSX.utils.encode_cell({ r, c: 6 })] = cell(row.rib || '—', true);
+  });
+
+  // ── ZOOM + STYLE GLOBAL ──
+  ws['!sheetViews'] = [
+    { zoomScale: 120 }
   ];
 
-  const recapSheet = XLSX.utils.json_to_sheet(recapData);
-  recapSheet['!rtl'] = true;
-  recapSheet['!cols'] = [{ wch: 20 }, { wch: 30 }];
-  XLSX.utils.book_append_sheet(workbook, recapSheet, 'Récapitulatif');
+  ws['!rows'] = [
+    { hpt: 30 }, // titre
+    { hpt: 25 }  // header
+  ];
 
-  // 6. Générer et télécharger le fichier
-  const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-const blob = new Blob([excelBuffer], {
-  type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-});
-const url = URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = url;
-a.download = `presence_paiement_${Date}.xlsx`;
-a.click();
-URL.revokeObjectURL(url);
+  // ── LARGEUR COLONNES (AGRANDIE) ──
+  ws['!cols'] = [
+    { wch: 7 },   // N°
+    { wch: 35 },  // Nom et Prénom
+    { wch: 18 },  // CIN
+    { wch: 22 },  // Durée
+    { wch: 22 },  // Absences
+    { wch: 25 },  // Jours travaillés
+    { wch: 28 }   // RIB
+  ];
+
+  // ── MERGE TITLE ──
+  ws['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: COLS - 1 } }
+  ];
+
+  // ── RANGE ──
+  const lastRow = startRow - 1 + this.filteredPresenceRows.length;
+
+  ws['!ref'] = XLSX.utils.encode_range({
+    s: { r: 0, c: 0 },
+    e: { r: lastRow, c: COLS - 1 }
+  });
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Présence');
+  XLSX.writeFile(wb, `presence_paiement_${this.currentYear}.xlsx`);
 }
 
 // Méthode helper pour récupérer le nom de la campagne sélectionnée
