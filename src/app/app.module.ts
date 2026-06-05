@@ -33,6 +33,7 @@ import { MemoComponent } from './features/admin/pages/memo/memo.component';
 import { StructuresComponent } from './features/admin/pages/structures/structures.component';
 import { CampagneExpireeComponent } from './pages/campagne-expiree/campagne-expiree.component';
 import { IltizamComponent } from './pages/iltizam/iltizam.component';
+import { AiChatComponent } from './pages/ai-chat/ai-chat.component';
 
 @NgModule({
   declarations: [
@@ -60,6 +61,7 @@ import { IltizamComponent } from './pages/iltizam/iltizam.component';
     StructuresComponent,
     CampagneExpireeComponent,
     IltizamComponent,
+    AiChatComponent,
     
     
   ],

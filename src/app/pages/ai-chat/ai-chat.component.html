@@ -1,0 +1,133 @@
+<!-- ============================================================
+     BOUTON FLOTTANT + FENÊTRE CHAT IA
+     ============================================================ -->
+
+<!-- Bouton flottant pour ouvrir/fermer -->
+<div class="ai-fab" [class.open]="isOpen" (click)="toggleChat()" title="Assistant IA">
+  <div class="fab-icon">
+    <svg *ngIf="!isOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      <circle cx="9" cy="10" r="1" fill="currentColor" stroke="none"/>
+      <circle cx="12" cy="10" r="1" fill="currentColor" stroke="none"/>
+      <circle cx="15" cy="10" r="1" fill="currentColor" stroke="none"/>
+    </svg>
+    <svg *ngIf="isOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <line x1="18" y1="6" x2="6" y2="18"/>
+      <line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  </div>
+  <!-- Badge pulse quand fermé -->
+  <span class="fab-pulse" *ngIf="!isOpen"></span>
+</div>
+
+<!-- Fenêtre du chat -->
+<div class="ai-chat-window" [class.visible]="isOpen">
+
+  <!-- ── En-tête ─────────────────────────────────────────────── -->
+  <div class="chat-header">
+    <div class="header-left">
+      <div class="ai-avatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="8" r="4"/>
+          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          <path d="M9 8h.01M15 8h.01" stroke-width="2.5"/>
+        </svg>
+      </div>
+      <div class="header-info">
+        <span class="header-title">Assistant RH</span>
+        <span class="header-status">
+          <span class="status-dot"></span>
+          En ligne
+        </span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="header-btn" (click)="clearHistory()" title="Nouvelle conversation">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="1 4 1 10 7 10"/>
+          <path d="M3.51 15a9 9 0 1 0 .49-4.7L1 10"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Corps des messages ──────────────────────────────────── -->
+  <div class="chat-messages" #messagesContainer>
+
+    <!-- Suggestions rapides (avant le 1er message) -->
+    <div class="quick-suggestions" *ngIf="quickSuggestions.length > 0">
+      <span class="suggestions-label">Suggestions rapides :</span>
+      <button
+        *ngFor="let s of quickSuggestions"
+        class="suggestion-chip"
+        (click)="useSuggestion(s)">
+        {{ s }}
+      </button>
+    </div>
+
+    <!-- Messages -->
+    <div
+      *ngFor="let msg of messages"
+      class="message-wrapper"
+      [class.user-wrapper]="msg.role === 'user'"
+      [class.assistant-wrapper]="msg.role === 'assistant'">
+
+      <!-- Avatar assistant -->
+      <div class="msg-avatar" *ngIf="msg.role === 'assistant'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="4"/>
+          <path d="M9 9h.01M15 9h.01M9 15h6" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <div class="message-bubble" [class.user-bubble]="msg.role === 'user'" [class.assistant-bubble]="msg.role === 'assistant'">
+
+        <!-- Indicateur de frappe -->
+        <div class="typing-indicator" *ngIf="msg.isTyping">
+          <span></span><span></span><span></span>
+        </div>
+
+        <!-- Contenu -->
+        <div
+          class="msg-content"
+          *ngIf="!msg.isTyping"
+          [innerHTML]="formatContent(msg.content)">
+        </div>
+
+        <!-- Heure -->
+        <div class="msg-time" *ngIf="!msg.isTyping">
+          {{ formatTime(msg.timestamp) }}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Zone de saisie ─────────────────────────────────────── -->
+  <div class="chat-input-area">
+    <div class="input-wrapper">
+      <textarea
+        #inputField
+        class="chat-input"
+        [(ngModel)]="userInput"
+        (keydown)="onKeyPress($event)"
+        placeholder="Posez votre question..."
+        rows="1"
+        [disabled]="isLoading">
+      </textarea>
+      <button
+        class="send-btn"
+        (click)="sendMessage()"
+        [disabled]="!userInput.trim() || isLoading"
+        title="Envoyer (Entrée)">
+        <svg *ngIf="!isLoading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+        <div class="btn-spinner" *ngIf="isLoading"></div>
+      </button>
+    </div>
+    <div class="input-hint">Appuyez sur <kbd>Entrée</kbd> pour envoyer · <kbd>Maj+Entrée</kbd> pour sauter une ligne</div>
+  </div>
+
+</div>
