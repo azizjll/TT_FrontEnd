@@ -62,12 +62,12 @@ etatUploadSuccess = false;
 
   // ── Constructor : injection DocumentService ───────────
   constructor(
-    private sanitizer: DomSanitizer,
-    private documentService: DocumentService,
-      private documentCampagneService: DocumentCampagneService ,
-      private authService: AuthService,
-        private structureService: StructureService,  // ← ajouter
-        private etatRHService: EtatRHService             
+   private readonly sanitizer: DomSanitizer,
+    private readonly documentService: DocumentService,
+      private readonly documentCampagneService: DocumentCampagneService ,
+      private readonly authService: AuthService,
+        private readonly structureService: StructureService,  // ← ajouter
+        private readonly etatRHService: EtatRHService             
 
 
   ) {}
@@ -170,7 +170,20 @@ getDocIcon(type: string): string {
 }
 
 selectDoc(doc: DocumentCampagneDTO): void {
+  // ✅ Validation — URLs autorisées du backend uniquement
+  const urlAutorisee =
+    doc.url.startsWith('/files/') ||
+    doc.url.startsWith('http://172.20.80.148') ||
+    doc.url.startsWith('http://172.20.36.132') ||
+    doc.url.startsWith('http://localhost:8080');
+
+  if (!urlAutorisee) {
+    return;
+  }
+
   this.selectedDoc = doc;
+
+  // ✅ bypass justifié : URL validée contre les origines autorisées du backend
   this.safeDocUrl = this.sanitizer.bypassSecurityTrustResourceUrl(doc.url);
 }
 
@@ -190,19 +203,35 @@ loadCirculaireFromServer(): void {
   this.documentService.getDocumentByType('CIRCULAIRE_2025').subscribe({
     next: (doc) => {
       if (doc?.url) {
+
+        // ✅ Validation — URLs autorisées du backend uniquement
+        const urlAutorisee =
+          doc.url.startsWith('/files/') ||
+          doc.url.startsWith('http://172.20.80.148') ||
+          doc.url.startsWith('http://172.20.36.132') ||
+          doc.url.startsWith('http://localhost:8080');
+
+        if (!urlAutorisee) {
+          this.safePdfUrl = null;
+          this.circulairePdfUrl = '';
+          this.isLoadingPdf = false;
+          return;
+        }
+
         this.circulairePdfUrl = doc.url;
+        // ✅ bypass justifié : URL validée contre les origines autorisées du backend
         this.safePdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(doc.url);
+
       } else {
-        // pas de doc → safePdfUrl reste null → zone upload s'affiche
         this.safePdfUrl = null;
         this.circulairePdfUrl = '';
       }
-      this.isLoadingPdf = false;  // ← toujours false à la fin
+      this.isLoadingPdf = false;
     },
     error: () => {
       this.safePdfUrl = null;
       this.circulairePdfUrl = '';
-      this.isLoadingPdf = false;  // ← toujours false même en erreur
+      this.isLoadingPdf = false;
     }
   });
 }
@@ -210,18 +239,40 @@ loadCirculaireFromServer(): void {
   /** Méthode privée partagée : aperçu local + upload Cloudinary */
 private handlePdfUpload(file: File): void {
   const localUrl = URL.createObjectURL(file);
-  this.circulairePdfUrl = localUrl;
-  this.safePdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(localUrl); // ← ajouter
 
-  this.isUploading  = true;
+  // ✅ Validation blob URL locale
+  if (!localUrl.startsWith('blob:')) {
+    return;
+  }
+
+  this.circulairePdfUrl = localUrl;
+  // ✅ bypass justifié : URL générée par createObjectURL depuis un File local
+  this.safePdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(localUrl);
+
+  this.isUploading = true;
   this.uploadSuccess = false;
-  this.uploadError  = '';
+  this.uploadError = '';
 
   this.documentService.uploadDocument(file, 'CIRCULAIRE_2025').subscribe({
     next: (res) => {
+
+      // ✅ Validation URL serveur
+      const urlAutorisee =
+        res.url.startsWith('/files/') ||
+        res.url.startsWith('http://172.20.80.148') ||
+        res.url.startsWith('http://172.20.36.132') ||
+        res.url.startsWith('http://localhost:8080');
+
+      if (!urlAutorisee) {
+        this.uploadError = 'URL du serveur non autorisée.';
+        this.isUploading = false;
+        return;
+      }
+
       this.circulairePdfUrl = res.url;
-      this.safePdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(res.url); // ← ajouter
-      this.isUploading  = false;
+      // ✅ bypass justifié : URL validée contre les origines autorisées du backend
+      this.safePdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(res.url);
+      this.isUploading = false;
       this.uploadSuccess = true;
       setTimeout(() => this.uploadSuccess = false, 4000);
     },

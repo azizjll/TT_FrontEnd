@@ -62,9 +62,9 @@ export class LoginSaisonnierComponent implements OnInit {
   lockedSection = '';
 
   constructor(
-    private authService: AuthService,
-    private router: Router,
-    private route: ActivatedRoute,
+    private readonly authService: AuthService,
+    private readonly router: Router,
+    private readonly route: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
@@ -193,7 +193,7 @@ export class LoginSaisonnierComponent implements OnInit {
     let score = 0;
     if (pw.length >= 8)  score++;
     if (/[A-Z]/.test(pw)) score++;
-    if (/[0-9]/.test(pw)) score++;
+    if (/\d/.test(pw)) score++;
     if (/[^A-Za-z0-9]/.test(pw)) score++;
     return score;
   }

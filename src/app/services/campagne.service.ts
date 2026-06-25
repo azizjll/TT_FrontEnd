@@ -25,6 +25,15 @@ export interface Campagne {
   budget?: number;
 }
 
+export interface CampagnePubliqueDTO {
+  id: number;
+  libelle: string;
+  dateDebut: string;
+  dateFin: string;
+  
+
+}
+
 
 @Injectable({
   providedIn: 'root'
@@ -53,6 +62,12 @@ creerCampagneAvecExcel(dto: CampagneRequestDTO, fichierExcel: File): Observable<
 }
 
   // READ
+
+  getCampagneParCode(code: string): Observable<CampagnePubliqueDTO> {
+  return this.http.get<CampagnePubliqueDTO>(
+    `${this.baseUrl}/${code}/publique`
+  );
+}
   getToutesCampagnes(): Observable<Campagne[]> {
     return this.http.get<Campagne[]>(this.baseUrl, this.getAuthHeaders());
   }

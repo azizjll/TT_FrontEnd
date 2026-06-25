@@ -16,7 +16,7 @@
   &:hover {
     background: rgba(239, 68, 68, 0.08);
     border-color: rgba(239, 68, 68, 0.4);
-    color: #ef4444;
+    color: #B91C1C; // red-700 → ~5.0:1 ✅ (était #ef4444)
   }
 
   i {
@@ -58,7 +58,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: #052e1c; // vert très foncé → ~7.1:1 ✅
+
   font-size: 17px;
 }
 

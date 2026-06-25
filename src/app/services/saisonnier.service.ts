@@ -12,6 +12,8 @@ export interface SaisonnierDTO {
   rib: string;
   statut?: string;
   moisTravail?: string;
+  absences?: number;
+
 }
 
 @Injectable({

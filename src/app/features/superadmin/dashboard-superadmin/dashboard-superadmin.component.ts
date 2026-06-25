@@ -13,7 +13,7 @@ export class DashboardSuperadminComponent implements OnInit {
   searchEmail = '';
   searchAction = '';
 
-  constructor(private auditService: AuditLogService) {}
+  constructor(private readonly auditService: AuditLogService) {}
 
   ngOnInit(): void {
     this.auditService.getTousLesLogs().subscribe(data => {

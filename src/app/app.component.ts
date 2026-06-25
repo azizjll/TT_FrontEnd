@@ -12,7 +12,7 @@ export class AppComponent {
   title = 'TT_FrontEnd';
   showLayout = true;
 
-  constructor(private router: Router) {
+  constructor(private readonly router: Router) {
     this.router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd)

@@ -8,8 +8,8 @@ import { AuthService } from '../services/auth.service';
 export class RoleGuard implements CanActivate {
 
   constructor(
-    private authService: AuthService,
-    private router: Router
+    private  readonly authService: AuthService,
+    private readonly router: Router
   ) {}
 
   canActivate(route: ActivatedRouteSnapshot): boolean {
@@ -18,9 +18,9 @@ export class RoleGuard implements CanActivate {
     // ✅ Lire le rôle requis depuis la config de la route
     const requiredRoles: string = route.data['roles'];
 
-     if (requiredRoles && requiredRoles.includes(role)) {
-      return true;
-    }
+     if (requiredRoles?.includes(role)) {
+  return true;
+}
     // ❌ Redirection selon le rôle réel
     switch (role) {
       case 'SAISONNIER':   this.router.navigate(['/espace-saisonnier']);      break;

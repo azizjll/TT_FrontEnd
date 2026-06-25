@@ -75,7 +75,7 @@
          (dragover)="onDragOver($event, 1)"
          (dragleave)="onDragLeave(1)"
          (drop)="onDrop($event, 1)"
-         (click)="!selectedFile1 && fileInput1.click()">
+         (click)="!selectedFile1 && fileInput1.click()"(keydown.enter)="!selectedFile1 && fileInput1.click()"(keydown.space)="!selectedFile1 && fileInput1.click()" role="button" [tabindex]="selectedFile1 ? -1 : 0" [attr.aria-label]="selectedFile1 ? null : 'Importer un fichier'">
 
       <input #fileInput1 type="file" accept=".xlsx,.xls"
              (change)="onFileSelected($event, 1)" hidden>
@@ -387,12 +387,17 @@
   <!-- Import zone 2 -->
   <div class="ul-import">
     <div class="ul-drop ul-drop--rs"
-         [class.ul-drop--over]="isDragging2"
-         [class.ul-drop--filled]="selectedFile2"
-         (dragover)="onDragOver($event, 2)"
-         (dragleave)="onDragLeave(2)"
-         (drop)="onDrop($event, 2)"
-         (click)="!selectedFile2 && fileInput2.click()">
+     [class.ul-drop--over]="isDragging2"
+     [class.ul-drop--filled]="selectedFile2"
+     (dragover)="onDragOver($event, 2)"
+     (dragleave)="onDragLeave(2)"
+     (drop)="onDrop($event, 2)"
+     (click)="!selectedFile2 && fileInput2.click()"
+     (keydown.enter)="!selectedFile2 && fileInput2.click()"
+     (keydown.space)="!selectedFile2 && fileInput2.click()"
+     role="button"
+     [tabindex]="selectedFile2 ? -1 : 0"
+     [attr.aria-label]="selectedFile2 ? null : 'Importer un fichier'">
 
       <input #fileInput2 type="file" accept=".xlsx,.xls"
              (change)="onFileSelected($event, 2)" hidden>

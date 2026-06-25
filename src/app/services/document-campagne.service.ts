@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface DocumentCampagneDTO {
@@ -17,6 +17,13 @@ export class DocumentCampagneService {
 
   constructor(private http: HttpClient) {}
 
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+  }
+
   /**
    * Upload un document (PDF, image…) lié à une campagne.
    * Correspond à POST /api/admin/documents-campagne/upload
@@ -32,7 +39,11 @@ export class DocumentCampagneService {
     form.append('nom', nom);
     form.append('type', type);
     form.append('file', file);
-    return this.http.post<DocumentCampagneDTO>(`${this.base}/upload`, form);
+    return this.http.post<DocumentCampagneDTO>(
+      `${this.base}/upload`,
+      form,
+      { headers: this.getHeaders() }
+    );
   }
 
   /**
@@ -40,7 +51,10 @@ export class DocumentCampagneService {
    * À ajouter côté backend : GET /api/admin/documents-campagne/{campagneId}
    */
   getDocumentsByCampagne(campagneId: number): Observable<DocumentCampagneDTO[]> {
-    return this.http.get<DocumentCampagneDTO[]>(`${this.base}/${campagneId}`);
+    return this.http.get<DocumentCampagneDTO[]>(
+      `${this.base}/${campagneId}`,
+      { headers: this.getHeaders() }
+    );
   }
 
   /**
@@ -48,6 +62,9 @@ export class DocumentCampagneService {
    * À ajouter côté backend : DELETE /api/admin/documents-campagne/{id}
    */
   deleteDocument(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.base}/${id}`);
+    return this.http.delete<void>(
+      `${this.base}/${id}`,
+      { headers: this.getHeaders() }
+    );
   }
 }

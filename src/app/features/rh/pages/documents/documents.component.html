@@ -128,7 +128,7 @@
     <div class="content-layout">
 
       <!-- SIDEBAR -->
-      <aside class="doc-sidebar">
+      <aside class="doc-sidebar" aria-label="Liste des documents">
         
 
         <!-- Filtre type -->
@@ -313,7 +313,7 @@
   <div class="campagne-layout" *ngIf="!loadingDocs">
 
     <!-- ── Liste des docs (sidebar) ── -->
-    <aside class="campagne-sidebar">
+    <aside class="campagne-sidebar" aria-label="Campagnes disponibles">
       <div class="campagne-sidebar-head">
         <h3>Documents disponibles</h3>
         <span class="doc-count-badge">{{ documentsCampagne.length }}</span>
@@ -329,9 +329,13 @@
 
       <div class="doc-list">
         <div class="doc-list-item"
-             *ngFor="let doc of documentsCampagne"
-             [class.active]="selectedDoc?.id === doc.id"
-             (click)="selectDoc(doc)">
+        *ngFor="let doc of documentsCampagne"
+        [class.active]="selectedDoc?.id === doc.id"
+        (click)="selectDoc(doc)"
+        (keydown.enter)="selectDoc(doc)"
+        (keydown.space)="selectDoc(doc)"
+        role="button"
+        tabindex="0">
 
           <div class="dli-icon" [ngClass]="'dli-' + doc.type.toLowerCase()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">

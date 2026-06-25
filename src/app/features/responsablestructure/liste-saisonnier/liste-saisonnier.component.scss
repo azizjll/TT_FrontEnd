@@ -143,12 +143,19 @@
 // Input jours
 .jours-input-wrap {
   display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  align-items: stretch;
   border: 0.5px solid #d3d1c7;
   border-radius: 8px;
   overflow: hidden;
   background: #fff;
+}
+
+//ajouter 
+.jours-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .jours-btn {
@@ -167,9 +174,9 @@
   &:hover:not(:disabled) { background: #e5e3da; }
   &:disabled { opacity: 0.35; cursor: not-allowed; }
 }
-
+//modifier
 .jours-input {
-  width: 42px;
+  width: 48px;
   height: 28px;
   border: none;
   text-align: center;
@@ -179,8 +186,72 @@
   background: #fff;
   outline: none;
 
-  // Masquer les flèches natives
   &::-webkit-outer-spin-button,
   &::-webkit-inner-spin-button { -webkit-appearance: none; }
   -moz-appearance: textfield;
+}
+
+//ajouter
+// Flèches empilées verticalement
+.jours-spin {
+  display: flex;
+  flex-direction: column;
+  border-left: 0.5px solid #d3d1c7;
+}
+
+.jours-spin-btn {
+  width: 22px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1efe8;
+  border: none;
+  cursor: pointer;
+  color: #5f5e5a;
+  font-size: 10px;
+  line-height: 0;
+
+  &:hover:not(:disabled) { background: #e5e3da; }
+  &:disabled { opacity: 0.35; cursor: not-allowed; }
+}
+.jours-spin-btn + .jours-spin-btn { border-top: 0.5px solid #d3d1c7; }
+
+// Bouton Sauvegarder bien visible avec texte
+.btn-sauvegarder {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 0.5px solid #5DCAA5;
+  background: #E1F5EE;
+  color: #0F6E56;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+
+  i { font-size: 14px; }
+
+  &:hover:not(:disabled) { background: #cdeee0; }
+
+  &.is-loading {
+    background: #f1efe8;
+    border-color: #d3d1c7;
+    color: #888780;
+    cursor: not-allowed;
+    i { animation: spin 0.8s linear infinite; }
+  }
+
+  &.is-success {
+    background: #0F6E56;
+    border-color: #0F6E56;
+    color: #fff;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

@@ -13,7 +13,7 @@ import { AuthService } from 'src/app/services/auth.service';
 export class LayoutSuperadminComponent {
   sidebarCollapsed = false;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private readonly authService: AuthService, private readonly router: Router) {}
 
   toggleSidebar(): void {
     this.sidebarCollapsed = !this.sidebarCollapsed;

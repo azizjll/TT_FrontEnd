@@ -193,7 +193,12 @@
 
 <!-- ═══════════════ MODAL DOSSIER ═══════════════ -->
   <div class="modal-overlay" *ngIf="showDossierModal">
-    <div class="modal-box wide" (click)="$event.stopPropagation()">
+    <div
+      class="modal-box wide"
+      tabindex="0"
+      (click)="$event.stopPropagation()"
+      (keydown.enter)="$event.stopPropagation()"
+      (keydown.space)="$event.stopPropagation()">
 
       <div class="modal-head">
         <div class="modal-title-grp">
@@ -218,205 +223,231 @@
       <div class="modal-content">
     <div class="dossier-grid">
 
-      <!-- ═══ COLONNE GAUCHE ═══ -->
-      <div class="dossier-col">
+  <!-- ═══ COLONNE GAUCHE ═══ -->
+  <div class="dossier-col">
 
-        <!-- Informations du parent -->
-        <h4 class="col-title" >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
-          Informations du parent
-        </h4>
-        <div class="field-group">
-          <label>Nom & Prénom du parent</label>
-          <input [(ngModel)]="selectedCandidature.saisonnier.nomPrenomParent"
-                placeholder="Nom et prénom du parent">
-        </div>
-        <div class="field-group">
-          <label>Matricule du parent</label>
-          <input [(ngModel)]="selectedCandidature.saisonnier.matriculeParent"
-                placeholder="Matricule du parent">
-        </div>
+    <!-- Informations du parent -->
+    <h4 class="col-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      Informations du parent
+    </h4>
 
-        <!-- Informations personnelles -->
-        <h4 class="col-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
-          Informations de saisonnier
-        </h4>
-
-        <div class="field-group">
-          <label>Prénom</label>
-          <input [(ngModel)]="selectedCandidature.saisonnier.prenom" placeholder="Prénom">
-        </div>
-        <div class="field-group">
-          <label>Nom</label>
-          <input [(ngModel)]="selectedCandidature.saisonnier.nom" placeholder="Nom">
-        </div>
-        <div class="field-group">
-          <label>Email</label>
-          <input [(ngModel)]="selectedCandidature.saisonnier.email" placeholder="Email">
-        </div>
-        <div class="field-group">
-          <label>CIN</label>
-          <input [(ngModel)]="selectedCandidature.saisonnier.cin" placeholder="CIN">
-        </div>
-        <div class="field-group">
-          <label>Téléphone</label>
-          <input [(ngModel)]="selectedCandidature.saisonnier.telephone" placeholder="Téléphone">
-        </div>
-        <div class="field-group">
-          <label>RIB</label>
-          <input [(ngModel)]="selectedCandidature.saisonnier.rib" placeholder="RIB">
-        </div>
-        <div class="field-group">
-          <label>Direction de rattachement</label>
-          <select [(ngModel)]="selectedCandidature.saisonnier.region.id">
-            <option *ngFor="let r of regions" [value]="r.id">{{ r.nom }}</option>
-          </select>
-        </div>
-        <div class="field-group">
-          <label>Structure</label>
-          <select [(ngModel)]="selectedStructureId" (ngModelChange)="onStructureChange()">
-            <option [ngValue]="null">— Toutes les structures —</option>
-            <optgroup label="🏪 Espaces Commerciaux" *ngIf="structuresEC.length > 0">
-              <option *ngFor="let s of structuresEC" [ngValue]="s.id" [disabled]="!s.disponible">
-                {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
-                {{ s.disponible ? '' : '⛔ COMPLET' }}
-              </option>
-            </optgroup>
-            <optgroup label="💻 Centres Technologiques" *ngIf="structuresCT.length > 0">
-              <option *ngFor="let s of structuresCT" [ngValue]="s.id" [disabled]="!s.disponible">
-                {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
-                {{ s.disponible ? '' : '⛔ COMPLET' }}
-              </option>
-            </optgroup>
-          </select>
-        </div>
-
-        
-
-        <!-- Formation -->
-        <h4 class="col-title" style="margin-top:18px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-          </svg>
-          Formation
-        </h4>
-        <div class="field-group">
-          <label>Niveau d'étude</label>
-          <input [(ngModel)]="selectedCandidature.saisonnier.niveauEtude" placeholder="Ex: BAC+2">
-        </div>
-        <div class="field-group">
-          <label>Diplôme</label>
-          <select [(ngModel)]="selectedCandidature.saisonnier.diplome">
-            <option value="" disabled>Choisir le diplôme</option>
-            <option value="BTP">BTP</option>
-            <option value="BTS">BTS</option>
-            <option value="LICENCE">Licence</option>
-            <option value="MASTER">Master</option>
-            <option value="Ingenierie">Ingénierie</option>
-            <option value="DOCTORAT">Doctorat</option>
-            <option value="Diplôme national d'architecte">Diplôme national d'architecte</option>
-            <option value="Diplôme de sante">Diplôme de sante</option>
-          </select>
-        </div>
-        <div class="field-group">
-          <label>Spécialité Diplôme</label>
-          <input [(ngModel)]="selectedCandidature.saisonnier.specialiteDiplome"
-                placeholder="Votre spécialité">
-        </div>
-
-      </div>
-
-      <!-- ═══ COLONNE DROITE ═══ -->
-      <div class="dossier-col">
-
-        <!-- Candidature -->
-        <h4 class="col-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 11l3 3L22 4"/>
-            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-          </svg>
-          Candidature
-        </h4>
-
-        <div class="field-group readonly">
-          <label>Date de dépôt</label>
-          <div class="readonly-val">{{ selectedCandidature?.dateDepot | date:'dd/MM/yyyy' }}</div>
-        </div>
-        <div class="field-group">
-          <label>Statut</label>
-          <select [(ngModel)]="selectedCandidature.statut">
-            <option value="EN_ATTENTE">En attente</option>
-            <option value="ACCEPTEE">Acceptée</option>
-            <option value="REJETEE">Refusée</option>
-          </select>
-        </div>
-        <div class="field-group">
-          <label>Mois de travail</label>
-          <select [(ngModel)]="selectedCandidature.saisonnier.moisTravail">
-            <option value="JUILLET">Juillet</option>
-            <option value="AOUT">Août</option>
-            <option value="JUILLET_AOUT">Juillet + Août</option>
-          </select>
-        </div>
-          <div class="field-group"
-              *ngIf="selectedCandidature.saisonnier.moisTravail === 'JUILLET_AOUT'">
-            <label>Commentaire RH <span style="color:red">*</span></label>
-            <textarea [(ngModel)]="selectedCandidature.commentaire"
-                      rows="4" placeholder="Justifiez le choix Juillet + Août..."></textarea>
-          </div>
-
-        <!-- Alerte Juillet + Août -->
-        <div class="alert-juillet-aout"
-            *ngIf="selectedCandidature.saisonnier.moisTravail === 'JUILLET_AOUT'">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          <span>
-            Ce choix nécessite une <strong>autorisation admin</strong>.
-            Aucune modification ne sera sauvegardée. Un email sera envoyé
-            à tous les administrateurs pour validation.
-            Ajoutez un commentaire justificatif ci-dessus.
-          </span>
-        </div>
-
-        <!-- Documents -->
-        <h4 class="col-title" style="margin-top:18px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-          </svg>
-          Documents joints
-        </h4>
-        <div class="docs-list">
-          <div *ngFor="let doc of selectedCandidature?.documents"
-              class="doc-item"
-              (click)="telechargerDoc(doc.url, doc.nomFichier)"
-              style="cursor:pointer">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-            </svg>
-            <span>{{ doc.nomFichier }}</span>
-            <span class="doc-type">{{ doc.type }}</span>
-          </div>
-          <p class="no-docs" *ngIf="!selectedCandidature?.documents?.length">
-            Aucun document joint.
-          </p>
-        </div>
-
-      </div>
+    <div class="field-group">
+      <label for="nom-prenom-parent">Nom & Prénom du parent</label>
+      <input id="nom-prenom-parent"
+             [(ngModel)]="selectedCandidature.saisonnier.nomPrenomParent"
+             placeholder="Nom et prénom du parent">
     </div>
+    <div class="field-group">
+      <label for="matricule-parent">Matricule du parent</label>
+      <input id="matricule-parent"
+             [(ngModel)]="selectedCandidature.saisonnier.matriculeParent"
+             placeholder="Matricule du parent">
+    </div>
+
+    <!-- Informations personnelles -->
+    <h4 class="col-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      Informations de saisonnier
+    </h4>
+
+    <div class="field-group">
+      <label for="sais-prenom">Prénom</label>
+      <input id="sais-prenom"
+             [(ngModel)]="selectedCandidature.saisonnier.prenom"
+             placeholder="Prénom">
+    </div>
+    <div class="field-group">
+      <label for="sais-nom">Nom</label>
+      <input id="sais-nom"
+             [(ngModel)]="selectedCandidature.saisonnier.nom"
+             placeholder="Nom">
+    </div>
+    <div class="field-group">
+      <label for="sais-email">Email</label>
+      <input id="sais-email"
+             [(ngModel)]="selectedCandidature.saisonnier.email"
+             placeholder="Email">
+    </div>
+    <div class="field-group">
+      <label for="sais-cin">CIN</label>
+      <input id="sais-cin"
+             [(ngModel)]="selectedCandidature.saisonnier.cin"
+             placeholder="CIN">
+    </div>
+    <div class="field-group">
+      <label for="sais-telephone">Téléphone</label>
+      <input id="sais-telephone"
+             [(ngModel)]="selectedCandidature.saisonnier.telephone"
+             placeholder="Téléphone">
+    </div>
+    <div class="field-group">
+      <label for="sais-rib">RIB</label>
+      <input id="sais-rib"
+             [(ngModel)]="selectedCandidature.saisonnier.rib"
+             placeholder="RIB">
+    </div>
+    <div class="field-group">
+      <label for="sais-region">Direction de rattachement</label>
+      <select id="sais-region" [(ngModel)]="selectedCandidature.saisonnier.region.id">
+        <option *ngFor="let r of regions" [value]="r.id">{{ r.nom }}</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label for="sais-structure">Structure</label>
+      <select id="sais-structure"
+              [(ngModel)]="selectedStructureId"
+              (ngModelChange)="onStructureChange()">
+        <option [ngValue]="null">— Toutes les structures —</option>
+        <optgroup label="🏪 Espaces Commerciaux" *ngIf="structuresEC.length > 0">
+          <option *ngFor="let s of structuresEC" [ngValue]="s.id" [disabled]="!s.disponible">
+            {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+            {{ s.disponible ? '' : '⛔ COMPLET' }}
+          </option>
+        </optgroup>
+        <optgroup label="💻 Centres Technologiques" *ngIf="structuresCT.length > 0">
+          <option *ngFor="let s of structuresCT" [ngValue]="s.id" [disabled]="!s.disponible">
+            {{ s.nom }} — {{ s.recrutes }}/{{ s.autorises }}
+            {{ s.disponible ? '' : '⛔ COMPLET' }}
+          </option>
+        </optgroup>
+      </select>
+    </div>
+
+    <!-- Formation -->
+    <h4 class="col-title" style="margin-top:18px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+      </svg>
+      Formation
+    </h4>
+    <div class="field-group">
+      <label for="sais-niveau">Niveau d'étude</label>
+      <input id="sais-niveau"
+             [(ngModel)]="selectedCandidature.saisonnier.niveauEtude"
+             placeholder="Ex: BAC+2">
+    </div>
+    <div class="field-group">
+      <label for="sais-diplome">Diplôme</label>
+      <select id="sais-diplome" [(ngModel)]="selectedCandidature.saisonnier.diplome">
+        <option value="" disabled>Choisir le diplôme</option>
+        <option value="BTP">BTP</option>
+        <option value="BTS">BTS</option>
+        <option value="LICENCE">Licence</option>
+        <option value="MASTER">Master</option>
+        <option value="Ingenierie">Ingénierie</option>
+        <option value="DOCTORAT">Doctorat</option>
+        <option value="Diplôme national d'architecte">Diplôme national d'architecte</option>
+        <option value="Diplôme de sante">Diplôme de sante</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label for="sais-specialite">Spécialité Diplôme</label>
+      <input id="sais-specialite"
+             [(ngModel)]="selectedCandidature.saisonnier.specialiteDiplome"
+             placeholder="Votre spécialité">
+    </div>
+
+  </div>
+
+  <!-- ═══ COLONNE DROITE ═══ -->
+  <div class="dossier-col">
+
+    <!-- Candidature -->
+    <h4 class="col-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 11l3 3L22 4"/>
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+      </svg>
+      Candidature
+    </h4>
+
+    <div class="field-group readonly">
+      <label>Date de dépôt</label>
+      <div class="readonly-val">{{ selectedCandidature?.dateDepot | date:'dd/MM/yyyy' }}</div>
+    </div>
+    <div class="field-group">
+      <label for="cand-statut">Statut</label>
+      <select id="cand-statut" [(ngModel)]="selectedCandidature.statut">
+        <option value="EN_ATTENTE">En attente</option>
+        <option value="ACCEPTEE">Acceptée</option>
+        <option value="REJETEE">Refusée</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label for="cand-mois">Mois de travail</label>
+      <select id="cand-mois" [(ngModel)]="selectedCandidature.saisonnier.moisTravail">
+        <option value="JUILLET">Juillet</option>
+        <option value="AOUT">Août</option>
+        <option value="JUILLET_AOUT">Juillet + Août</option>
+      </select>
+    </div>
+
+    <div class="field-group"
+         *ngIf="selectedCandidature.saisonnier.moisTravail === 'JUILLET_AOUT'">
+      <label for="cand-commentaire">Commentaire RH <span style="color:red">*</span></label>
+      <textarea id="cand-commentaire"
+                [(ngModel)]="selectedCandidature.commentaire"
+                rows="4"
+                placeholder="Justifiez le choix Juillet + Août..."></textarea>
+    </div>
+
+    <!-- Alerte Juillet + Août -->
+    <div class="alert-juillet-aout"
+         *ngIf="selectedCandidature.saisonnier.moisTravail === 'JUILLET_AOUT'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span>
+        Ce choix nécessite une <strong>autorisation admin</strong>.
+        Aucune modification ne sera sauvegardée. Un email sera envoyé
+        à tous les administrateurs pour validation.
+        Ajoutez un commentaire justificatif ci-dessus.
+      </span>
+    </div>
+
+    <!-- Documents -->
+    <h4 class="col-title" style="margin-top:18px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      Documents joints
+    </h4>
+    <div class="docs-list">
+      <!-- S6835: div cliquable → role="button" + keyboard -->
+      <div *ngFor="let doc of selectedCandidature?.documents"
+           class="doc-item"
+           (click)="telechargerDoc(doc.url, doc.nomFichier)"
+           (keydown.enter)="telechargerDoc(doc.url, doc.nomFichier)"
+           (keydown.space)="telechargerDoc(doc.url, doc.nomFichier)"
+           role="button"
+           tabindex="0"
+           style="cursor:pointer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        <span>{{ doc.nomFichier }}</span>
+        <span class="doc-type">{{ doc.type }}</span>
+      </div>
+      <p class="no-docs" *ngIf="!selectedCandidature?.documents?.length">
+        Aucun document joint.
+      </p>
+    </div>
+
+  </div>
+</div>
   </div>
 
       <div class="modal-foot">
@@ -451,7 +482,12 @@
 
 <!-- ═══════════════ MODAL AJOUTER ═══════════════ -->
 <div class="modal-overlay" *ngIf="showModal">
-  <div class="modal-box" (click)="$event.stopPropagation()">
+  <div
+    class="modal-box"
+    tabindex="0"
+    (click)="$event.stopPropagation()"
+    (keydown.enter)="$event.stopPropagation()"
+    (keydown.space)="$event.preventDefault(); $event.stopPropagation()">
 
     <div class="modal-head">
       <div class="modal-title-grp">
@@ -484,8 +520,10 @@
 
   <!-- Matricule -->
   <div class="field-group">
-    <label>Matricule du parent *</label>
+    <label for="matricule-parent">Matricule du parent *</label>
     <input type="text"
+           id="matricule-parent"
+           name="matriculeParent"
            [(ngModel)]="form.matriculeParent"
            name="matriculeParent"
            placeholder="Matricule du parent"
@@ -513,6 +551,7 @@
   <div class="field-group">
     <label>Nom & Prénom du parent</label>
     <input type="text"
+            id="nom-prenom-parent"
            [(ngModel)]="form.nomPrenomParent"
            name="nomPrenomParent"
            placeholder="Rempli automatiquement"
@@ -553,8 +592,9 @@
   <!-- champ message -->
   <!-- champ message -->
 <div class="field-group" style="margin:0;">
-  <label style="color:#c2410c;">Commentaire / Message de justification *</label>
+  <label for="cand-commentaire" style="color:#c2410c;">Commentaire / Message de justification *</label>
   <textarea [(ngModel)]="form.commentaire"
+            id="cand-commentaire"
             name="commentaire"
             rows="3"
             placeholder="Expliquez pourquoi vous demandez une autorisation exceptionnelle...">
@@ -573,8 +613,8 @@
           
           <!-- Prénom -->
           <div class="field-group">
-            <label>Prénom *</label>
-            <input type="text" [(ngModel)]="form.prenom" name="prenom"
+            <label for="prenom">Prénom *</label>
+            <input type="text" [(ngModel)]="form.prenom" id="prenom" name="prenom"
                    #prenom="ngModel" required placeholder="Prénom"
                    [class.input-error]="prenom.invalid && prenom.touched">
             <small class="error-msg" *ngIf="prenom.touched && prenom.errors?.['required']">
@@ -584,8 +624,8 @@
 
           <!-- Nom -->
           <div class="field-group">
-            <label>Nom *</label>
-            <input type="text" [(ngModel)]="form.nom" name="nom"
+            <label for="nom">Nom *</label>
+            <input type="text" [(ngModel)]="form.nom" id="nom" name="nom"
                    #nom="ngModel" required placeholder="Nom"
                    [class.input-error]="nom.invalid && nom.touched">
             <small class="error-msg" *ngIf="nom.touched && nom.errors?.['required']">
@@ -595,8 +635,8 @@
 
           <!-- Email -->
           <div class="field-group">
-            <label>Email *</label>
-            <input type="email" [(ngModel)]="form.email" name="email"
+            <label for="email">Email *</label>
+            <input type="email" [(ngModel)]="form.email" id="email" name="email"
                    #email="ngModel" required email placeholder="email@exemple.com"
                    [class.input-error]="email.invalid && email.touched">
             <small class="error-msg" *ngIf="email.touched && email.errors?.['required']">
@@ -609,8 +649,8 @@
 
           <!-- Téléphone -->
           <div class="field-group">
-            <label>Téléphone *</label>
-            <input type="text" [(ngModel)]="form.telephone" name="telephone"
+            <label for="telephone">Téléphone *</label>
+            <input type="text" [(ngModel)]="form.telephone" id="telephone" name="telephone"
                    #telephone="ngModel" required pattern="^\d{8}$" placeholder="XX XXX XXX"
                    [class.input-error]="telephone.invalid && telephone.touched">
             <small class="error-msg" *ngIf="telephone.touched && telephone.errors?.['required']">
@@ -623,8 +663,8 @@
 
           <!-- CIN -->
           <div class="field-group">
-            <label>CIN *</label>
-            <input type="text" [(ngModel)]="form.cin" name="cin"
+            <label for="cin">CIN *</label>
+            <input type="text" [(ngModel)]="form.cin" id="cin" name="cin"
                    #cin="ngModel" required pattern="^\d{8}$" placeholder="Numéro CIN"
                    [class.input-error]="cin.invalid && cin.touched">
             <small class="error-msg" *ngIf="cin.touched && cin.errors?.['required']">
@@ -637,8 +677,8 @@
 
           <!-- RIB -->
           <div class="field-group">
-            <label>RIB *</label>
-            <input type="text" [(ngModel)]="form.rib" name="rib"
+            <label for="rib">RIB *</label>
+            <input type="text" [(ngModel)]="form.rib" id="rib" name="rib"
                    #rib="ngModel" required pattern="^\d{20}$" placeholder="RIB "
                    [class.input-error]="rib.invalid && rib.touched">
             <small class="error-msg" *ngIf="rib.touched && rib.errors?.['required']">
@@ -660,8 +700,8 @@
         <div class="form-grid-2">
 
           <div class="field-group">
-  <label>Niveau d'étude</label>
-  <select [(ngModel)]="form.niveauEtude" name="niveauEtude">
+  <label for="niveau-etude">Niveau d'étude</label>
+  <select [(ngModel)]="form.niveauEtude" name="niveauEtude" id="niveau-etude">
     <option value="" disabled selected hidden>Choisir le niveau d'étude</option>
     <option value="BAC">Bac</option>
     <option value="BAC+1">Bac+1</option>
@@ -674,8 +714,8 @@
 </div>
 
 <div class="field-group">
-  <label>Diplôme</label>
-  <select [(ngModel)]="form.diplomeNom" name="diplomeNom">
+  <label for="diplomeNom">Diplôme</label>
+  <select [(ngModel)]="form.diplomeNom" name="diplomeNom" id="diplomeNom">
     <option value="" disabled selected hidden>Choisir le diplôme</option>
     <option value="BTP">BTP</option>
     <option value="BTS">BTS</option>
@@ -687,14 +727,14 @@
 </div>
 
           <div class="field-group">
-            <label>Spécialité Diplôme</label>
-            <input type="text" [(ngModel)]="form.specialiteDiplome" name="specialiteDiplome"
+            <label for="specialiteDiplome">Spécialité Diplôme</label>
+            <input type="text" [(ngModel)]="form.specialiteDiplome" id="specialiteDiplome" name="specialiteDiplome"
                    placeholder="Votre spécialité">
           </div>
 
             <div class="field-group">
-  <label>Mois de travail *</label>
-  <select [(ngModel)]="form.moisTravail" name="moisTravail"
+  <label for="moisTravail">Mois de travail *</label>
+  <select [(ngModel)]="form.moisTravail" id="moisTravail" name="moisTravail"
           #moisTravail="ngModel" required
           [class.input-error]="moisTravail.invalid && moisTravail.touched">
     <option value="" disabled selected>Choisir le mois</option>
@@ -714,14 +754,14 @@
 
           <!-- Direction -->
           <div class="field-group">
-  <label>Direction de rattachement *</label>
-  <input type="text" [value]="myRegion.nom" disabled>
+  <label for="direction">Direction de rattachement *</label>
+  <input type="text" [value]="myRegion.nom" id="direction" disabled>
 </div>
 
           <!-- Structure -->
           <div class="field-group">
-            <label>Structure *</label>
-            <select [(ngModel)]="form.structureId" name="structureId"
+            <label for="structureId">Structure *</label>
+            <select [(ngModel)]="form.structureId" id="structureId" name="structureId"
                     #structureId="ngModel" required
                     [class.input-error]="structureId.invalid && structureId.touched">
               <option value="" disabled selected>Choisir une structure</option>
@@ -823,7 +863,12 @@
 
 <!-- ═══════════════ MODAL AFFECTATION ═══════════════ -->
 <div class="modal-overlay" *ngIf="showAffectModal">
-  <div class="modal-box small" (click)="$event.stopPropagation()">
+  <div class="modal-box small"
+     (click)="$event.stopPropagation()"
+     (keydown)="$event.stopPropagation()"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="affect-modal-title">
 
     <div class="modal-head">
       <div class="modal-title-grp">
@@ -846,8 +891,8 @@
 
     <div class="modal-content">
       <div class="field-group">
-        <label>Choisir une structure</label>
-        <select [(ngModel)]="selectedStructureId">
+        <label for="structureId">Choisir une structure</label>
+        <select [(ngModel)]="selectedStructureId" id="structureId" name="structureId">
           <optgroup label="ESPACE COMMERCIAL">
             <option *ngFor="let s of structuresCommerciaux" [value]="s.id">{{ s.nom }}</option>
           </optgroup>

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
-import { map, Observable } from 'rxjs';
+import { CanActivate, ActivatedRouteSnapshot, Router } from '@angular/router';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { CampagneService } from '../services/campagne.service';
 
 @Injectable({
@@ -9,28 +10,23 @@ import { CampagneService } from '../services/campagne.service';
 export class CampagneGuard implements CanActivate {
 
   constructor(
-    private router: Router,
-    private campagneService: CampagneService
+    private readonly router: Router,
+    private readonly campagneService: CampagneService
   ) {}
 
-  canActivate(): Observable<boolean> {
+  canActivate(route: ActivatedRouteSnapshot): Observable<boolean> {
 
-    return this.campagneService.getCampagnesActives().pipe(
+    const code = route.paramMap.get('code');
 
-      map(campagnes => {
+    if (!code) {
+      this.router.navigate(['/campagne-expiree']);
+      return of(false);
+    }
 
-        const activeCampagne = campagnes.find(c => new Date(c.dateFin).getTime() > Date.now());
-
-        if (!activeCampagne) {
-          this.router.navigate(['/campagne-expiree']);
-          return false;
-        }
-
+    return this.campagneService.getCampagneParCode(code).pipe(
+      map(campagne => {
         const now = Date.now();
-        const fin = new Date(activeCampagne.dateFin + 'T23:59:59').getTime();
-
-        console.log('NOW:', now);
-        console.log('FIN:', fin);
+        const fin = new Date(campagne.dateFin + 'T23:59:59').getTime();
 
         if (now > fin) {
           this.router.navigate(['/campagne-expiree']);
@@ -38,8 +34,12 @@ export class CampagneGuard implements CanActivate {
         }
 
         return true;
+      }),
+      catchError(() => {
+        // 404 = code invalide ou campagne non ACTIVE (déjà vérifié côté backend)
+        this.router.navigate(['/campagne-expiree']);
+        return of(false);
       })
-
     );
   }
 }

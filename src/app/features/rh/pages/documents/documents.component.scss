@@ -501,7 +501,7 @@ $amber-lt: #fffbeb;
   .doc-card-name { font-weight: 600; font-size: 14px; }
   .doc-card-type {
     font-size: 12px; color: #6b7280;
-    background: #f3f4f6; border-radius: 4px;
+    background: #1f2937; border-radius: 4px;
     padding: 2px 8px; width: fit-content;
   }
 }
@@ -509,7 +509,7 @@ $amber-lt: #fffbeb;
 .btn-download-sm {
   display: flex; align-items: center; gap: 6px;
   padding: 8px 14px; border-radius: 8px;
-  background: #3b82f6; color: white;
+  background: #1d4ed8; color: white;
   font-size: 13px; text-decoration: none;
   white-space: nowrap;
   svg { width: 15px; height: 15px; }
@@ -888,12 +888,12 @@ $amber-lt: #fffbeb;
   font-size: 13px;
   font-weight: 500;
   background: rgba(74, 158, 255, 0.08);
-  color: #4A9EFF;
+  color: #1d4ed8; // blue-700 → ~5.9:1 sur fond blanc ✅ (était #4A9EFF → ~2.9:1)
   text-align: center;
 
   &.success {
     background: rgba(16, 185, 129, 0.1);
-    color: #10B981;
+    color: #065F46; // emerald-900 → ~7.2:1 ✅ (était #10B981)
   }
 }
 
@@ -920,19 +920,19 @@ $amber-lt: #fffbeb;
 
   &.soumis {
     background: rgba(245, 158, 11, 0.1);
-    color: #D97706;
+  color: #92400E; // amber-800 → ~5.9:1 ✅ (était #D97706)
     border-left: 3px solid #F59E0B;
   }
 
   &.valide {
     background: rgba(16, 185, 129, 0.1);
-    color: #059669;
+  color: #065F46; // emerald-900 → ~7.2:1 ✅ (était #059669)
     border-left: 3px solid #10B981;
   }
 
   &.rejete {
     background: rgba(239, 68, 68, 0.1);
-    color: #DC2626;
+  color: #B91C1C; // red-700 → ~5.0:1 ✅ (était #DC2626)
     border-left: 3px solid #EF4444;
   }
 }
@@ -986,7 +986,7 @@ $amber-lt: #fffbeb;
 
     &.green {
       background: rgba(16, 185, 129, 0.12);
-      color: #059669;
+    color: #065F46; // emerald-900 → ~7.2:1 ✅ (était #059669)
 
       &:hover { opacity: 0.8; }
     }

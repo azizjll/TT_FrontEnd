@@ -59,15 +59,16 @@
   <div class="params-bar">
     
     <div class="param-group">
-  <label>Durée contrat (jours)</label>
-  <input type="number" [(ngModel)]="dureeContrat" min="1" disabled>
+  <label for="duree-contrat">Durée contrat (jours)</label>
+  <input id="duree-contrat" type="number" [(ngModel)]="dureeContrat" min="1" disabled>
 </div>
     
     
 
     <div class="param-group">
-  <label>Structure</label>
-  <select [(ngModel)]="selectedStructureId"
+  <label for="structure-select">Structure</label>
+  <select id="structure-select"
+          [(ngModel)]="selectedStructureId"
           (ngModelChange)="onStructureChange()"
           style="width: 220px">
 
@@ -95,16 +96,13 @@
 </div>
 
   <div class="param-group">
-  <label>Mois de travail</label>
+  <label for="mois-travail">Mois de travail</label>
 
-  <select [(ngModel)]="selectedMois">
-
-  <option *ngFor="let m of moisOptions"
-          [value]="m.value">
-    {{ m.label }}
-  </option>
-
-</select>
+  <select id="mois-travail" [(ngModel)]="selectedMois">
+    <option *ngFor="let m of moisOptions" [value]="m.value">
+      {{ m.label }}
+    </option>
+  </select>
 </div>
 
 
@@ -252,7 +250,11 @@
 
 <!-- ══════ MODAL DÉTAIL ══════ -->
 <div class="modal-overlay" *ngIf="showDetail && selectedSaisonnier">
-  <div class="modal-box" (click)="$event.stopPropagation()">
+<div class="modal-box"
+     (click)="$event.stopPropagation()"
+     (keydown)="$event.stopPropagation()"
+     role="dialog"
+     aria-modal="true">
 
     <div class="modal-head">
       <div class="modal-title-grp">
@@ -298,10 +300,7 @@
             <span class="fiche-label">رقم بطاقة التعريف :</span>
             <span class="fiche-val td-mono">{{ selectedSaisonnier.cin }}</span>
           </div>
-          <div class="fiche-row">
-            <span class="fiche-label">تاريخ المباشرة :</span>
-            <span class="fiche-val">{{ selectedSaisonnier.dateMbacharah | date:'dd/MM/yyyy' }}</span>
-          </div>
+         
           <div class="fiche-row">
             <span class="fiche-label">مدة العمل :</span>
             <span class="fiche-val">{{ selectedSaisonnier.duree }} يوم</span>

@@ -36,9 +36,10 @@
   margin-bottom: 20px;
 }
 
+// ✅ Après — assombrir le dégradé
 .btn-return {
-  background: linear-gradient(135deg, #1E8BD4, #2FA8E8);
-  color: white;
+  background: linear-gradient(135deg, #1266a8, #1a85bf);
+  color: #ffffff;
   border: none;
   padding: 12px 20px;
   border-radius: 10px;

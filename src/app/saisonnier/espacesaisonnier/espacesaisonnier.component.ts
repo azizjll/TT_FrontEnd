@@ -8,9 +8,9 @@
 import { animate, query, stagger, style, transition, trigger } from '@angular/animations';
 import { Component, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService, Region } from 'src/app/services/auth.service';
-import { Campagne, CampagneService } from 'src/app/services/campagne.service';
+import { Campagne, CampagnePubliqueDTO, CampagneService } from 'src/app/services/campagne.service';
 import { CandidatureService } from 'src/app/services/candidature.service';
 import { DocumentCampagneDTO, DocumentCampagneService } from 'src/app/services/document-campagne.service';
 import { StructureDTO, StructureService } from 'src/app/structure.service';
@@ -112,7 +112,7 @@ activeTab: 'candidatures' | 'documents' | 'profil' | 'notifications' | '' = '';
   notificationCount = 3;
   saisonnier: any = {};
   campagneIdSelectionnee!: number;
-  activeCampagne: Campagne | null = null;
+  activeCampagne: CampagnePubliqueDTO | null = null;
 showGuide = false;
 showCandidatureModal = false;  campagnes: Campagne[] = [];
   regions: Region[] = [];
@@ -122,6 +122,8 @@ showCandidatureModal = false;  campagnes: Campagne[] = [];
 
   documentsCampagne: DocumentCampagneDTO[] = [];
 loadingDocsCampagne = false;
+
+campagneCode: string | null = null;
 
   form: any = {
   nom: '',
@@ -191,21 +193,27 @@ onMatriculeParentChange(matricule: string): void {
   this.candidatureService.getParentByMatricule(matricule.trim()).subscribe({
     next: (parent) => {
   console.log('Parent reçu:', parent);
+
+  const data = parent.message;
   
   // Vérifier si le parent est dépassé (quota atteint)
-  if (parent.depasse) {
+  if (data.depasse) {
     this.form.nomPrenomParent = '';
+        this.form.email = '';           // ✅ reset si dépassé
+
     this.isLoadingParent = false;
     this.parentNonTrouve = true;
     return;
   }
 
-  this.form.nomPrenomParent = parent.nomPrenom; // ← était `${parent.prenom} ${parent.nom}`
+  this.form.nomPrenomParent = data.nomPrenom; // ← était `${parent.prenom} ${parent.nom}`
+    this.form.email = data.email;     // ✅ auto-remplir l'email
   this.isLoadingParent = false;
   this.parentNonTrouve = false;
 },
     error: () => {
       this.form.nomPrenomParent = '';
+        this.form.email = '';             // ✅ reset en cas d'erreur
       this.isLoadingParent = false;
       this.parentNonTrouve = true;
     }
@@ -239,31 +247,70 @@ onMatriculeParentChange(matricule: string): void {
     private structureService: StructureService,
     private router: Router,                      // ← ✅ NOUVEAU : injecter Router
     private documentCampagneService: DocumentCampagneService,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
- if (!this.isLoggedIn) {
-  this.showGuide = true;
-}  else {
-    this.activeTab = 'candidatures'; // ← ICI
+  this.campagneCode = this.route.snapshot.paramMap.get('code');
+
+  if (this.isLoggedIn) {
+    // Utilisateur authentifié : pas besoin de code dans l'URL,
+    // on utilise les endpoints protégés (déjà sécurisés par JWT)
+    this.activeTab = 'candidatures';
     this.loadSaisonnierProfile();
-    this.loadMesCandidatures(); 
+    this.loadMesCandidatures();
     this.loadMesDocuments();
     this.loadMonProfil();
+    this.loadRegions();
+
+    this.campagneService.getCampagnesActives().subscribe(data => {
+      if (data && data.length > 0) {
+        this.activeCampagne = data[0];
+        this.campagneIdSelectionnee = data[0].id;
+        this.loadDocumentsCampagne(data[0].id);
+      }
+    });
+    return;
   }
 
-  this.campagneService.getCampagnesActives().subscribe(data => {
-    if (data && data.length > 0) {
-      this.activeCampagne = data[0];
-      this.campagneIdSelectionnee = data[0].id;
-      this.loadStructuresCampagneActive();
-      this.loadDocumentsCampagne(data[0].id)
-    }
+  // Utilisateur anonyme : le code est obligatoire, pas de fallback possible
+  if (!this.campagneCode) {
+    console.error('Code de campagne manquant dans l\'URL');
+    this.showGuide = true; // ou redirection vers "lien invalide"
+    return;
+  }
+
+  this.showGuide = true;
+
+  // Récupère les infos publiques de la campagne (sans code/budget)
+  this.campagneService.getCampagneParCode(this.campagneCode).subscribe({
+    next: (campagne) => {
+      this.activeCampagne = campagne;
+    },
+    error: (err) => {
+      console.error('Erreur campagne:', err);
+      if (err.status === 404) {
+        this.router.navigate(['/campagne-expiree']);
+      }
+    },
   });
 
+  this.loadStructuresParCodeCampagne(this.campagneCode);
   this.loadRegions();
 }
 
+loadStructuresParCodeCampagne(code: string): void {
+  this.structureService.getStructuresParCodeCampagne(code).subscribe({
+    next: (data) => { this.structures = data; },
+    error: (err) => {
+      console.error('Erreur structures:', err);
+      if (err.status === 404) {
+        // lien invalide ou campagne clôturée
+        this.showGuide = true;
+      }
+    },
+  });
+}
 
 
 
@@ -396,23 +443,26 @@ loadMonProfil(): void {
   // ─────────────────────────────────────────────────────────
   // Structures / Régions (inchangé)
   // ─────────────────────────────────────────────────────────
-  loadStructuresCampagneActive(): void {
-    this.structureService.getStructuresCampagneActivePublique().subscribe({
-      next: (data) => { this.structures = data; },
-      error: (err) => console.error('Erreur structures:', err),
-    });
-  }
+ loadStructuresCampagneActive(): void {
+  if (!this.campagneCode) return;
+
+  this.structureService.getStructuresParCodeCampagne(this.campagneCode).subscribe({
+    next: (data) => { this.structures = data; },
+    error: (err) => console.error('Erreur structures:', err),
+  });
+}
 
   loadStructuresByRegion(regionId: number): void {
-    this.structureService.getStructuresCampagneActivePublique().subscribe({
-      next: (data) => {
-        this.structures = data.filter(s =>
-          s.region === this.regions.find(r => r.id == regionId)?.nom
-        );
-      },
-      error: (err) => console.error('Erreur:', err),
-    });
-  }
+  if (!this.campagneCode) return;
+
+  this.structureService.getStructuresParCodeCampagne(this.campagneCode).subscribe({
+    next: (data) => {
+      const regionNom = this.regions.find(r => r.id == regionId)?.nom;
+      this.structures = data.filter(s => s.region === regionNom);
+    },
+    error: (err) => console.error('Erreur:', err),
+  });
+}
 
   loadCampagnes(): void {
     this.campagneService.getToutesCampagnes().subscribe({
@@ -543,24 +593,24 @@ openCandidatureFromGuide(): void {
   this.setTab('profil');
 
   // ✅ 2. Charger structures après
-  if (candidature.regionId) {
-    this.structureService.getStructuresCampagneActivePublique().subscribe({
-      next: (data) => {
+  if (candidature.regionId && this.campagneCode) {
+  this.structureService.getStructuresParCodeCampagne(this.campagneCode).subscribe({
+    next: (data) => {
+      const regionNom = this.regions.find(r => r.id == candidature.regionId)?.nom;
 
-        const regionNom = this.regions.find(r => r.id == candidature.regionId)?.nom;
+      this.structures = data
+        .filter(s => s.region === regionNom)
+        .map(s => ({
+          ...s,
+          id: Number(s.id) // 🔥 IMPORTANT
+        }));
 
-        this.structures = data
-          .filter(s => s.region === regionNom)
-          .map(s => ({
-            ...s,
-            id: Number(s.id) // 🔥 IMPORTANT
-          }));
-
-        console.log('✅ structures chargées:', this.structures);
-        console.log('🎯 structureId actuel:', this.selectedCandidature?.structureId);
-      }
-    });
-  }
+      console.log('✅ structures chargées:', this.structures);
+      console.log('🎯 structureId actuel:', this.selectedCandidature?.structureId);
+    },
+    error: (err) => console.error('Erreur structures:', err), // manquait dans l'original
+  });
+}
 }
   closeDetail(): void {
     this.showDetailModal = false;
@@ -613,14 +663,54 @@ openCandidatureFromGuide(): void {
   }
 
   onFileChange(event: any, type: string): void {
-    const file = event.target.files[0];
-    if (!file) return;
-    if (type === 'cin')     { this.cinFile = file;    this.cinFileName = file.name; }
-    if (type === 'diplome') { this.diplome = file;    this.diplomeFileName = file.name; }
-    if (type === 'contrat') { this.contrat = file;    this.contratFileName = file.name; }
-    if (type === 'rib') { this.ribFile = file; this.ribFileName = file.name; }
+  const file = event.target.files[0];
 
+  if (!file) {
+    return;
   }
+
+  // Types autorisés : PDF et images
+  const allowedTypes = [
+    'application/pdf',
+    'image/jpeg',
+    'image/png',
+    'image/jpg',
+    'image/webp',
+    'image/gif'
+  ];
+
+  if (!allowedTypes.includes(file.type)) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Format non autorisé',
+      text: 'Veuillez sélectionner uniquement un fichier PDF ou une image.'
+    });
+
+    // Réinitialiser le champ
+    event.target.value = '';
+    return;
+  }
+
+  if (type === 'cin') {
+    this.cinFile = file;
+    this.cinFileName = file.name;
+  }
+
+  if (type === 'diplome') {
+    this.diplome = file;
+    this.diplomeFileName = file.name;
+  }
+
+  if (type === 'contrat') {
+    this.contrat = file;
+    this.contratFileName = file.name;
+  }
+
+  if (type === 'rib') {
+    this.ribFile = file;
+    this.ribFileName = file.name;
+  }
+}
 
   submitCandidature(candidatureForm: NgForm): void {
 

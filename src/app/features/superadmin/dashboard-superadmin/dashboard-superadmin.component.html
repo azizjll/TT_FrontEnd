@@ -17,11 +17,11 @@
   <div class="filters-card">
 
     <div class="filter-group">
-      <label>Email utilisateur</label>
+      <label for="searchEmail">Email utilisateur</label>
 
       <div class="input-wrapper">
         <input
-          type="text"
+          type="text" id ="searchEmail"
           placeholder="Rechercher par email..."
           [(ngModel)]="searchEmail"
           (input)="filtrer()">
@@ -29,9 +29,9 @@
     </div>
 
     <div class="filter-group">
-      <label>Action</label>
+      <label for="searchAction">Action</label>
 
-      <select [(ngModel)]="searchAction" (change)="filtrer()">
+      <select  id="searchAction" [(ngModel)]="searchAction" (change)="filtrer()">
         <option value="">Toutes</option>
         <option value="CREATE">CREATE</option>
         <option value="UPDATE">UPDATE</option>

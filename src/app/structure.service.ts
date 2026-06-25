@@ -68,12 +68,9 @@ export class StructureService {
     );
   }
 
-  getStructuresCampagneActivePublique(): Observable<StructureDTO[]> {
-    return this.http.get<StructureDTO[]>(
-      `${this.baseUrl}/campagne-active/publique`,
-      {
-        headers: this.getHeaders()
-      }
-    );
-  }
+  getStructuresParCodeCampagne(code: string): Observable<StructureDTO[]> {
+  return this.http.get<StructureDTO[]>(
+    `${this.baseUrl}/campagne/${code}/publique`
+  );
+}
 }

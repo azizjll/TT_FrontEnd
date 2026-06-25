@@ -15,8 +15,7 @@ export class NavbarComponent implements OnInit {
 
   navLinks = [
     { name: 'Espace Saisonnier', path: '/espace-saisonnier' },
-    { name: 'Contact', path: '/contact' },
-    { name: 'About', path: '/about' },
+    
   ];
 
   constructor(private router: Router) {

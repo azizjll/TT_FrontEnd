@@ -15,7 +15,7 @@ export class LayoutComponent {
     { label: 'Candidatures', icon: 'users', route: 'candidatures', badge: 0 },
   ];
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private readonly authService: AuthService, private readonly router: Router) {}
 
   logout(): void {
     this.authService.logout();          // supprime le token

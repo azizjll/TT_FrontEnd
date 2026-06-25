@@ -69,9 +69,9 @@ export class UsersListComponent implements OnInit {
   page2     = 1;
   pageSize2 = 10;
 
-  private apiBase = 'http://localhost:8080';
+  private readonly apiBase = 'http://localhost:8080';
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
   ngOnInit(): void { this.loadUsers(); }
 
@@ -94,19 +94,34 @@ export class UsersListComponent implements OnInit {
   }
 
   // ── Drag & Drop ────────────────────────────────────────────────
-  onDragOver(e: DragEvent, n: 1|2): void {
-    e.preventDefault();
-    n === 1 ? (this.isDragging1 = true) : (this.isDragging2 = true);
+ // ✅ Après
+onDragOver(e: DragEvent, n: 1|2): void {
+  e.preventDefault();
+  if (n === 1) {
+    this.isDragging1 = true;
+  } else {
+    this.isDragging2 = true;
   }
-  onDragLeave(n: 1|2): void {
-    n === 1 ? (this.isDragging1 = false) : (this.isDragging2 = false);
+}
+
+onDragLeave(n: 1|2): void {
+  if (n === 1) {
+    this.isDragging1 = false;
+  } else {
+    this.isDragging2 = false;
   }
-  onDrop(e: DragEvent, n: 1|2): void {
-    e.preventDefault();
-    n === 1 ? (this.isDragging1 = false) : (this.isDragging2 = false);
-    const file = e.dataTransfer?.files?.[0];
-    if (file) this.setFile(file, n);
+}
+
+onDrop(e: DragEvent, n: 1|2): void {
+  e.preventDefault();
+  if (n === 1) {
+    this.isDragging1 = false;
+  } else {
+    this.isDragging2 = false;
   }
+  const file = e.dataTransfer?.files?.[0];
+  if (file) this.setFile(file, n);
+}
   onFileSelected(e: Event, n: 1|2): void {
     const file = (e.target as HTMLInputElement).files?.[0];
     if (file) this.setFile(file, n);

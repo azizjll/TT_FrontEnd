@@ -70,11 +70,39 @@ campagneNom   = '';      // nom de la campagne active
   // ── Données ───────────────────────────────────────
   saisonniers: SaisonnierPaie[] = [];
 
+    // ── Méthodes privées pour le style PDF ──────────────────────────
+  private applyRowAlternating(data: any, rowIndex: number): void {
+    data.cell.styles.fillColor = rowIndex % 2 === 0
+      ? [241, 245, 249]
+      : [255, 255, 255];
+  }
+
+  private applyAbsenceStyle(data: any, s: any): void {
+    if (s.absences > 0) {
+      data.cell.styles.fillColor = [254, 226, 226];
+      data.cell.styles.textColor = [153, 27, 27];
+    } else {
+      data.cell.styles.fillColor = [209, 250, 229];
+      data.cell.styles.textColor = [6, 95, 70];
+    }
+    data.cell.styles.fontStyle = 'bold';
+  }
+
+  private applyMontantStyle(data: any): void {
+    data.cell.styles.textColor = [30, 58, 95];
+    data.cell.styles.fontStyle = 'bold';
+  }
+
+  private applyStatutStyle(data: any, s: any): void {
+    data.cell.styles.textColor = s.paye ? [6, 95, 70] : [153, 27, 27];
+    data.cell.styles.fontStyle = 'bold';
+  }
+
 constructor(
-    private saisonnierService: SaisonnierService,
-    private authService: AuthService,
-    private campagneService: CampagneService,
-        private structureService: StructureService
+    private readonly saisonnierService: SaisonnierService,
+    private readonly authService: AuthService,
+    private readonly campagneService: CampagneService,
+    private readonly structureService: StructureService
 
 ) {}
 
@@ -184,7 +212,7 @@ onStructureChange(): void {
           rib:                saved.rib ?? dto.rib ?? '',
           dateMbacharah:      saved.dateMbacharah ?? this.dateMbacharah,
           duree:              saved.duree ?? this.dureeContrat,
-          absences:           saved.absences ?? 0,
+          absences:           dto.absences ?? saved.absences ?? 0,
           montantNet:         0,
           nomTitulaireCompte: saved.nomTitulaireCompte ?? '',
           cinTitulaire:       saved.cinTitulaire ?? '',
@@ -217,7 +245,9 @@ get structuresCT(): StructureDTO[] {
 
   // ── Calculs ───────────────────────────────────────
   recalcRow(s: SaisonnierPaie): void {
-  s.duree      = Math.max(0, this.dureeContrat - s.absences);
+  const dureeTotale = this.getDureeContrat(s);
+
+  s.duree      = Math.max(0, dureeTotale - s.absences);
   s.montantNet = s.duree * this.tauxJourDT;
 
   this.saisonnierService.updateAbsences(s.id, s.absences).subscribe({
@@ -240,8 +270,12 @@ get structuresCT(): StructureDTO[] {
   getTotalAbsences():  number { return this.saisonniers.reduce((s, x) => s + x.absences, 0); }
   getTotalJours():     number { return this.saisonniers.reduce((s, x) => s + x.duree, 0); }
 
+  getDureeContrat(s: SaisonnierPaie): number {
+  return s.moisTravail === 'JUILLET_AOUT' ? 60 : this.dureeContrat;
+}
+
   // ── Filtre / recherche ────────────────────────────
-  get filteredSaisonniers(): SaisonnierPaie[] {
+ get filteredSaisonniers(): SaisonnierPaie[] {
 
   const q = this.searchQ.toLowerCase().trim();
 
@@ -262,11 +296,18 @@ get structuresCT(): StructureDTO[] {
 
     if (this.selectedMois !== 'ALL') {
 
-      if (this.selectedMois === 'JUILLET_AOUT') {
+      if (this.selectedMois === 'JUILLET') {
         matchMonth =
           s.moisTravail === 'JUILLET' ||
-          s.moisTravail === 'AOUT';
+          s.moisTravail === 'JUILLET_AOUT';
+
+      } else if (this.selectedMois === 'AOUT') {
+        matchMonth =
+          s.moisTravail === 'AOUT' ||
+          s.moisTravail === 'JUILLET_AOUT';
+
       } else {
+        // Cas JUILLET_AOUT (et tout autre mois simple) : correspondance stricte
         matchMonth =
           s.moisTravail === this.selectedMois;
       }
@@ -318,17 +359,14 @@ get structuresCT(): StructureDTO[] {
   // ── Styles réutilisables ──────────────────────────────────────────────
   const BLUE_DARK  = '1E3A5F';
   const BLUE_MED   = '2563EB';
-  const BLUE_LIGHT = 'DBEAFE';
   const GREEN_BG   = 'D1FAE5';
   const GREEN_FG   = '065F46';
   const RED_BG     = 'FEE2E2';
   const RED_FG     = '991B1B';
   const GREY_BG    = 'F1F5F9';
-  const YELLOW_BG  = 'FEF9C3';
   const WHITE      = 'FFFFFF';
 
-  const fontBase   = { name: 'Arial', sz: 10 };
-  const fontWhite  = { ...fontBase, bold: true, color: { rgb: WHITE } };
+  
   const fontTitle  = { name: 'Arial', sz: 14, bold: true, color: { rgb: WHITE } };
   const fontSub    = { name: 'Arial', sz: 10, italic: true, color: { rgb: WHITE } };
   const fontHeader = { name: 'Arial', sz: 10, bold: true, color: { rgb: WHITE } };
@@ -347,11 +385,7 @@ get structuresCT(): StructureDTO[] {
     alignment: { horizontal: 'center', vertical: 'center' },
   };
 
-  const cellSub: any = {
-    font: fontSub,
-    fill: { fgColor: { rgb: BLUE_MED } },
-    alignment: { horizontal: 'center', vertical: 'center' },
-  };
+  
 
   const cellHeader: any = {
     font: fontHeader,
@@ -392,7 +426,7 @@ get structuresCT(): StructureDTO[] {
   ws['A3'] = { v: '', s: { fill: { fgColor: { rgb: WHITE } } } };
 
   // Ligne 4 : en-têtes colonnes
-  const headers = ['N°', 'Nom et Prénom', 'N° CIN', 'Nbre de jours de travail', ' Nbre de jours d\absences',  'N° Compte'];
+const headers = ['N°', 'Nom et Prénom', 'N° CIN', 'Nbre de jours de travail', "Nbre de jours d'absences", 'N° Compte'];
   headers.forEach((h, c) => {
     ws[XLSX.utils.encode_cell({ r: 3, c })] = { v: h, s: cellHeader };
   });
@@ -443,7 +477,7 @@ get structuresCT(): StructureDTO[] {
   // Ligne Total
   const totalRow = dataStartRow - 1 + saisonniers.length;
   ws[XLSX.utils.encode_cell({ r: totalRow, c: 0 })] = { v: 'TOTAL',                         s: cellTotalLabel };
-  ws[XLSX.utils.encode_cell({ r: totalRow, c: 1 })] = { v: `${saisonniers.length} agents`,   s: cellTotalLabel };
+  ws[XLSX.utils.encode_cell({ r: totalRow, c: 1 })] = { v: `${saisonniers.length} saisonniers`,   s: cellTotalLabel };
   ws[XLSX.utils.encode_cell({ r: totalRow, c: 2 })] = { v: '',                               s: cellTotalVal };
   ws[XLSX.utils.encode_cell({ r: totalRow, c: 3 })] = { v: this.getTotalJours(),             s: cellTotalVal };
   ws[XLSX.utils.encode_cell({ r: totalRow, c: 4 })] = { v: this.getTotalAbsences(),          s: cellTotalVal };
@@ -528,7 +562,7 @@ get structuresCT(): StructureDTO[] {
   );
 
   // ── Tableau ───────────────────────────────────────────────────────────
-  const headers = [['N°', 'Nom et Prénom', 'N° CIN', 'Durée (J)', 'Absences (J)', 'Montant net (DT)', 'N° Compte', 'Statut']];
+  const headers = [['N°', 'Nom et Prénom', 'N° CIN', 'Nbre de jours de travail', 'Nbre de jours d/absences', 'Montant net (DT)', 'N° Compte']];
 
   const bodyData = this.filteredSaisonniers.map((s, i) => [
     (i + 1).toString(),
@@ -538,7 +572,7 @@ get structuresCT(): StructureDTO[] {
     s.absences.toString(),
     `${s.montantNet.toFixed(3)} DT`,
     s.rib || '—',
-    s.paye ? 'Payé' : 'Impayé',
+    
   ]);
 
   autoTable(doc, {
@@ -573,59 +607,28 @@ get structuresCT(): StructureDTO[] {
       4: { halign: 'center', cellWidth: 22  },   // Absences
       5: { halign: 'center', cellWidth: 32  },   // Montant
       6: { halign: 'center', cellWidth: 50  },   // RIB
-      7: { halign: 'center', cellWidth: 20  },   // Statut
+      
     },
 
     // Lignes alternées + coloration conditionnelle
     didParseCell: (data) => {
-      if (data.section === 'body') {
-        const rowIndex = data.row.index;
-        const colIndex = data.column.index;
-        const s = this.filteredSaisonniers[rowIndex];
+  if (data.section !== 'body') return;
 
-        // Alternance de lignes
-        if (rowIndex % 2 === 0) {
-          data.cell.styles.fillColor = [241, 245, 249];  // gris clair
-        } else {
-          data.cell.styles.fillColor = [255, 255, 255];  // blanc
-        }
+  const rowIndex = data.row.index;
+  const colIndex = data.column.index;
+  const s = this.filteredSaisonniers[rowIndex];
 
-        // Colonne Absences : rouge si > 0, vert si 0
-        if (colIndex === 4) {
-          if (s.absences > 0) {
-            data.cell.styles.fillColor  = [254, 226, 226]; // rouge clair
-            data.cell.styles.textColor  = [153, 27,  27 ]; // rouge foncé
-            data.cell.styles.fontStyle  = 'bold';
-          } else {
-            data.cell.styles.fillColor  = [209, 250, 229]; // vert clair
-            data.cell.styles.textColor  = [6,   95,  70 ]; // vert foncé
-            data.cell.styles.fontStyle  = 'bold';
-          }
-        }
+  this.applyRowAlternating(data, rowIndex);
 
-        // Colonne Montant : bleu
-        if (colIndex === 5) {
-          data.cell.styles.textColor = [30, 58, 95];
-          data.cell.styles.fontStyle = 'bold';
-        }
-
-        // Colonne Statut : vert/rouge
-        if (colIndex === 7) {
-          if (s.paye) {
-            data.cell.styles.textColor = [6,  95, 70];
-            data.cell.styles.fontStyle = 'bold';
-          } else {
-            data.cell.styles.textColor = [153, 27, 27];
-            data.cell.styles.fontStyle = 'bold';
-          }
-        }
-      }
-    },
+  if (colIndex === 4) this.applyAbsenceStyle(data, s);
+  if (colIndex === 5) this.applyMontantStyle(data);
+  if (colIndex === 7) this.applyStatutStyle(data, s);
+},
 
     // Ligne de total en bas du tableau
     foot: [[
       '',
-      `${this.filteredSaisonniers.length} agents`,
+      `${this.filteredSaisonniers.length} saisonniers`,
       '',
       this.getTotalJours().toString(),
       this.getTotalAbsences().toString(),
@@ -661,44 +664,49 @@ get structuresCT(): StructureDTO[] {
 
   // ── Imprimer fiche individuelle ───────────────────
   printFiche(s: SaisonnierPaie): void {
-    const html = `
-      <html><head>
-        <meta charset="UTF-8">
-        <style>
-          body { font-family: Arial, sans-serif; direction: rtl; padding: 32px; }
-          h2 { text-align: center; color: #1e3a5f; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          td { padding: 10px 14px; border: 1px solid #ddd; font-size: 14px; }
-          td:first-child { font-weight: bold; background: #f8fafc; width: 40%; }
-          .total { background: #1e3a5f; color: white; font-size: 16px; }
-          .header { text-align: center; margin-bottom: 20px; }
-          .header h3 { color: #2563eb; }
-        </style>
-      </head><body>
-        <div class="header">
-          <strong>تونس تيليكوم — Tunisie Telecom</strong>
-          <h2>بطاقة أجرة عون متعاقد موسمي — ${this.currentYear}</h2>
-        </div>
-        <table>
-          <tr><td>Nom et Prénom</td><td>${s.prenom} ${s.nom}</td></tr>
-          <tr><td>N° CIN</td><td>${s.cin}</td></tr>
-          <tr><td>Durée de travail(Jours)</td><td>${s.duree} يوم</td></tr>
-          <tr><td>Absences(Jours)</td><td>${s.absences} يوم</td></tr>
-          <tr><td>أيام العمل الفعلية</td><td>${s.duree - s.absences} يوم</td></tr>
-          <tr><td>المبلغ الصافي</td><td class="total"><strong>${s.montantNet.toFixed(3)} DT</strong></td></tr>
-          <tr><td>N° Compte</td><td>${s.rib || '—'}</td></tr>
-        </table>
-        <br>
-        <table>
-          <tr><td>الأجر الإجمالي</td><td>${s.duree} × ${this.tauxJourDT} = ${(s.duree * this.tauxJourDT).toFixed(3)} DT</td></tr>
-          <tr><td>خصم الغيابات</td><td>${s.absences} × ${this.tauxJourDT} = ${(s.absences * this.tauxJourDT).toFixed(3)} DT</td></tr>
-          <tr><td><strong>الصافي للصرف</strong></td><td><strong>${s.montantNet.toFixed(3)} DT</strong></td></tr>
-        </table>
-      </body></html>
-    `;
-    const w = window.open('', '_blank');
-    w?.document.write(html);
-    w?.document.close();
-    w?.print();
-  }
+  const html = `
+    <html><head>
+      <meta charset="UTF-8">
+      <style>
+        body { font-family: Arial, sans-serif; direction: rtl; padding: 32px; }
+        h2 { text-align: center; color: #1e3a5f; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        td { padding: 10px 14px; border: 1px solid #ddd; font-size: 14px; }
+        td:first-child { font-weight: bold; background: #f8fafc; width: 40%; }
+        .total { background: #1e3a5f; color: white; font-size: 16px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h3 { color: #2563eb; }
+      </style>
+    </head><body>
+      <div class="header">
+        <strong>تونس تيليكوم — Tunisie Telecom</strong>
+        <h2>بطاقة أجرة عون متعاقد موسمي — ${this.currentYear}</h2>
+      </div>
+      <table>
+        <tr><td>Nom et Prénom</td><td>${s.prenom} ${s.nom}</td></tr>
+        <tr><td>N° CIN</td><td>${s.cin}</td></tr>
+        <tr><td>Durée de travail(Jours)</td><td>${s.duree} يوم</td></tr>
+        <tr><td>Absences(Jours)</td><td>${s.absences} يوم</td></tr>
+        <tr><td>أيام العمل الفعلية</td><td>${s.duree - s.absences} يوم</td></tr>
+        <tr><td>المبلغ الصافي</td><td class="total"><strong>${s.montantNet.toFixed(3)} DT</strong></td></tr>
+        <tr><td>N° Compte</td><td>${s.rib || '—'}</td></tr>
+      </table>
+      <br>
+      <table>
+        <tr><td>الأجر الإجمالي</td><td>${s.duree} × ${this.tauxJourDT} = ${(s.duree * this.tauxJourDT).toFixed(3)} DT</td></tr>
+        <tr><td>خصم الغيابات</td><td>${s.absences} × ${this.tauxJourDT} = ${(s.absences * this.tauxJourDT).toFixed(3)} DT</td></tr>
+        <tr><td><strong>الصافي للصرف</strong></td><td><strong>${s.montantNet.toFixed(3)} DT</strong></td></tr>
+      </table>
+      <script>window.onload = () => { window.print(); window.onafterprint = () => window.close(); }</script>
+    </body></html>
+  `;
+
+  // ✅ Blob URL — remplace document.write (déprécié)
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const w = globalThis.open(url, '_blank');
+
+  // Libérer l'URL après ouverture
+  w?.addEventListener('load', () => URL.revokeObjectURL(url));
+}
 }

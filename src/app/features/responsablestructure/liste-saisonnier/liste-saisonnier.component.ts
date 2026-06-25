@@ -22,8 +22,8 @@ export class ListeSaisonnierComponent implements OnInit {
   joursDemandes: Record<number, number> = {};
 
   constructor(
-    private candidatureService: CandidatureService,
-    private saisonnierService: SaisonnierService
+    private readonly candidatureService: CandidatureService,
+    private readonly saisonnierService: SaisonnierService
   ) {}
 
   ngOnInit() {

@@ -308,14 +308,7 @@ input[type="email"]:focus {
   z-index: 9999;
 }
 
-.modal {
-  background: white;
-  width: 650px;
-  max-width: 95%;
-  border-radius: 12px;
-  padding: 20px;
-  animation: fadeIn .25s ease;
-}
+
 
 @keyframes fadeIn {
   from { transform: scale(.95); opacity: 0 }

@@ -39,8 +39,8 @@
 
       <form class="auth-form" #loginForm="ngForm" (ngSubmit)="onLogin(loginForm)">
 
-        <div class="field-group">
-          <label class="field-label">Adresse email</label>
+        <div class="field-group" >
+          <label class="field-label" for="email">Adresse email</label>
           <div class="input-wrapper" [class.focused]="emailFocused" [class.has-error]="emailCtrl.invalid && emailCtrl.touched">
             <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
@@ -48,7 +48,7 @@
             </svg>
             <input
               type="email"
-              name="email"
+              name="email" id="email"
               placeholder="votre@email.com"
               [(ngModel)]="loginData.email"
               #emailCtrl="ngModel"
@@ -65,7 +65,7 @@
 
         <div class="field-group">
           <div class="label-row">
-            <label class="field-label">Mot de passe</label>
+            <label  class="field-label" for="password">Mot de passe</label>
             <button type="button" class="link-btn" (click)="currentView = 'forgot'">Mot de passe oublié ?</button>
           </div>
           <div class="input-wrapper" [class.focused]="pwFocused" [class.has-error]="pwCtrl.invalid && pwCtrl.touched">
@@ -75,7 +75,7 @@
             </svg>
             <input
               [type]="showPassword ? 'text' : 'password'"
-              name="password"
+              name="password" id="password"
               placeholder="••••••••"
               [(ngModel)]="loginData.password"
               #pwCtrl="ngModel"
@@ -144,7 +144,7 @@
       <form class="auth-form" *ngIf="!forgotSuccess" #forgotForm="ngForm" (ngSubmit)="onForgotPassword(forgotForm)">
 
         <div class="field-group">
-          <label class="field-label">Adresse email</label>
+          <label class="field-label" for="forgotEmail">Adresse email</label>
           <div class="input-wrapper" [class.focused]="forgotEmailFocused">
             <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
@@ -152,7 +152,7 @@
             </svg>
             <input
               type="email"
-              name="forgotEmail"
+              name="forgotEmail" id="forgotEmail"
               placeholder="votre@email.com"
               [(ngModel)]="forgotEmail"
               #forgotEmailCtrl="ngModel"
@@ -210,7 +210,7 @@
       <form class="auth-form" *ngIf="!resetSuccess" #resetForm="ngForm" (ngSubmit)="onResetPassword(resetForm)">
 
         <div class="field-group">
-          <label class="field-label">Nouveau mot de passe</label>
+          <label class="field-label" for="newPassword">Nouveau mot de passe</label>
           <div class="input-wrapper" [class.focused]="newPwFocused">
             <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
@@ -218,7 +218,7 @@
             </svg>
             <input
               [type]="showNewPw ? 'text' : 'password'"
-              name="newPassword"
+              name="newPassword" id="newPassword"
               placeholder="Nouveau mot de passe"
               [(ngModel)]="resetData.newPassword"
               #newPwCtrl="ngModel"
@@ -254,7 +254,7 @@
         </div>
 
         <div class="field-group">
-          <label class="field-label">Confirmer le mot de passe</label>
+          <label class="field-label" for="confirmPassword">Confirmer le mot de passe</label>
           <div class="input-wrapper" [class.focused]="confirmPwFocused" [class.has-error]="resetData.confirmPassword && resetData.newPassword !== resetData.confirmPassword">
             <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
@@ -262,7 +262,7 @@
             </svg>
             <input
               [type]="showConfirmPw ? 'text' : 'password'"
-              name="confirmPassword"
+              name="confirmPassword"  id="confirmPassword"
               placeholder="Confirmer le mot de passe"
               [(ngModel)]="resetData.confirmPassword"
               (focus)="confirmPwFocused = true"
@@ -302,8 +302,17 @@
 </div>
 
 <!-- ===== MODAL : CONNEXION REQUISE ===== -->
-<div class="modal-overlay" *ngIf="showLoginRequired" (click)="closeLoginRequired()" @fadeSlide>
-  <div class="login-required-modal" (click)="$event.stopPropagation()">
+<div class="modal-overlay" 
+  *ngIf="showLoginRequired" 
+  (click)="closeLoginRequired()" 
+  (keydown.enter)="closeLoginRequired()"
+  (keydown.escape)="closeLoginRequired()"
+  role="button"
+  tabindex="0"
+  @fadeSlide>
+  <div class="login-required-modal" 
+    (click)="$event.stopPropagation()"
+    (keydown.enter)="$event.stopPropagation()">
     <div class="lrm-icon">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>

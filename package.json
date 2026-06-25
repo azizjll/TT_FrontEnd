@@ -40,6 +40,8 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "postcss": "^8.5.6",
+    "stylelint": "^16.26.1",
+    "stylelint-config-standard-scss": "^14.0.0",
     "tailwindcss": "^3.4.19",
     "typescript": "~5.1.3"
   }

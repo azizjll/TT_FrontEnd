@@ -44,31 +44,58 @@
             </td>
 
             <td class="td-jours">
-  <div class="jours-input-wrap">
-    <button class="jours-btn"
-      (click)="onJoursChange(c.id, joursDemandes[c.id] - 1)"
-      [disabled]="joursDemandes[c.id] <= 0">
-      <i class="ti ti-minus"></i>
-    </button>
+              <div class="jours-control">
 
-    <input type="number" class="jours-input" min="0"
-      [value]="joursDemandes[c.id]"
-      (change)="onJoursChange(c.id, +$any($event.target).value)" />
+                <!-- Input + flèches haut/bas -->
+                <div class="jours-input-wrap">
+                  <input type="number" class="jours-input" min="0"
+                    [value]="joursDemandes[c.id]"
+                    (change)="onJoursChange(c.id, +$any($event.target).value)" />
 
-    <button class="jours-btn"
-      (click)="onJoursChange(c.id, joursDemandes[c.id] + 1)">
-      <i class="ti ti-plus"></i>
-    </button>
+                  <div class="jours-spin">
+                    <button type="button" class="jours-spin-btn"
+                      (click)="onJoursChange(c.id, joursDemandes[c.id] + 1)">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <path d="M6 15l6-6 6 6"/>
+                      </svg>
+                    </button>
+                    <button type="button" class="jours-spin-btn"
+                      (click)="onJoursChange(c.id, joursDemandes[c.id] - 1)"
+                      [disabled]="joursDemandes[c.id] <= 0">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <path d="M6 9l6 6 6-6"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
 
-    <!-- ✅ Bouton sauvegarder -->
-    <button class="jours-btn save-btn"
-      (click)="sauvegarderAbsences(c)"
-      [disabled]="saveLoading[c.id]"
-      [title]="saveSuccess[c.id] ? 'Sauvegardé !' : 'Sauvegarder'">
-      <i class="ti" [class.ti-check]="saveSuccess[c.id]"
-                    [class.ti-device-floppy]="!saveSuccess[c.id]"></i>
-    </button>
-  </div>
+                <!-- Bouton Sauvegarder avec texte -->
+                <button type="button" class="btn-sauvegarder"
+                  [class.is-success]="saveSuccess[c.id]"
+                  [class.is-loading]="saveLoading[c.id]"
+                  (click)="sauvegarderAbsences(c)"
+                  [disabled]="saveLoading[c.id]">
+
+                  <!-- Icône loader (en cours) -->
+                  <svg *ngIf="saveLoading[c.id]" class="icon-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M12 3a9 9 0 1 0 9 9" stroke-linecap="round"/>
+                  </svg>
+
+                  <!-- Icône check (succès) -->
+                  <svg *ngIf="!saveLoading[c.id] && saveSuccess[c.id]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+
+                  <!-- Icône disquette (par défaut) -->
+                  <svg *ngIf="!saveLoading[c.id] && !saveSuccess[c.id]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <path d="M17 21v-8H7v8M7 3v5h8"/>
+                  </svg>
+
+                  <span>{{ saveLoading[c.id] ? 'Sauvegarde...' : (saveSuccess[c.id] ? 'Sauvegardé' : 'Sauvegarder') }}</span>
+                </button>
+
+              </div>
 </td>
           </tr>
         </tbody>

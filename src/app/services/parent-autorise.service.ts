@@ -6,6 +6,7 @@ export interface ParentAutorise {
   id: number;
   nomPrenom: string;
   matricule: string;
+  email: string;  
   autorises: number;
   utilise: number;
 }
@@ -56,18 +57,18 @@ export class ParentAutoriseService {
   }
 
   // ➕ ADD
-  addParent(nomPrenom: string, matricule: string, autorises: number): Observable<any> {
+  addParent(nomPrenom: string, matricule: string, email: string, autorises: number): Observable<any> {
     return this.http.post(
-      `${this.apiUrl}?nomPrenom=${nomPrenom}&matricule=${matricule}&autorises=${autorises}`,
+      `${this.apiUrl}?nomPrenom=${nomPrenom}&matricule=${matricule}&email=${email}&autorises=${autorises}`,
       {},
       { headers: this.authHeaders() }
     );
   }
 
   // ✏️ UPDATE
-  updateParent(id: number, nomPrenom: string, matricule: string, autorises: number, utilise: number): Observable<any> {
+  updateParent(id: number, nomPrenom: string, matricule: string, email: string, autorises: number, utilise: number): Observable<any> {
     return this.http.put(
-      `${this.apiUrl}/${id}?nomPrenom=${nomPrenom}&matricule=${matricule}&autorises=${autorises}&utilise=${utilise}`,
+       `${this.apiUrl}/${id}?nomPrenom=${nomPrenom}&matricule=${matricule}&email=${email}&autorises=${autorises}&utilise=${utilise}`,
       {},
       { headers: this.authHeaders() }
     );

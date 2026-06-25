@@ -105,12 +105,12 @@ get toutesCompletes(): boolean {
 }
 
   constructor(
-    private route: ActivatedRoute,
-    private candidatureService: CandidatureService,
-    private authService: AuthService,
-    private structureService: StructureService,
-    private affectationService: AffectationService,
-    private pdfExport: PdfExportService
+    private readonly route: ActivatedRoute,
+    private readonly candidatureService: CandidatureService,
+    private readonly authService: AuthService,
+    private readonly structureService: StructureService,
+    private readonly affectationService: AffectationService,
+    private readonly pdfExport: PdfExportService
   ) {}
 
   ngOnInit(): void {
@@ -197,10 +197,18 @@ get filteredCandidatures() {
       this.activeStructureFilter === 'ALL' ||
       this.structureMap[c.id] === this.activeStructureFilter;
 
-    // 🆕 filtre mois
-    const matchMois =
-      this.activeMoisFilter === 'ALL' ||
-      c.saisonnier.moisTravail === this.activeMoisFilter;
+    // 🆕 filtre mois avec logique d'inclusion
+    const moisTravail = c.saisonnier.moisTravail;
+    let matchMois = true;
+
+    if (this.activeMoisFilter === 'JUILLET') {
+      matchMois = moisTravail === 'JUILLET' || moisTravail === 'JUILLET_AOUT';
+    } else if (this.activeMoisFilter === 'AOUT') {
+      matchMois = moisTravail === 'AOUT' || moisTravail === 'JUILLET_AOUT';
+    } else if (this.activeMoisFilter === 'JUILLET_AOUT') {
+      matchMois = moisTravail === 'JUILLET_AOUT';
+    }
+    // si activeMoisFilter === 'ALL', matchMois reste true
 
     const q = this.searchQuery.toLowerCase().trim();
 
@@ -405,27 +413,22 @@ formData.append('messageDemandeAdmin', this.form.commentaire ?? '');  // 🆕 m�
 }
 
 
+
+parentNonTrouve = false;
+
 onMatriculeChange(matricule: string): void {
-  this.parentInfo = null;
-  this.quotaDepasse = false;
-  this.form.nomPrenomParent = '';
-
-  if (!matricule || matricule.trim().length === 0) return;
-
-  this.loadingParent = true;
+  if (!matricule || matricule.trim().length < 3) return;
 
   this.candidatureService.getParentByMatricule(matricule.trim()).subscribe({
-    next: (data) => {
-      this.parentInfo = data;
-      this.form.nomPrenomParent = data.nomPrenom; // 🔥 auto-fill
-      this.quotaDepasse = data.depasse;
-      this.loadingParent = false;
+    next: (res) => {
+      this.parentInfo = res.message; // la réponse est { message: parentObject }
+      this.form.nomPrenomParent = this.parentInfo.nomPrenom; // adapte selon ton objet
+      this.parentNonTrouve = false;
     },
     error: () => {
       this.parentInfo = null;
       this.form.nomPrenomParent = '';
-      this.quotaDepasse = false;
-      this.loadingParent = false;
+      this.parentNonTrouve = true;
     }
   });
 }
@@ -660,22 +663,12 @@ telechargerDoc(url: string, nom: string): void {
   fetch(url)
     .then(res => res.blob())
     .then(blob => {
-      const extension = nom.includes('.') ? '' : this.getExtensionFromBlob(blob);
-      const nomFinal = nom.endsWith(extension) ? nom : nom + extension;
       const blobUrl = URL.createObjectURL(blob);
-
-      if (blob.type === 'application/pdf') {
-        // PDF → ouvrir dans nouvel onglet
-        window.open(blobUrl, '_blank');
-      } else {
-        // Autres types → télécharger
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = nomFinal;
-        a.click();
-        URL.revokeObjectURL(blobUrl);
-      }
-    });
+      window.open(blobUrl, '_blank', 'noopener,noreferrer');
+      // Revoke après un délai pour laisser le temps au nouvel onglet de charger le blob
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+    })
+    .catch(err => console.error('Erreur lors de l\'ouverture du document', err));
 }
 
 private getExtensionFromBlob(blob: Blob): string {
